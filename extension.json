@@ -1,0 +1,8 @@
+{
+	"name": "FHC-Core-Softwarebereitstellung",
+	"description": "Softwareverwaltung für die Lehre",
+	"version": "1",
+	"license": "GPL",
+	"url": "https://github.com/FH-Complete/FHC-Core-Softwarebereitstellung",
+	"core_version": "3.4"
+}
