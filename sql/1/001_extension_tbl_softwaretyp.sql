@@ -13,3 +13,5 @@ INSERT INTO extension.tbl_softwaretyp(softwaretyp_kurzbz, bezeichnung) VALUES
 ('modul','{Modul,Module}'),
 ('config','{Config,Config}')
 ON CONFLICT (softwaretyp_kurzbz) DO NOTHING;
+
+COMMENT ON TABLE extension.tbl_softwaretyp IS 'Codextabelle für Softwaretypen';
