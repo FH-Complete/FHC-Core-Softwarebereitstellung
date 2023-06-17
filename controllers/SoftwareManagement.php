@@ -22,13 +22,13 @@ class SoftwareManagement extends Auth_Controller
 		$this->load->library('WidgetLib');
 
 		// Loads phrases system
-		$this->loadPhrases(
-			array(
-				'global',
-				'ui',
-				'filter'
-			)
-		);
+		//~ $this->loadPhrases(
+			//~ array(
+				//~ 'global',
+				//~ 'ui',
+				//~ 'filter'
+			//~ )
+		//~ );
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
