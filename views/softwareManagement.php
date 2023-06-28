@@ -26,6 +26,10 @@
 		<div id="content">
 			<div>
 				<!-- Filter component -->
+				<options-bar-cmpt
+					title="Software Verwaltung"
+					:include-hierarchy="includeHierarchy">
+				</options-bar-cmpt>
 				<core-filter-cmpt
 					title="Software Verwaltung"
 					filter-type="SoftwareManagement"
