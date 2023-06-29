@@ -36,25 +36,41 @@ const softwareManagementApp = Vue.createApp({
 	//~ },
 	data: function() {
 		return {
-			includeHierarchy: true,
+			optionsbar: {
+				includeHierarchy: true
+			},
+			//includeHierarchy: true,
 			appSideMenuEntries: {},
-			softwareManagementTabulatorOptions: null,
-			softwareManagementTabulatorEventHandlers: null
+			//softwareManagementTabulatorOptions: null,
+			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers
 		};
 	},
 	created() {
-		console.log("IN MOUNTED");
 		//~ console.log(this.getTabulatorOptions);
-		this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions();
+		this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions(this.optionsbar.includeHierarchy);
 		this.softwareManagementTabulatorEventHandlers = SoftwareManagementTabulatorEventHandlers;
 		//this.includeHierarchy = 
 	},
-	computed: {
-		//~ softwareManagementTabulatorOptions: function() {
-			
+	//~ computed: {
+		//~ softwareManagementTabulatorOptions() {
+			//~ console.log(this.optionsbar.includeHierarchy);
+			//~ return SoftwareManagementTabulatorOptions.getOptions(this.optionsbar.includeHierarchy);
 		//~ }
-	},
+	//~ },
+	//~ updated() {
+		//~ console.log("IN UPDATED");
+		//~ this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions(this.optionsbar.includeHierarchy);
+	//~ },
 	methods: {
+		handleCustomChange(s) {
+			//let options = this.softwareManagementTabulatorOptions;
+			this.optionsbar.includeHierarchy = s;
+			//console.log(this.softwareManagementTabulatorOptions);
+
+			
+			
+			//this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions(s);
+		},
 		newSideMenuEntryHandler: function(payload) {
 			this.appSideMenuEntries = payload;
 		},
@@ -91,14 +107,10 @@ const softwareManagementApp = Vue.createApp({
 				rowFormatter: function(row) {
 					let data = row.getData(); // get data for this row
 
-					//console.log(this.includeHierarchy);
-					//console.log(data);
-					//console.log(row.getTreeChildren().length);
-					//console.log(this);
-					console.log(includeHierarchy);
+					console.log("IN FORMATTER");
 
-					if (includeHierarchy == true && row.getTreeChildren().length)
-						row.treeExpand();
+					//~ if (!row.isTreeExpanded())
+						//~ row.treeExpand();
 
 					if (data.ID == 7)
 					{

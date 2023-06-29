@@ -32,14 +32,16 @@
 
  
 export const SoftwareManagementTabulatorOptions = {
-	getOptions: function () {
+	getOptions: function (includeHierarchy) {
+		console.log("IN FINAL METHOD");
+		console.log(includeHierarchy);
 		return {
 				maxHeight: "100%",
 				minHeight: 50,
 				layout: 'fitColumns',
 				dataTree: true,
 				dataTreeFilter: true,
-				//dataTreeStartExpanded: false,
+				//~ dataTreeStartExpanded: false,
 			   //~ data:  [
 				  //~ {ID: 7, 'Software Kurzbezeichnung': 'PhysiklabMod', 'Softwaretyp Kurzbezeichnung': 'modul', Version: '2', Beschreibung: 'Physiklab Modul', 'Softwarestatus Kurzbezeichnung': 'neu'},
 				  //~ {ID: 4, 'Software Kurzbezeichnung': 'MatlabMod', 'Softwaretyp Kurzbezeichnung': 'modul', Version: '1', Beschreibung: 'Matlab Modul', 'Softwarestatus Kurzbezeichnung': 'budgetiert', _children:[
@@ -72,7 +74,7 @@ export const SoftwareManagementTabulatorOptions = {
 					//console.log(this.includeHierarchy);
 					//this.includeHierarchy = true
 
-					//~ if (row.getTreeChildren().length)
+					//~ if (!row.isTreeExpanded() && includeHierarchy)
 						//~ row.treeExpand();
 
 					if (data.ID == 7)
@@ -118,16 +120,16 @@ export const SoftwareManagementTabulatorEventHandlers = [
 
 			if (data.length)
 			{
-				//~ data[0]._children = [
-				 //~ {ID: 2, 'Software Kurzbezeichnung': 'Test', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'},
-				 //~ {ID: 5, 'Software Kurzbezeichnung': 'MIEP', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'},
-			  //~ ];
-				//~ data[0]._children = [
-				 //~ data[3],
-				 //~ data[4]
-			  //~ ];
+				data[0]._children = [
+				 {ID: 2, 'Software Kurzbezeichnung': 'Test', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'},
+				 {ID: 5, 'Software Kurzbezeichnung': 'MIEP', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'},
+			  ];
+				data[0]._children = [
+				 data[3],
+				 data[4]
+			  ];
 
-			  //~ data.splice(3, 2);
+			  //data.splice(3, 2);
 			}
 		//data[0].Version = 3;
 		

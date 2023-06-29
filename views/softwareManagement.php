@@ -25,11 +25,11 @@
 
 		<div id="content">
 			<div>
-				<!-- Filter component -->
+						{{optionsbar.includeHierarchy}}
 				<options-bar-cmpt
-					title="Software Verwaltung"
-					:include-hierarchy="includeHierarchy">
+					@custom-change="handleCustomChange">
 				</options-bar-cmpt>
+				<!-- Filter component -->
 				<core-filter-cmpt
 					title="Software Verwaltung"
 					filter-type="SoftwareManagement"
