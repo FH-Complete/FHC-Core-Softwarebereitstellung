@@ -44,7 +44,8 @@ export const SoftwareManagementTabulatorOptions = {
 					{title: 'Anzahl Lizenzen', field: 'Anzahl Lizenzen', headerFilter: true},
 					{title: 'Aktiv', field: 'Aktiv', headerFilter: true},
 					{title: 'Softwarestatus Kurzbezeichnung', field: 'Softwarestatus Kurzbezeichnung', headerFilter: true},
-					{title: 'ID', field: 'ID', headerFilter: true}
+					{title: 'ID', field: 'ID', headerFilter: true},
+					{title: 'Übergeordnete Software ID', field: 'Übergeordnete Software ID', headerFilter: true}
 				],
 				rowFormatter: function(row) {
 					let data = row.getData(); // get data for this row
@@ -76,36 +77,71 @@ export const SoftwareManagementTabulatorOptions = {
  *
  */
 export const SoftwareManagementTabulatorEventHandlers = [
-	{
-		// show issue text on row click
-		event: "rowClick",
-		handler: function(e, row) {
-			alert(row.getData().Beschreibung);
-		}
-	},
+	//~ {
+		//~ // show issue text on row click
+		//~ event: "rowClick",
+		//~ handler: function(e, row) {
+			//~ alert(row.getData().Beschreibung);
+		//~ }
+	//~ },
 	{
 		event: "dataLoaded",
 		handler: function(data) {
 
 			if (data.length)
 			{
-				//~ data[0]._children = [
-				 //~ {ID: 2, 'Software Kurzbezeichnung': 'Test', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'},
-				 //~ {ID: 5, 'Software Kurzbezeichnung': 'MIEP', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'},
-			  //~ ];
-				data[0]._children = [
-					 data[3],
-					 data[4]
-				];
+				let toDelete = [];
 
-				data[1]._children = [
-					 data[0]
-				];
+				// loop through all software
+				for (let childIdx = 0; childIdx < data.length; childIdx++)
+				{
+					let childSw = data[childIdx];
 
-			//data.splice(3, 2);
+					// if it has parent ID, it is a child
+					if (childSw['Übergeordnete Software ID'])
+					{
+						// append the child on the right place. if sw parent found, mark original sw child on 0 level for deleting
+						if (_appendChild(data, childSw)) toDelete.push(childIdx);
+					}
+				}
+
+				// delete the marked children from 0 level
+				for (let counter = 0; counter < toDelete.length; counter++)
+				{
+					//decrease index by counter as index of data array changes after every deletion
+					data.splice(toDelete[counter] - counter, 1);
+				}
 			}
 		}
 	}
 ];
 
+// append childSw to it's parent
+function _appendChild(swArr, childSw) {
+	// get parent id
+	let parentId = childSw['Übergeordnete Software ID'];
 
+	// loop thorugh all software
+	for (let parentIdx = 0; parentIdx < swArr.length; parentIdx++)
+	{
+		let parentSw = swArr[parentIdx];
+
+		// if it's the parent
+		if (parentSw['ID'] == parentId)
+		{
+			// create children array if not done yet
+			if (!parentSw._children) parentSw._children = [];
+
+			// append the child
+			parentSw._children.push(childSw);
+
+			// parent found
+			return true;
+		}
+		// search children for parents
+		else if (parentSw._children) _appendChild(parentSw._children, childSw);
+	}
+
+	// parent not found
+	return false;
+}
