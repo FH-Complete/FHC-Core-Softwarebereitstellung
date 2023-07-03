@@ -27,7 +27,8 @@
 			<div>
 						{{optionsbar.includeHierarchy}}
 				<options-bar-cmpt
-					@custom-change="handleCustomChange">
+					:expand-hierarchy="optionsbar.expandHierarchy"
+					@hierarchy-toggle="handleHierarchyToggle">
 				</options-bar-cmpt>
 				<!-- Filter component -->
 				<core-filter-cmpt

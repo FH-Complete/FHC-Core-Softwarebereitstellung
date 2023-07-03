@@ -28,111 +28,42 @@ const softwareManagementApp = Vue.createApp({
 		CoreFilterCmpt,
 		OptionsBarCmpt
 	},
-	//~ props: {
-		//~ includeHierarchy: {
-			//~ type: Boolean,
-			//~ default: true
-		//~ }
-	//~ },
 	data: function() {
 		return {
 			optionsbar: {
-				includeHierarchy: true
+				expandHierarchy: false
 			},
-			//includeHierarchy: true,
 			appSideMenuEntries: {},
-			//softwareManagementTabulatorOptions: null,
-			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers
+			softwareManagementTabulatorOptions: null,
+			softwareManagementTabulatorEventHandlers: null
 		};
 	},
 	created() {
-		//~ console.log(this.getTabulatorOptions);
-		this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions(this.optionsbar.includeHierarchy);
+		this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions(this.optionsbar.expandHierarchy);
 		this.softwareManagementTabulatorEventHandlers = SoftwareManagementTabulatorEventHandlers;
-		//this.includeHierarchy = 
 	},
-	//~ computed: {
-		//~ softwareManagementTabulatorOptions() {
-			//~ console.log(this.optionsbar.includeHierarchy);
-			//~ return SoftwareManagementTabulatorOptions.getOptions(this.optionsbar.includeHierarchy);
-		//~ }
-	//~ },
-	//~ updated() {
-		//~ console.log("IN UPDATED");
-		//~ this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions(this.optionsbar.includeHierarchy);
-	//~ },
+	mounted() {
+		console.log("IN MOUNTED");
+	},
 	methods: {
-		handleCustomChange(s) {
-			//let options = this.softwareManagementTabulatorOptions;
-			this.optionsbar.includeHierarchy = s;
-			//console.log(this.softwareManagementTabulatorOptions);
+		handleHierarchyToggle(expandHierarchy) {
+			this.optionsbar.expandHierarchy = expandHierarchy;
 
-			
-			
-			//this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions(s);
+			let expandIconClassName = 'tabulator-data-tree-control-expand';
+			if (!expandHierarchy) expandIconClassName = 'tabulator-data-tree-control-collapse';
+
+			let iconElements = document.getElementsByClassName(expandIconClassName);
+
+			for (let idx in iconElements)
+			{
+				if (iconElements[0] && iconElements[0].click)
+				{
+					iconElements[0].click();
+				}
+			}
 		},
 		newSideMenuEntryHandler: function(payload) {
 			this.appSideMenuEntries = payload;
-		},
-		getTabulatorOptions: function(includeHierarchy) {
-			return {
-				maxHeight: "100%",
-				minHeight: 50,
-				layout: 'fitColumns',
-				dataTree: true,
-				dataTreeFilter: true,
-				//dataTreeStartExpanded: false,
-			   //~ data:  [
-				  //~ {ID: 7, 'Software Kurzbezeichnung': 'PhysiklabMod', 'Softwaretyp Kurzbezeichnung': 'modul', Version: '2', Beschreibung: 'Physiklab Modul', 'Softwarestatus Kurzbezeichnung': 'neu'},
-				  //~ {ID: 4, 'Software Kurzbezeichnung': 'MatlabMod', 'Softwaretyp Kurzbezeichnung': 'modul', Version: '1', Beschreibung: 'Matlab Modul', 'Softwarestatus Kurzbezeichnung': 'budgetiert', _children:[
-					 //~ {ID: 2, 'Software Kurzbezeichnung': 'Matlab I', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu', _children:[
-						   //~ {'ID': 6, 'Software Kurzbezeichnung': 'Matlab I - child', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child, grandchild', 'Softwarestatus Kurzbezeichnung': 'neu'}
-						//~ ]},
-					 //~ {ID: 5, 'Software Kurzbezeichnung': 'Matlab ||', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'},
-				  //~ ]},
-			   //~ ],
-				columns: [
-					{title: 'ID', field: 'ID', headerFilter: true},
-					{title: 'Software Kurzbezeichnung', field: 'Software Kurzbezeichnung', headerFilter: true},
-					{title: 'Softwaretyp Kurzbezeichnung', field: 'Softwaretyp Kurzbezeichnung', headerFilter: true},
-					{title: 'Version', field: 'Version', headerFilter: true},
-					{title: 'Beschreibung', field: 'Beschreibung', headerFilter: true},
-					{title: 'Hersteller', field: 'Hersteller', headerFilter: true},
-					{title: 'Betriebssystem', field: 'Betriebssystem', headerFilter: true},
-					{title: 'Lizenzart', field: 'Lizenzart', headerFilter: true},
-					{title: 'Anzahl Lizenzen', field: 'Anzahl Lizenzen', headerFilter: true},
-					{title: 'Aktiv', field: 'Aktiv', headerFilter: true},
-					{title: 'Softwarestatus Kurzbezeichnung', field: 'Softwarestatus Kurzbezeichnung', headerFilter: true}
-				],
-				rowFormatter: function(row) {
-					let data = row.getData(); // get data for this row
-
-					console.log("IN FORMATTER");
-
-					//~ if (!row.isTreeExpanded())
-						//~ row.treeExpand();
-
-					if (data.ID == 7)
-					{
-						//row.getNextRow().delete();
-						//var children = row.getTreeChildren();
-						//row.addTreeChild({ID: 2, 'Software Kurzbezeichnung': 'Test', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'});
-					}
-
-					
-
-					
-
-					// If data is not null and provides the property Aktiv and it is not null
-					//~ if (data != null && data.hasOwnProperty('Aktiv') && data.Aktiv != null)
-					//~ {
-						//~ // display human readable values
-						//~ let copiedData = JSON.parse(JSON.stringify(data));
-						//~ let aktiv = copiedData.Aktiv;
-						//~ //console.log(aktiv);
-					//~ }
-				}
-			}
 		}
 	}
 });

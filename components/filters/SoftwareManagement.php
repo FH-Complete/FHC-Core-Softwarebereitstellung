@@ -6,7 +6,6 @@
 		'datasetName' => 'softwareManagement',
 		'query' => '
 			SELECT
-				sw.software_id AS "ID",
 				sw.software_kurzbz AS "Software Kurzbezeichnung",
 				sw.softwaretyp_kurzbz AS "Softwaretyp Kurzbezeichnung",
 				sw.version AS "Version",
@@ -16,7 +15,8 @@
 				sw.lizenzart AS "Lizenzart",
 				sw.anzahl_lizenzen AS "Anzahl Lizenzen",
 				sw.aktiv AS "Aktiv",
-				sw_status.softwarestatus_kurzbz AS "Softwarestatus Kurzbezeichnung"
+				sw_status.softwarestatus_kurzbz AS "Softwarestatus Kurzbezeichnung",
+				sw.software_id AS "ID"
 			FROM
 				extension.tbl_software sw
 				JOIN extension.tbl_softwaretyp sw_typ USING (softwaretyp_kurzbz)
