@@ -34,18 +34,18 @@ export const SoftwareManagementTabulatorOptions = {
 				  //~ ]},
 			   //~ ],
 				columns: [
-					{title: 'Software Kurzbezeichnung', field: 'Software Kurzbezeichnung', headerFilter: true},
-					{title: 'Softwaretyp Kurzbezeichnung', field: 'Softwaretyp Kurzbezeichnung', headerFilter: true},
-					{title: 'Version', field: 'Version', headerFilter: true},
-					{title: 'Beschreibung', field: 'Beschreibung', headerFilter: true},
-					{title: 'Hersteller', field: 'Hersteller', headerFilter: true},
-					{title: 'Betriebssystem', field: 'Betriebssystem', headerFilter: true},
-					{title: 'Lizenzart', field: 'Lizenzart', headerFilter: true},
-					{title: 'Anzahl Lizenzen', field: 'Anzahl Lizenzen', headerFilter: true},
-					{title: 'Aktiv', field: 'Aktiv', headerFilter: true},
-					{title: 'Softwarestatus Kurzbezeichnung', field: 'Softwarestatus Kurzbezeichnung', headerFilter: true},
-					{title: 'ID', field: 'ID', headerFilter: true},
-					{title: 'Übergeordnete Software ID', field: 'Übergeordnete Software ID', headerFilter: true}
+					{title: 'Software Kurzbezeichnung', field: 'software_kurzbz', headerFilter: true},
+					{title: 'Softwaretyp Kurzbezeichnung', field: 'softwaretyp_kurzbz', headerFilter: true},
+					{title: 'Version', field: 'version', headerFilter: true},
+					{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
+					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
+					{title: 'Betriebssystem', field: 'os', headerFilter: true},
+					{title: 'Lizenzart', field: 'lizenzart', headerFilter: true},
+					{title: 'Anzahl Lizenzen', field: 'anzahl_lizenzen', headerFilter: true},
+					{title: 'Aktiv', field: 'aktiv', headerFilter: true},
+					{title: 'Softwarestatus Kurzbezeichnung', field: 'softwarestatus_kurzbz', headerFilter: true},
+					{title: 'ID', field: 'software_id', headerFilter: true},
+					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true}
 				],
 				rowFormatter: function(row) {
 					let data = row.getData(); // get data for this row
@@ -98,7 +98,7 @@ export const SoftwareManagementTabulatorEventHandlers = [
 					let childSw = data[childIdx];
 
 					// if it has parent ID, it is a child
-					if (childSw['Übergeordnete Software ID'])
+					if (childSw['software_id_parent'])
 					{
 						// append the child on the right place. if sw parent found, mark original sw child on 0 level for deleting
 						if (_appendChild(data, childSw)) toDelete.push(childIdx);
@@ -119,7 +119,7 @@ export const SoftwareManagementTabulatorEventHandlers = [
 // append childSw to it's parent
 function _appendChild(swArr, childSw) {
 	// get parent id
-	let parentId = childSw['Übergeordnete Software ID'];
+	let parentId = childSw['software_id_parent'];
 
 	// loop thorugh all software
 	for (let parentIdx = 0; parentIdx < swArr.length; parentIdx++)
@@ -127,7 +127,7 @@ function _appendChild(swArr, childSw) {
 		let parentSw = swArr[parentIdx];
 
 		// if it's the parent
-		if (parentSw['ID'] == parentId)
+		if (parentSw['software_id'] == parentId)
 		{
 			// create children array if not done yet
 			if (!parentSw._children) parentSw._children = [];

@@ -31,7 +31,7 @@ const softwareManagementApp = Vue.createApp({
 	data: function() {
 		return {
 			optionsbar: {
-				expandHierarchy: false
+				expandHierarchy: true
 			},
 			appSideMenuEntries: {},
 			softwareManagementTabulatorOptions: null,
