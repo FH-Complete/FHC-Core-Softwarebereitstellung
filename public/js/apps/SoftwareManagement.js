@@ -15,56 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {SoftwareManagementTabulatorOptions} from './SoftwareManagementTabulatorSetup.js';
-import {SoftwareManagementTabulatorEventHandlers} from './SoftwareManagementTabulatorSetup.js';
-
-import {CoreFilterCmpt} from '../../../../js/components/filter/Filter.js';
-import {CoreNavigationCmpt} from '../../../../js/components/navigation/Navigation.js';
-import {OptionsBarCmpt} from '../components/OptionsBarCmpt.js';
+import {SoftwareManagementCmpt} from '../components/SoftwareManagement/SoftwareManagementCmpt.js';
 
 const softwareManagementApp = Vue.createApp({
 	components: {
-		CoreNavigationCmpt,
-		CoreFilterCmpt,
-		OptionsBarCmpt
-	},
-	data: function() {
-		return {
-			optionsbar: {
-				expandHierarchy: true
-			},
-			appSideMenuEntries: {},
-			softwareManagementTabulatorOptions: null,
-			softwareManagementTabulatorEventHandlers: null
-		};
-	},
-	created() {
-		this.softwareManagementTabulatorOptions = SoftwareManagementTabulatorOptions.getOptions(this.optionsbar.expandHierarchy);
-		this.softwareManagementTabulatorEventHandlers = SoftwareManagementTabulatorEventHandlers;
-	},
-	mounted() {
-		console.log("IN MOUNTED");
-	},
-	methods: {
-		handleHierarchyToggle(expandHierarchy) {
-			this.optionsbar.expandHierarchy = expandHierarchy;
-
-			let expandIconClassName = 'tabulator-data-tree-control-expand';
-			if (!expandHierarchy) expandIconClassName = 'tabulator-data-tree-control-collapse';
-
-			let iconElements = document.getElementsByClassName(expandIconClassName);
-
-			for (let idx in iconElements)
-			{
-				if (iconElements[0] && iconElements[0].click)
-				{
-					iconElements[0].click();
-				}
-			}
-		},
-		newSideMenuEntryHandler: function(payload) {
-			this.appSideMenuEntries = payload;
-		}
+		SoftwareManagementCmpt
 	}
 });
 

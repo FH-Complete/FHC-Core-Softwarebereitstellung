@@ -19,27 +19,7 @@
 ?>
 
 	<div id="main">
-
-		<!-- Navigation component -->
-		<core-navigation-cmpt v-bind:add-side-menu-entries="appSideMenuEntries"></core-navigation-cmpt>
-
-		<div id="content">
-			<div>
-						{{optionsbar.includeHierarchy}}
-				<options-bar-cmpt
-					:expand-hierarchy="optionsbar.expandHierarchy"
-					@hierarchy-toggle="handleHierarchyToggle">
-				</options-bar-cmpt>
-				<!-- Filter component -->
-				<core-filter-cmpt
-					title="Software Verwaltung"
-					filter-type="SoftwareManagement"
-					:tabulator-options="softwareManagementTabulatorOptions"
-					:tabulator-events="softwareManagementTabulatorEventHandlers"
-					@nw-new-entry="newSideMenuEntryHandler">
-				</core-filter-cmpt>
-			</div>
-		</div>
+		<software-management-cmpt></software-management-cmpt>
 	</div>
 
 <?php $this->load->view('templates/FHC-Footer', $includesArray); ?>
