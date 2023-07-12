@@ -20,8 +20,11 @@ export const SoftwareManagementTabulatorOptions = {
 	maxHeight: "100%",
 	minHeight: 50,
 	layout: 'fitColumns',
+	index: 'software_id',
 	dataTree: true,
-	dataTreeFilter: true,
+	dataTreeFilter: true, // TODO ist eigentlich default
+	dataTreeSort: true,	  // TODO ist eigentlich default
+	dataTreeSelectPropagate:true, //propagate selection events from parent rows to children
 	//dataTreeStartExpanded: expandHierarchy,
    //~ data:  [
 	  //~ {ID: 7, 'Software Kurzbezeichnung': 'PhysiklabMod', 'Softwaretyp Kurzbezeichnung': 'modul', Version: '2', Beschreibung: 'Physiklab Modul', 'Softwarestatus Kurzbezeichnung': 'neu'},
@@ -49,8 +52,8 @@ export const SoftwareManagementTabulatorOptions = {
 		{title: 'Betriebssystem', field: 'os', headerFilter: true},
 		{title: 'Lizenzart', field: 'lizenzart', headerFilter: true},
 		{title: 'Anzahl Lizenzen', field: 'anzahl_lizenzen', headerFilter: true},
-		{title: 'Aktiv', field: 'aktiv', headerFilter: true},
-		{title: 'Softwarestatus Kurzbezeichnung', field: 'softwarestatus_kurzbz', headerFilter: true},
+		{title: 'Aktiv', field: 'aktiv', headerFilter: true, formatter:"tickCross", hozAlign: 'center'},
+		{title: 'Status', field: 'softwarestatus_kurzbz', headerFilter: true},
 		{title: 'ID', field: 'software_id', headerFilter: true},
 		{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true}
 	],

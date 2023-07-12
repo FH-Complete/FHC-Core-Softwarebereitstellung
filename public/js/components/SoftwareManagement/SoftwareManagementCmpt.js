@@ -138,6 +138,10 @@ export const SoftwareManagementCmpt = {
 							:softwarestatus="softwarestatus"
 							 @set-status="changeStatus"/>
 						 </actions-cmpt>
+						 <options-bar-cmpt
+							:expand-hierarchy="extraTabulatorOptions.dataTreeStartExpanded"
+							@hierarchy-toggle="handleHierarchyToggle">
+						 </options-bar-cmpt>
 					 </template>
 				</core-filter-cmpt>
 				<software-modal class="fade" ref="modalForCreate" dialog-class="modal-lg" title="Software anlegen" :softwareId="softwareId"></software-modal>

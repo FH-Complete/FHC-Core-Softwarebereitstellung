@@ -16,7 +16,7 @@ export const OptionsBarCmpt = {
 				<div class="form-switch">
 					<input class="form-check-input text-end" type="checkbox" id="expandHierarchy" name="expandHierarchy" :checked="expandHierarchy" @input="handleHierarchyToggle">
 					&nbsp;
-					<label class="form-check-label" for="expandHierarchy">Hierarchie anzeigen</label>
+					<label class="form-check-label" for="expandHierarchy">Hierarchie {{ expandHierarchy ? 'aufgeklappt' : 'zugeklappt' }}</label>
 				</div>
 			</div>
 		</div>
