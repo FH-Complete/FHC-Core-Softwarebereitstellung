@@ -33,9 +33,17 @@ export const SoftwareManagementTabulatorOptions = {
 	  //~ ]},
    //~ ],
 	columns: [
-		{title: 'Software Kurzbezeichnung', field: 'software_kurzbz', headerFilter: true},
-		{title: 'Softwaretyp Kurzbezeichnung', field: 'softwaretyp_kurzbz', headerFilter: true},
-		{title: 'Version', field: 'version', headerFilter: true},
+		{
+			formatter: 'rowSelection',
+			titleFormatter: 'rowSelection',
+			hozAlign: 'left',
+			width: 150,
+			headerSort: false,
+			frozen: true
+		},
+		{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
+		{title: 'Softwaretyp', field: 'softwaretyp_kurzbz', headerFilter: true},
+		{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
 		{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
 		{title: 'Hersteller', field: 'hersteller', headerFilter: true},
 		{title: 'Betriebssystem', field: 'os', headerFilter: true},
