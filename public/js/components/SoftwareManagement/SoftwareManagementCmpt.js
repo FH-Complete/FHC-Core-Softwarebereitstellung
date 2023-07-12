@@ -21,13 +21,16 @@ import {SoftwareManagementTabulatorEventHandlers} from './SoftwareManagementTabu
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
 import {OptionsBarCmpt} from './OptionsBarCmpt.js';
+import {ActionsCmpt} from './ActionsCmpt.js';
 import SoftwareModal from '../Modals/SoftwareModal.js';
+import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 
 export const SoftwareManagementCmpt = {
 	components: {
 		CoreNavigationCmpt,
 		CoreFilterCmpt,
 		OptionsBarCmpt,
+		ActionsCmpt,
 		SoftwareModal
 	},
 	data: function() {
@@ -38,7 +41,8 @@ export const SoftwareManagementCmpt = {
 			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers,
 			softwareId: null,
 			appSideMenuEntries: {},
-		};
+			softwarestatus: Array
+		}
 	},
 	computed: {
 		softwareManagementTabulatorOptions() { // default options + extra options
@@ -64,12 +68,53 @@ export const SoftwareManagementCmpt = {
 		reloadTabulator() {
 			for (let option in this.softwareManagementTabulatorOptions)
 			{
-				if (this.$refs.filterTable.tabulator.options.hasOwnProperty(option)
-					&& this.$refs.filterTable.tabulator.options[option] != this.softwareManagementTabulatorOptions[option])
-					this.$refs.filterTable.tabulator.options[option] = this.softwareManagementTabulatorOptions[option]
+				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option)
+					&& this.$refs.softwareTable.tabulator.options[option] != this.softwareManagementTabulatorOptions[option])
+					this.$refs.softwareTable.tabulator.options[option] = this.softwareManagementTabulatorOptions[option]
 			}
-			this.$refs.filterTable.reloadTable();
+			this.$refs.softwareTable.reloadTable();
+		},
+		changeStatus(softwarestatus_kurzbz) {
+			let selectedData = this.$refs.softwareTable.tabulator.getSelectedData();
+
+			if (selectedData.length == 0)
+			{
+				alert( 'Bitte erst Zeilen auswählen');
+				return;
+			}
+
+			let software_ids = selectedData.map(data => data.software_id);
+
+			CoreRESTClient.post(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/updateStatus',
+				{
+					software_ids: software_ids,
+					softwarestatus_kurzbz: softwarestatus_kurzbz
+				}
+			).then(
+				result => {
+					this.$refs.softwareTable.reloadTable(); // TODO use row update instead of reloadTable after solving datatree issues
+				}
+			).catch(
+				error => {
+					alert('Error when getting softwarestatus: ' + error.message);
+				}
+			);
 		}
+	},
+	beforeCreate() {
+		CoreRESTClient.get(
+			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus'
+		).then(
+			result => {
+				this.softwarestatus = CoreRESTClient.getData(result.data);
+			}
+		).catch(
+			error => {
+				let errorMessage = error.message ? error.message : 'Unknown error';
+				alert('Error when getting softwarestatus: ' + errorMessage); //TODO beautiful alert
+			}
+		);
 	},
 	template: `
 		<!-- Navigation component -->
@@ -77,14 +122,9 @@ export const SoftwareManagementCmpt = {
 
 		<div id="content">
 			<div>
-				<!-- Options bar component -->
-				<options-bar-cmpt
-					:expand-hierarchy="extraTabulatorOptions.dataTreeStartExpanded"
-					@hierarchy-toggle="handleHierarchyToggle">
-				</options-bar-cmpt>
 				<!-- Filter component -->
 				<core-filter-cmpt
-					ref="filterTable"
+					ref="softwareTable"
 					title="Software Verwaltung"
 					filter-type="SoftwareManagement"
 					:tabulator-options="softwareManagementTabulatorOptions"
@@ -93,6 +133,12 @@ export const SoftwareManagementCmpt = {
 					:new-btn-show="true"
 					@nw-new-entry="newSideMenuEntryHandler"
 					@click:new="openModalForCreate">
+					<template v-slot:actions>
+						<actions-cmpt
+							:softwarestatus="softwarestatus"
+							 @set-status="changeStatus"/>
+						 </actions-cmpt>
+					 </template>
 				</core-filter-cmpt>
 				<software-modal class="fade" ref="modalForCreate" dialog-class="modal-lg" title="Software anlegen" :softwareId="softwareId"></software-modal>
 			</div>
