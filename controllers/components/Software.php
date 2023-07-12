@@ -16,6 +16,8 @@ class Software extends Auth_Controller
 			array(
 				'index' => 'basis/mitarbeiter:r',
 				'getDataPrefill' => 'basis/mitarbeiter:r',
+				'getStatus' => 'basis/mitarbeiter:r',
+				'updateStatus' => 'basis/mitarbeiter:r',
 				'createSoftware' => 'basis/mitarbeiter:rw'
 			)
 		);
@@ -25,6 +27,8 @@ class Software extends Auth_Controller
 
 		$this->load->model('system/Sprache_model', 'SpracheModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwaretyp_model', 'SoftwaretypModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
 
 		// Loads phrases system
 		//~ $this->loadPhrases(
@@ -67,6 +71,45 @@ class Software extends Auth_Controller
 
 		$this->outputJsonSuccess($dataPrefill);
 	}
+
+    /**
+     * Get Softwarestatus
+     *
+     * @param
+     * @return object success or error
+     */
+    public function getStatus()
+    {
+        $language_index = $this->_getLanguageIndex();
+        $result = $this->SoftwarestatusModel->loadByLanguage($language_index);
+
+        if (isError($result))
+        {
+            $this->terminateWithJsonError('Fehler beim Holen der Softwarestatus');
+        }
+
+        $this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+    }
+
+    /**
+     * Update Status
+     *
+     * @param
+     * @return object success or error
+     */
+    public function updateStatus()
+    {
+        $data = $this->getPostJson();
+
+        $result = $this->SoftwareSoftwarestatusModel->updateStatus($data->software_ids, $data->softwarestatus_kurzbz);
+
+        if (isError($result))
+        {
+            $this->terminateWithJsonError('Fehler beim Ändern des Softwarestatus');
+        }
+
+        $this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+    }
 
 	/**
 	 *
