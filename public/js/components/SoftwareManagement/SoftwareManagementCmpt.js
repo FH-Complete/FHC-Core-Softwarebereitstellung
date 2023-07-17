@@ -56,19 +56,12 @@ export const SoftwareManagementCmpt = {
 			this.extraTabulatorOptions.dataTreeStartExpanded = expandHierarchy;
 			this.reloadTabulator();
 		},
-		openModalForCreate(softwareId) {
+		openModalForCreate(event, softwareId) {
 			if (softwareId) this.softwareId = softwareId;
-			this.$refs.modalForCreate.show();
+			this.$refs.modalForSave.show();
 		},
-		newSideMenuEntryHandler: function(payload) {
-			this.appSideMenuEntries = payload;
-		},
-		reloadTabulator() {
-			for (let option in this.softwareManagementTabulatorOptions)
-			{
-				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
-					this.$refs.softwareTable.tabulator.options[option] = this.softwareManagementTabulatorOptions[option]
-			}
+		handleSoftwareSaved() {
+			this.$refs.modalForSave.hide();
 			this.$refs.softwareTable.reloadTable();
 		},
 		changeStatus(softwarestatus_kurzbz) {
@@ -94,14 +87,29 @@ export const SoftwareManagementCmpt = {
 				}
 			).catch(
 				error => {
-					alert('Error when getting softwarestatus: ' + error.message);
+					alert('Error when updating softwarestatus: ' + error.message);
 				}
 			);
+		},
+		reloadTabulator() {
+			for (let option in this.softwareManagementTabulatorOptions)
+			{
+				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
+					this.$refs.softwareTable.tabulator.options[option] = this.softwareManagementTabulatorOptions[option]
+			}
+			this.$refs.softwareTable.reloadTable();
+		},
+		newSideMenuEntryHandler: function(payload) {
+			this.appSideMenuEntries = payload;
 		}
 	},
 	beforeCreate() {
 		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus'
+			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus',
+			null,
+			{
+				timeout: 2000
+			}
 		).then(
 			result => {
 				this.softwarestatus = CoreRESTClient.getData(result.data);
@@ -139,7 +147,14 @@ export const SoftwareManagementCmpt = {
 						 </actions-cmpt>
 					 </template>
 				</core-filter-cmpt>
-				<software-modal class="fade" ref="modalForCreate" dialog-class="modal-lg" title="Software anlegen" :softwareId="softwareId">
+				<!-- Software modal component -->
+				<software-modal
+					class="fade"
+					ref="modalForSave"
+					dialog-class="modal-lg"
+					title="Software anlegen"
+					:softwareId="softwareId"
+					@software-saved="handleSoftwareSaved">
 				</software-modal>
 			</div>
 		</div>

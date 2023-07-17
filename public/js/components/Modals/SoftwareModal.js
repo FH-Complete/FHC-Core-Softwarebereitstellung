@@ -6,6 +6,9 @@ export default {
 		BsModal,
 		SoftwareForm
 	},
+	emits: [
+		'softwareSaved'
+	],
 	mixins: [
 		BsModal
 	],
@@ -37,18 +40,23 @@ export default {
 	methods: {
 		bsModalShown() {
 			console.log("Modal shown");
+		},
+		onBsModalSave() {
+			this.$refs.softwareForm.saveSoftware();
+		},
+		handleSoftwareFormSaved() {
+			this.$emit('softwareSaved');
 		}
 	},
-	//~ popup(msg, options, title) {
-		//~ return BsModal.popup.bind(this)(msg, options, title);
-	//~ },
-	template: `<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @show-bs-modal="bsModalShown">
-		<template v-slot:title>{{title}}</template>
-		<template v-slot:default>
-			<software-form :softwareId="softwareId"></software-form>
-		</template>
-		<template v-slot:footer>
-			<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Speichern</button>
-		</template>
-	</bs-modal>`
+	template: `
+		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @show-bs-modal="bsModalShown">
+			<template v-slot:title>{{title}}</template>
+			<template v-slot:default>
+				<software-form ref="softwareForm" :softwareId="softwareId" @software-form-saved="handleSoftwareFormSaved"></software-form>
+			</template>
+			<template v-slot:footer>
+				<button type="button" class="btn btn-primary" @click="onBsModalSave">Speichern</button>
+			</template>
+		</bs-modal>
+	`
 }

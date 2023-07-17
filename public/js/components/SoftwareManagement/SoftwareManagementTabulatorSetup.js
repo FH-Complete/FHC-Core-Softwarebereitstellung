@@ -24,7 +24,7 @@ export const SoftwareManagementTabulatorOptions = {
 	dataTree: true,
 	dataTreeFilter: true, // TODO ist eigentlich default
 	dataTreeSort: true,	  // TODO ist eigentlich default
-	dataTreeSelectPropagate:true, //propagate selection events from parent rows to children
+	dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 	//dataTreeStartExpanded: expandHierarchy,
    //~ data:  [
 	  //~ {ID: 7, 'Software Kurzbezeichnung': 'PhysiklabMod', 'Softwaretyp Kurzbezeichnung': 'modul', Version: '2', Beschreibung: 'Physiklab Modul', 'Softwarestatus Kurzbezeichnung': 'neu'},
