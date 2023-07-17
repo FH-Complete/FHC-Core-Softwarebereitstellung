@@ -116,7 +116,7 @@ export const SoftwareManagementTabulatorEventHandlers = [
 				// delete the marked children from 0 level
 				for (let counter = 0; counter < toDelete.length; counter++)
 				{
-					//decrease index by counter as index of data array changes after every deletion
+					// decrease index by counter as index of data array changes after every deletion
 					data.splice(toDelete[counter] - counter, 1);
 				}
 			}

@@ -1,14 +1,19 @@
 export const ActionsCmpt = {
 	props: {
-		softwarestatus: Array
+		softwarestatus: Array,
+		expandHierarchy: Boolean
 	},
 	emits: [
-		'setStatus'
+		'setStatus',
+		'hierarchyToggle'
 	],
 	methods: {
 		changeStatus(softwarestatus_kurzbz) {
 			this.selected = softwarestatus_kurzbz;
 			this.$emit("setStatus", softwarestatus_kurzbz);
+		},
+		handleHierarchyToggle (event) {
+			this.$emit("hierarchyToggle", event.target.checked)
 		}
 	},
 	data: function() {
@@ -26,6 +31,15 @@ export const ActionsCmpt = {
 					<a class="dropdown-item" @click="changeStatus(status.softwarestatus_kurzbz)">{{status.bezeichnung}}</a>
 				</li>
 			</ul>
+		</div>
+		<div class="row">
+			<div class="col-12 text-end">
+				<div class="form-switch">
+					<input class="form-check-input text-end" type="checkbox" id="expandHierarchy" name="expandHierarchy" :checked="expandHierarchy" @input="handleHierarchyToggle">
+					&nbsp;
+					<label class="form-check-label" for="expandHierarchy">Hierarchie {{ expandHierarchy ? 'aufgeklappt' : 'zugeklappt' }}</label>
+				</div>
+			</div>
 		</div>
 	`
 };

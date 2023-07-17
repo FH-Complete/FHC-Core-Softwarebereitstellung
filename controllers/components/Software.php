@@ -136,7 +136,7 @@ class Software extends Auth_Controller
 
 	/**
 	 * Gets language index of currently logged in user.
-	 * @return object int (the index, start at 1)
+	 * @return int (the index, start at 1)
 	 */
 	private function _getLanguageIndex()
 	{

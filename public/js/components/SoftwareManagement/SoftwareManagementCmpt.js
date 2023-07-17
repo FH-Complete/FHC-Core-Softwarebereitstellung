@@ -20,7 +20,6 @@ import {SoftwareManagementTabulatorEventHandlers} from './SoftwareManagementTabu
 
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
-import {OptionsBarCmpt} from './OptionsBarCmpt.js';
 import {ActionsCmpt} from './ActionsCmpt.js';
 import SoftwareModal from '../Modals/SoftwareModal.js';
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
@@ -29,7 +28,6 @@ export const SoftwareManagementCmpt = {
 	components: {
 		CoreNavigationCmpt,
 		CoreFilterCmpt,
-		OptionsBarCmpt,
 		ActionsCmpt,
 		SoftwareModal
 	},
@@ -68,8 +66,7 @@ export const SoftwareManagementCmpt = {
 		reloadTabulator() {
 			for (let option in this.softwareManagementTabulatorOptions)
 			{
-				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option)
-					&& this.$refs.softwareTable.tabulator.options[option] != this.softwareManagementTabulatorOptions[option])
+				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
 					this.$refs.softwareTable.tabulator.options[option] = this.softwareManagementTabulatorOptions[option]
 			}
 			this.$refs.softwareTable.reloadTable();
@@ -136,15 +133,14 @@ export const SoftwareManagementCmpt = {
 					<template v-slot:actions>
 						<actions-cmpt
 							:softwarestatus="softwarestatus"
-							 @set-status="changeStatus"/>
-						 </actions-cmpt>
-						 <options-bar-cmpt
 							:expand-hierarchy="extraTabulatorOptions.dataTreeStartExpanded"
-							@hierarchy-toggle="handleHierarchyToggle">
-						 </options-bar-cmpt>
+							 @set-status="changeStatus"
+							 @hierarchy-toggle="handleHierarchyToggle"/>
+						 </actions-cmpt>
 					 </template>
 				</core-filter-cmpt>
-				<software-modal class="fade" ref="modalForCreate" dialog-class="modal-lg" title="Software anlegen" :softwareId="softwareId"></software-modal>
+				<software-modal class="fade" ref="modalForCreate" dialog-class="modal-lg" title="Software anlegen" :softwareId="softwareId">
+				</software-modal>
 			</div>
 		</div>
 	`
