@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS extension.tbl_software (
 	aktiv boolean NOT NULL DEFAULT TRUE,
 	kostentraeger_oe_kurzbz varchar(32),
 	anmerkung_intern text,
-	insertamum timestamp,
+	insertamum timestamp DEFAULT NOW(),
 	insertvon varchar(32),
 	updateamum timestamp,
 	updatevon varchar(32),
