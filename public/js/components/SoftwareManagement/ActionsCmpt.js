@@ -6,8 +6,9 @@ export const ActionsCmpt = {
 		'setStatus'
 	],
 	methods: {
-		changeStatus (event) {
-			this.$emit("setStatus", this.selected);
+		changeStatus(softwarestatus_kurzbz) {
+			this.selected = softwarestatus_kurzbz;
+			this.$emit("setStatus", softwarestatus_kurzbz);
 		}
 	},
 	data: function() {
@@ -16,13 +17,15 @@ export const ActionsCmpt = {
 		}
 	},
 	template: `
-	<div>
-		<select class="form-select" v-model="selected" @change="changeStatus">
-		  	<option disabled value="">Status setzen</option>
-			<option v-for="status in softwarestatus" :key="status.softwarestatus_kurzbz" :value="status.softwarestatus_kurzbz">
-				{{status.bezeichnung}}
-			</option>
-		</select>
-	</div>
+		<div class="dropdown">
+			<button class="btn btn-outline-secondary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+				{{ selected ? selected : 'Status setzen' }}
+			</button>
+			 <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+				<li v-for="status in softwarestatus" :key="status.softwarestatus_kurzbz">
+					<a class="dropdown-item" @click="changeStatus(status.softwarestatus_kurzbz)">{{status.bezeichnung}}</a>
+				</li>
+			</ul>
+		</div>
 	`
 };
