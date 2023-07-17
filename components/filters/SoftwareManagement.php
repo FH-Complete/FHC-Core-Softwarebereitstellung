@@ -18,7 +18,8 @@
 				sw.aktiv,
 				sw_status.softwarestatus_kurzbz,
 				sw.software_id,
-				sw.software_id_parent
+				sw.software_id_parent,
+				sw.anmerkung_intern
 			FROM
 				extension.tbl_software sw
 				JOIN extension.tbl_softwaretyp sw_typ USING (softwaretyp_kurzbz)
