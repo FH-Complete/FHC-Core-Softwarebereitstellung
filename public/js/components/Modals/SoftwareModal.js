@@ -42,7 +42,7 @@ export default {
 			console.log("Modal shown");
 		},
 		onBsModalSave() {
-			this.$refs.softwareForm.saveSoftware();
+			this.$refs.softwareFormCmpt.saveSoftware();
 		},
 		handleSoftwareFormSaved() {
 			this.$emit('softwareSaved');
@@ -52,7 +52,7 @@ export default {
 		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @show-bs-modal="bsModalShown">
 			<template v-slot:title>{{title}}</template>
 			<template v-slot:default>
-				<software-form ref="softwareForm" :softwareId="softwareId" @software-form-saved="handleSoftwareFormSaved"></software-form>
+				<software-form ref="softwareFormCmpt" :softwareId="softwareId" @software-form-saved="handleSoftwareFormSaved"></software-form>
 			</template>
 			<template v-slot:footer>
 				<button type="button" class="btn btn-primary" @click="onBsModalSave">Speichern</button>

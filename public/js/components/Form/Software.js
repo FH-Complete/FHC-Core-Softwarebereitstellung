@@ -45,6 +45,14 @@ export const SoftwareForm = {
 	methods: {
 		saveSoftware() {
 
+			// Check form fields
+			if (!this.$refs.softwareForm.checkValidity())
+			{
+				// Display form errors if not ok
+				this.$refs.softwareForm.reportValidity();
+				return;
+			}
+
 			let method = null;
 
 			// if numeric software Id is present
@@ -91,7 +99,7 @@ export const SoftwareForm = {
 	},
 	template: `
 	<div>
-		<div class="row justify-content-center">
+		<form ref="softwareForm" class="row justify-content-center">
 			<div class="col-sm-9 mb-6">
 				<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
 				<label :for="software_kurzbz" class="form-label">Software Kurzbz:</label>
@@ -131,7 +139,7 @@ export const SoftwareForm = {
 					rows="5">
 				</textarea>
 			</div>
-		</div>
+		</form>
 	</div>
 	`
 }
