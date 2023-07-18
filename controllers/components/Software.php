@@ -20,7 +20,8 @@ class Software extends Auth_Controller
 				'getDataPrefill' => 'basis/mitarbeiter:r',
 				'getStatus' => 'basis/mitarbeiter:r',
 				'updateStatus' => 'basis/mitarbeiter:r',
-				'createSoftware' => 'basis/mitarbeiter:rw'
+				'createSoftware' => 'basis/mitarbeiter:rw',
+				'deleteSoftware' => 'basis/mitarbeiter:rw'
 			)
 		);
 
@@ -124,36 +125,65 @@ class Software extends Auth_Controller
 		$this->load->library('form_validation');
 
 		$softwareData = json_decode($this->input->raw_input_stream, true);
-		//var_dump($softwareData);
 
+		// validate data
 		$this->form_validation->set_data($softwareData);
 
 		$this->form_validation->set_rules('software_kurzbz', 'Software Kurzbezeichnung', 'required', array('required' => '%s fehlt'));
 		$this->form_validation->set_rules('softwaretyp_kurzbz', 'Softwaretyp', 'required', array('required' => '%s fehlt'));
 
 		if ($this->form_validation->run() == false)
-		{
 			return $this->outputJsonError($this->form_validation->error_array());
-		}
-		else
+
+		if (isset($softwareData['version']))
 		{
-			if (isset($softwareData['version']))
-			{
-				// check if there is already a software with the kurzbz and version
-				$this->SoftwareModel->addSelect('1');
-				$softwareRes = $this->SoftwareModel->loadWhere(array(
-					'software_kurzbz' => $softwareData['software_kurzbz'],
-					'version' => $softwareData['version'])
-				);
+			// check if there is already a software with the kurzbz and version
+			$this->SoftwareModel->addSelect('1');
+			$softwareRes = $this->SoftwareModel->loadWhere(array(
+				'software_kurzbz' => $softwareData['software_kurzbz'],
+				'version' => $softwareData['version'])
+			);
 
-				if (isError($softwareRes) || hasData($softwareRes))
-					return $this->outputJsonError(array('Software Kurzbezeichnung mit dieser Version existiert bereits'));
-			}
-
-			$softwareData['insertvon'] = $this->_uid;
-
-			return $this->outputJson($this->SoftwareModel->insert($softwareData));
+			if (isError($softwareRes) || hasData($softwareRes))
+				return $this->outputJsonError(array('Software Kurzbezeichnung mit dieser Version existiert bereits'));
 		}
+
+		$softwareData['insertvon'] = $this->_uid;
+
+		return $this->outputJson($this->SoftwareModel->insert($softwareData));
+	}
+
+	/**
+	 * Deletes a software after performing necessary checks.
+	 */
+	public function deleteSoftware()
+	{
+		$this->load->library('form_validation');
+
+		$softwareData = json_decode($this->input->raw_input_stream, true);
+
+		// validate data
+		$this->form_validation->set_data($softwareData);
+
+		$this->form_validation->set_rules(
+			'software_id',
+			'Software ID',
+			'required|numeric',
+			array('required' => '%s fehlt', 'numeric' => '%s ungültig')
+		);
+
+		if ($this->form_validation->run() == false)
+			return $this->outputJsonError($this->form_validation->error_array());
+
+		// check/delete dependencies before deleting software
+
+		// delete software_status
+		$softwareSoftwarestatusRes = $this->SoftwareSoftwarestatusModel->delete(array('software_id' => $softwareData['software_id']));
+
+		if (isError($softwareSoftwarestatusRes)) return $this->outputJsonError(array(getError($softwareSoftwarestatusRes)));
+
+		// delete software itself
+		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
 	}
 
 	/**

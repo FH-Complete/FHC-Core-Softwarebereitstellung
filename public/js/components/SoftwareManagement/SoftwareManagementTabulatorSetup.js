@@ -25,7 +25,6 @@ export const SoftwareManagementTabulatorOptions = {
 	dataTreeFilter: true, // TODO ist eigentlich default
 	dataTreeSort: true,	  // TODO ist eigentlich default
 	dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
-	//dataTreeStartExpanded: expandHierarchy,
    //~ data:  [
 	  //~ {ID: 7, 'Software Kurzbezeichnung': 'PhysiklabMod', 'Softwaretyp Kurzbezeichnung': 'modul', Version: '2', Beschreibung: 'Physiklab Modul', 'Softwarestatus Kurzbezeichnung': 'neu'},
 	  //~ {ID: 4, 'Software Kurzbezeichnung': 'MatlabMod', 'Softwaretyp Kurzbezeichnung': 'modul', Version: '1', Beschreibung: 'Matlab Modul', 'Softwarestatus Kurzbezeichnung': 'budgetiert', _children:[
@@ -35,50 +34,8 @@ export const SoftwareManagementTabulatorOptions = {
 		 //~ {ID: 5, 'Software Kurzbezeichnung': 'Matlab ||', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'},
 	  //~ ]},
    //~ ],
-	columns: [
-		{
-			formatter: 'rowSelection',
-			titleFormatter: 'rowSelection',
-			hozAlign: 'left',
-			width: 150,
-			headerSort: false,
-			frozen: true
-		},
-		{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
-		{title: 'Softwaretyp', field: 'softwaretyp_kurzbz', headerFilter: true},
-		{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
-		{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
-		{title: 'Hersteller', field: 'hersteller', headerFilter: true},
-		{title: 'Betriebssystem', field: 'os', headerFilter: true},
-		{title: 'Lizenzart', field: 'lizenzart', headerFilter: true},
-		{title: 'Anzahl Lizenzen', field: 'anzahl_lizenzen', headerFilter: true},
-		{title: 'Aktiv', field: 'aktiv', headerFilter: true, formatter:"tickCross", hozAlign: 'center'},
-		{title: 'Status', field: 'softwarestatus_kurzbz', headerFilter: true},
-		{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
-		{title: 'ID', field: 'software_id', headerFilter: true},
-		{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true}
-	],
 	rowFormatter: function(row) {
 		let data = row.getData(); // get data for this row
-
-		//~ if (!row.isTreeExpanded() && expandHierarchy)
-			//~ row.treeExpand();
-
-		if (data.ID == 7)
-		{
-			//row.getNextRow().delete();
-			//var children = row.getTreeChildren();
-			//row.addTreeChild({ID: 2, 'Software Kurzbezeichnung': 'Test', 'Softwaretyp Kurzbezeichnung': 'software', Version: '1', Beschreibung: 'child', 'Softwarestatus Kurzbezeichnung': 'neu'});
-		}
-
-		// If data is not null and provides the property Aktiv and it is not null
-		//~ if (data != null && data.hasOwnProperty('Aktiv') && data.Aktiv != null)
-		//~ {
-			//~ // display human readable values
-			//~ let copiedData = JSON.parse(JSON.stringify(data));
-			//~ let aktiv = copiedData.Aktiv;
-			//~ //console.log(aktiv);
-		//~ }
 	}
 };
 
