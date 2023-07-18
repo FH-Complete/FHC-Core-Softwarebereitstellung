@@ -147,7 +147,7 @@ class Software extends Auth_Controller
 				);
 
 				if (isError($softwareRes) || hasData($softwareRes))
-					return $this->outputJsonError(array('Softwaretyp mit dieser Version existiert bereits'));
+					return $this->outputJsonError(array('Software Kurzbezeichnung mit dieser Version existiert bereits'));
 			}
 
 			$softwareData['insertvon'] = $this->_uid;
