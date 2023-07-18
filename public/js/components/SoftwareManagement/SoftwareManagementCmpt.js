@@ -148,7 +148,6 @@ export const SoftwareManagementCmpt = {
 			);
 		},
 		addTabulatorColumns() {
-
 			let deleteSoftwareFunc = this.deleteSoftware;
 			let columns = [
 				{
