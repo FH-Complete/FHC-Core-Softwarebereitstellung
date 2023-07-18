@@ -54,6 +54,7 @@ export const SoftwareManagementTabulatorOptions = {
 		{title: 'Anzahl Lizenzen', field: 'anzahl_lizenzen', headerFilter: true},
 		{title: 'Aktiv', field: 'aktiv', headerFilter: true, formatter:"tickCross", hozAlign: 'center'},
 		{title: 'Status', field: 'softwarestatus_kurzbz', headerFilter: true},
+		{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
 		{title: 'ID', field: 'software_id', headerFilter: true},
 		{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true}
 	],
