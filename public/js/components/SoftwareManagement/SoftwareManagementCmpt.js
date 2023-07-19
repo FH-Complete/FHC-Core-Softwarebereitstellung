@@ -66,6 +66,12 @@ export const SoftwareManagementCmpt = {
 
 							let button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-edit"></i>';
+							button.addEventListener('click', () => this.editSoftware(cell.getRow().getIndex()));
+							container.append(button);
+
+							button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-xmark"></i>';
 							button.addEventListener('click', () => this.deleteSoftware(cell.getRow().getIndex()));
 							container.append(button);
@@ -190,6 +196,9 @@ export const SoftwareManagementCmpt = {
 					alert('Error when deleting software: ' + error.message);
 				}
 			);
+		},
+		editSoftware(software_id){
+			console.log('editSoftware now');
 		},
 		reloadTabulator() {
 			for (let option in this.softwareManagementTabulatorOptions)
