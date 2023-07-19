@@ -56,11 +56,26 @@ export const SoftwareManagementCmpt = {
 					{title: 'Status', field: 'softwarestatus_kurzbz', headerFilter: true, editor: "list", editorParams:{values:[]}},
 					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
-					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true}
+					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
+					{
+						title: 'Aktionen',
+						field: 'actions',
+						formatter: (cell, formatterParams, onRendered) => {
+							let container = document.createElement('div');
+							container.className = "d-flex gap-2";
+
+							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-xmark"></i>';
+							button.addEventListener('click', () => this.deleteSoftware(cell.getRow().getIndex()));
+							container.append(button);
+
+							return container;
+						}
+					}
 				]
 			},
 			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers,
-			softwareManagementTabulatorAdditionalColumns: ['Action'],
 			softwareId: null,
 			appSideMenuEntries: {},
 			softwarestatus: Array
@@ -85,8 +100,6 @@ export const SoftwareManagementCmpt = {
 				// Populate Status column with editable Softwarestatus list.
 				// NOTE: tabulator bugfixed transparent list in 5.2.3 release. (release notes)
 				this.populateTabulatorColumnStatus(this.softwarestatus);
-
-				this.addTabulatorColumns();
 				this.reloadTabulator();
 			}
 		).catch(
@@ -178,23 +191,6 @@ export const SoftwareManagementCmpt = {
 				}
 			);
 		},
-		addTabulatorColumns() {
-			let deleteSoftwareFunc = this.deleteSoftware;
-			let columns = [
-				{
-					title: 'Action', field: 'action', headerFilter: false, formatter: function(cell){
-						let delButton = document.createElement('button');
-						delButton.className = 'btn btn-outline-secondary';
-						delButton.innerHTML = '<i class="fa fa-xmark"></i>';
-						delButton.addEventListener('click', () => deleteSoftwareFunc(cell.getRow().getIndex()));
-
-						return delButton;
-					}
-				}
-			];
-
-			this.extraTabulatorOptions.columns = this.extraTabulatorOptions.columns.concat(columns);
-		},
 		reloadTabulator() {
 			for (let option in this.softwareManagementTabulatorOptions)
 			{
@@ -220,7 +216,6 @@ export const SoftwareManagementCmpt = {
 					filter-type="SoftwareManagement"
 					:tabulator-options="softwareManagementTabulatorOptions"
 					:tabulator-events="softwareManagementTabulatorEventHandlers"
-					:tabulator-additional-columns="softwareManagementTabulatorAdditionalColumns"
 					:new-btn-label="'Software'"
 					:new-btn-show="true"
 					@nw-new-entry="newSideMenuEntryHandler"
