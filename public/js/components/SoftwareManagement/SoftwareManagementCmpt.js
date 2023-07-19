@@ -53,7 +53,7 @@ export const SoftwareManagementCmpt = {
 					{title: 'Lizenzart', field: 'lizenzart', headerFilter: true},
 					{title: 'Anzahl Lizenzen', field: 'anzahl_lizenzen', headerFilter: true},
 					{title: 'Aktiv', field: 'aktiv', headerFilter: true, formatter:"tickCross", hozAlign: 'center'},
-					{title: 'Status', field: 'softwarestatus_kurzbz', headerFilter: true},
+					{title: 'Status', field: 'softwarestatus_kurzbz', headerFilter: true, editor: "list", editorParams:{values:[]}},
 					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true}
@@ -81,6 +81,11 @@ export const SoftwareManagementCmpt = {
 		).then(
 			result => {
 				this.softwarestatus = CoreRESTClient.getData(result.data);
+
+				// Populate Status column with editable Softwarestatus list.
+				// NOTE: tabulator bugfixed transparent list in 5.2.3 release. (release notes)
+				this.populateTabulatorColumnStatus(this.softwarestatus);
+
 				this.addTabulatorColumns();
 				this.reloadTabulator();
 			}
@@ -103,6 +108,16 @@ export const SoftwareManagementCmpt = {
 		handleSoftwareSaved() {
 			this.$refs.modalForSave.hide();
 			this.$refs.softwareTable.reloadTable();
+		},
+		populateTabulatorColumnStatus(status_arr){
+			// Modify format
+			let result = status_arr.reduce((res, x) => {
+				res[x.softwarestatus_kurzbz] = x.bezeichnung;
+				return res;
+			}, {});
+
+			let statusCol = this.softwareManagementTabulatorOptions.columns.find(col => col.field === 'softwarestatus_kurzbz');
+			statusCol.editorParams = {values: result};
 		},
 		changeStatus(softwarestatus_kurzbz) {
 			let selectedData = this.$refs.softwareTable.tabulator.getSelectedData();
