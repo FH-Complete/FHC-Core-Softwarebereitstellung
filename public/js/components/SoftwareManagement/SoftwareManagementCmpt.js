@@ -96,6 +96,11 @@ export const SoftwareManagementCmpt = {
 			}
 		);
 	},
+	mounted(){
+		this.$refs.softwareTable.tabulator.on("cellEdited", (cell) => {
+			this.changeStatus(cell.getValue(), cell.getRow().getIndex());
+		})
+	},
 	methods: {
 		handleHierarchyToggle(expandHierarchy) {
 			this.extraTabulatorOptions.dataTreeStartExpanded = expandHierarchy;
@@ -119,16 +124,27 @@ export const SoftwareManagementCmpt = {
 			let statusCol = this.softwareManagementTabulatorOptions.columns.find(col => col.field === 'softwarestatus_kurzbz');
 			statusCol.editorParams = {values: result};
 		},
-		changeStatus(softwarestatus_kurzbz) {
-			let selectedData = this.$refs.softwareTable.tabulator.getSelectedData();
+		changeStatus(softwarestatus_kurzbz, software_id = null) {
+			let software_ids = [];
 
-			if (selectedData.length == 0)
+			// If software_id is provided
+			if (software_id !== null)
 			{
-				alert( 'Bitte erst Zeilen auswählen');
-				return;
+				software_ids.push(software_id);
 			}
+			// Else get software_id of selected rows
+			else
+			{
+				let selectedData = this.$refs.softwareTable.tabulator.getSelectedData();
 
-			let software_ids = selectedData.map(data => data.software_id);
+				if (selectedData.length == 0)
+				{
+					alert( 'Bitte erst Zeilen auswählen');
+					return;
+				}
+
+				software_ids = selectedData.map(data => data.software_id);
+			}
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/updateStatus',
