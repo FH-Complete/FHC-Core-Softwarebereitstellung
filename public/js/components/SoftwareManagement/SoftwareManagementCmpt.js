@@ -33,10 +33,34 @@ export const SoftwareManagementCmpt = {
 	},
 	data: function() {
 		return {
-			extraTabulatorOptions: { // tabulator options which are modified externally
-				dataTreeStartExpanded: true
+			extraTabulatorOptions: { // tabulator options which can be modified after first render
+				dataTreeStartExpanded: true,
+				columns: [
+					{
+						formatter: 'rowSelection',
+						titleFormatter: 'rowSelection',
+						hozAlign: 'left',
+						width: 150,
+						headerSort: false,
+						frozen: true
+					},
+					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
+					{title: 'Softwaretyp', field: 'softwaretyp_kurzbz', headerFilter: true},
+					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
+					{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
+					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
+					{title: 'Betriebssystem', field: 'os', headerFilter: true},
+					{title: 'Lizenzart', field: 'lizenzart', headerFilter: true},
+					{title: 'Anzahl Lizenzen', field: 'anzahl_lizenzen', headerFilter: true},
+					{title: 'Aktiv', field: 'aktiv', headerFilter: true, formatter:"tickCross", hozAlign: 'center'},
+					{title: 'Status', field: 'softwarestatus_kurzbz', headerFilter: true},
+					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
+					{title: 'ID', field: 'software_id', headerFilter: true},
+					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true}
+				]
 			},
 			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers,
+			softwareManagementTabulatorAdditionalColumns: ['Action'],
 			softwareId: null,
 			appSideMenuEntries: {},
 			softwarestatus: Array
@@ -47,9 +71,25 @@ export const SoftwareManagementCmpt = {
 			return {...SoftwareManagementTabulatorOptions, ...this.extraTabulatorOptions};
 		}
 	},
-	created() {
-	},
-	mounted() {
+	beforeCreate() {
+		CoreRESTClient.get(
+			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus',
+			null,
+			{
+				timeout: 2000
+			}
+		).then(
+			result => {
+				this.softwarestatus = CoreRESTClient.getData(result.data);
+				this.addTabulatorColumns();
+				this.reloadTabulator();
+			}
+		).catch(
+			error => {
+				let errorMessage = error.message ? error.message : 'Unknown error';
+				alert('Error when getting softwarestatus: ' + errorMessage); //TODO beautiful alert
+			}
+		);
 	},
 	methods: {
 		handleHierarchyToggle(expandHierarchy) {
@@ -91,35 +131,50 @@ export const SoftwareManagementCmpt = {
 				}
 			);
 		},
+		deleteSoftware(software_id) {
+			CoreRESTClient.post(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
+				{
+					software_id: software_id
+				}
+			).then(
+				result => {
+					this.$refs.softwareTable.reloadTable(); // TODO use row update instead of reloadTable after solving datatree issues
+				}
+			).catch(
+				error => {
+					alert('Error when deleting software: ' + error.message);
+				}
+			);
+		},
+		addTabulatorColumns() {
+			let deleteSoftwareFunc = this.deleteSoftware;
+			let columns = [
+				{
+					title: 'Action', field: 'action', headerFilter: false, formatter: function(cell){
+						let delButton = document.createElement('button');
+						delButton.className = 'btn btn-outline-secondary';
+						delButton.innerHTML = '<i class="fa fa-xmark"></i>';
+						delButton.addEventListener('click', () => deleteSoftwareFunc(cell.getRow().getIndex()));
+
+						return delButton;
+					}
+				}
+			];
+
+			this.extraTabulatorOptions.columns = this.extraTabulatorOptions.columns.concat(columns);
+		},
 		reloadTabulator() {
 			for (let option in this.softwareManagementTabulatorOptions)
 			{
 				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
-					this.$refs.softwareTable.tabulator.options[option] = this.softwareManagementTabulatorOptions[option]
+					this.$refs.softwareTable.tabulator.options[option] = this.softwareManagementTabulatorOptions[option];
 			}
 			this.$refs.softwareTable.reloadTable();
 		},
 		newSideMenuEntryHandler: function(payload) {
 			this.appSideMenuEntries = payload;
 		}
-	},
-	beforeCreate() {
-		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus',
-			null,
-			{
-				timeout: 2000
-			}
-		).then(
-			result => {
-				this.softwarestatus = CoreRESTClient.getData(result.data);
-			}
-		).catch(
-			error => {
-				let errorMessage = error.message ? error.message : 'Unknown error';
-				alert('Error when getting softwarestatus: ' + errorMessage); //TODO beautiful alert
-			}
-		);
 	},
 	template: `
 		<!-- Navigation component -->
@@ -134,6 +189,7 @@ export const SoftwareManagementCmpt = {
 					filter-type="SoftwareManagement"
 					:tabulator-options="softwareManagementTabulatorOptions"
 					:tabulator-events="softwareManagementTabulatorEventHandlers"
+					:tabulator-additional-columns="softwareManagementTabulatorAdditionalColumns"
 					:new-btn-label="'Software'"
 					:new-btn-show="true"
 					@nw-new-entry="newSideMenuEntryHandler"
