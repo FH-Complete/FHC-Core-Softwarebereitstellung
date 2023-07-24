@@ -18,7 +18,9 @@ export const SoftwareForm = {
 	data() {
 		return {
 			dataPrefill: {},
-			software: {},
+			software: {
+				softwaretyp_kurzbz: 'software',
+				aktiv: false},
 			errors: []
 		}
 	},
@@ -99,14 +101,14 @@ export const SoftwareForm = {
 	},
 	template: `
 	<div>
-		<form ref="softwareForm" class="row justify-content-center">
+		<form ref="softwareForm" class="row">
 			<div class="col-sm-9 mb-6">
 				<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
-				<label :for="software_kurzbz" class="form-label">Software Kurzbz:</label>
-				<input type="text" class="form-control" :id="software_kurzbz"  v-model="software.software_kurzbz" required>
-				<label :for="softwaretyp" class="form-label">Softwaretyp:</label>
+				<label :for="software_kurzbz" class="form-label">Software Kurzbz *</label>
+				<input type="text" class="form-control mb-3" :id="software_kurzbz"  v-model="software.software_kurzbz" required>
+				<label :for="softwaretyp" class="form-label">Softwaretyp *</label>
 				<select
-					class="form-select"
+					class="form-select mb-3"
 					required
 					:id="sofwaretyp_kurzbz"
 					v-model="software.softwaretyp_kurzbz">
@@ -114,26 +116,21 @@ export const SoftwareForm = {
 						{{bezeichnung}}
 					</option>
 				</select>
-				<label :for="version" class="form-label">Version:</label>
-				<input type="text" class="form-control" :id="version" v-model="software.version">
-				<label :for="os" class="form-label">Betriebssystem:</label>
-				<input type="text" class="form-control" :id="os" v-model="software.os">
-				<label :for="aktiv" class="form-label">Aktiv:</label>
-				<select
-					class="form-select"
-					:id="aktiv"
-					v-model="software.aktiv"
-					required>
-					<option :value="true">
-						Ja
-					</option>
-					<option :value="false">
-						Nein
-					</option>
-				</select>
-				<label :for="anmerkung_intern" class="form-label">Anmerkung:</label>
+				<label :for="version" class="form-label">Version</label>
+				<input type="text" class="form-control mb-3" :id="version" v-model="software.version">
+				<label :for="os" class="form-label">Betriebssystem</label>
+				<input type="text" class="form-control mb-3" :id="os" v-model="software.os">
+				<div class="form-check mb-3">
+				  <input class="form-check-input" type="checkbox" :id="aktiv" v-model="software.aktiv" :true-value="true" :false-value="false" >
+				  <label class="form-check-label" for="flexCheckChecked">Aktiv</label>
+				</div>
+				<label :for="ansprechpartner_intern" class="form-label">Ansprechpartner (intern)</label>
+				<input type="text" class="form-control mb-3" :id="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
+					<label :for="ansprechpartner_extern" class="form-label">Ansprechpartner (extern)</label>
+				<input type="text" class="form-control mb-3" :id="ansprechpartner_extern" v-model="software.ansprechpartner_extern">
+				<label :for="anmerkung_extern" class="form-label">Anmerkung</label>
 				<textarea
-					class="form-control"
+					class="form-control mb-3"
 					v-model="software.anmerkung_intern"
 					:id="anmerkung_intern"
 					rows="5">
