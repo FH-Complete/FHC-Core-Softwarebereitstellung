@@ -14,7 +14,6 @@ export default {
 	],
 	props: {
 		title: String,
-		softwareId: Number
 		//~ dialogClass: {
 			//~ type: [String,Array,Object],
 			//~ default: 'modal-dialog-centered'
@@ -31,28 +30,30 @@ export default {
 		//onShowBsModal: Function,
 		//~ onShownBsModal: Function
 	},
-	data: () => ({
-		result: true
-	}),
 	mounted() {
 		this.modal = this.$refs.modalContainer.modal;
 	},
 	methods: {
-		bsModalShown() {
-			console.log("Modal shown");
+		onHiddenBsModal() {
+			this.$refs.softwareFormCmpt.resetSoftware();
 		},
 		onBsModalSave() {
 			this.$refs.softwareFormCmpt.saveSoftware();
 		},
 		handleSoftwareFormSaved() {
 			this.$emit('softwareSaved');
+		},
+		openSoftwareModal(software_id) {
+			// Prefill form with Softwaredata
+			this.$refs.softwareFormCmpt.prefillSoftware(software_id);
+			this.$refs.modalContainer.show();
 		}
 	},
 	template: `
-		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @show-bs-modal="bsModalShown">
+		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @hidden-bs-modal="onHiddenBsModal">
 			<template v-slot:title>{{title}}</template>
 			<template v-slot:default>
-				<software-form ref="softwareFormCmpt" :softwareId="softwareId" @software-form-saved="handleSoftwareFormSaved"></software-form>
+				<software-form ref="softwareFormCmpt" @software-form-saved="handleSoftwareFormSaved"></software-form>
 			</template>
 			<template v-slot:footer>
 				<button type="button" class="btn btn-primary" @click="onBsModalSave">Speichern</button>

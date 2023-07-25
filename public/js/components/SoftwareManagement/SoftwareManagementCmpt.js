@@ -67,7 +67,7 @@ export const SoftwareManagementCmpt = {
 							let button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-edit"></i>';
-							button.addEventListener('click', () => this.editSoftware(cell.getRow().getIndex()));
+							button.addEventListener('click', (event) => this.editSoftware(event, cell.getRow().getIndex()));
 							container.append(button);
 
 							button = document.createElement('button');
@@ -82,7 +82,6 @@ export const SoftwareManagementCmpt = {
 				]
 			},
 			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers,
-			softwareId: null,
 			appSideMenuEntries: {},
 			softwarestatus: Array
 		}
@@ -125,9 +124,8 @@ export const SoftwareManagementCmpt = {
 			this.extraTabulatorOptions.dataTreeStartExpanded = expandHierarchy;
 			this.reloadTabulator();
 		},
-		openModalForCreate(event, softwareId) {
-			if (softwareId) this.softwareId = softwareId;
-			this.$refs.modalForSave.show();
+		openModal(event, softwareId) {
+			this.$refs.modalForSave.openSoftwareModal(softwareId);
 		},
 		handleSoftwareSaved() {
 			this.$refs.modalForSave.hide();
@@ -197,8 +195,8 @@ export const SoftwareManagementCmpt = {
 				}
 			);
 		},
-		editSoftware(software_id){
-			console.log('editSoftware now');
+		editSoftware(event, software_id){
+			this.openModal(event, software_id);
 		},
 		reloadTabulator() {
 			for (let option in this.softwareManagementTabulatorOptions)
@@ -228,7 +226,7 @@ export const SoftwareManagementCmpt = {
 					:new-btn-label="'Software'"
 					:new-btn-show="true"
 					@nw-new-entry="newSideMenuEntryHandler"
-					@click:new="openModalForCreate">
+					@click:new="openModal">
 					<template v-slot:actions>
 						<actions-cmpt
 							:softwarestatus="softwarestatus"
