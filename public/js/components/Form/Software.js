@@ -12,19 +12,13 @@ export const SoftwareForm = {
 	//~ mixins: [
 		//~ Phrasen
 	//~ ],
-	props: {
-		softwareId: Number
-	},
 	data() {
 		return {
 			dataPrefill: {},
-			software: {
-				softwaretyp_kurzbz: 'software',
-				aktiv: false},
+			softwareId: null,
+			software: {},
 			errors: []
 		}
-	},
-	computed: {
 	},
 	beforeCreate() {
 		CoreRESTClient.get(
@@ -44,7 +38,33 @@ export const SoftwareForm = {
 			}
 		);
 	},
+	created() {
+		this.software = this.getDefaultSoftware();
+	},
 	methods: {
+		getDefaultSoftware() {
+			return {
+				softwaretyp_kurzbz: 'software',
+				aktiv: true
+			}
+		},
+		prefillSoftware(software_id){
+			this.softwareId = software_id;
+
+			if (Number.isInteger(this.softwareId))
+			{
+				CoreRESTClient.get(
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware/' + software_id
+				).then(
+					result => {this.software = CoreRESTClient.getData(result.data);}
+				).catch(
+					error => {
+						let errorMessage = error.message ? error.message : 'Unknown error';
+						alert('Error when getting software: ' + errorMessage); //TODO beautiful alert
+					}
+				);
+			}
+		},
 		saveSoftware() {
 
 			// Check form fields
@@ -72,7 +92,7 @@ export const SoftwareForm = {
 			if (method)
 			{
 				CoreRESTClient.post(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/'+method,
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/' + method,
 					this.software
 				).then(
 					result => {
@@ -97,6 +117,10 @@ export const SoftwareForm = {
 					}
 				);
 			}
+		},
+		resetSoftware(){
+			this.softwareId = null;
+			this.software = this.getDefaultSoftware();
 		}
 	},
 	template: `

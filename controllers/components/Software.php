@@ -18,9 +18,11 @@ class Software extends Auth_Controller
 			array(
 				'index' => 'basis/mitarbeiter:r',
 				'getDataPrefill' => 'basis/mitarbeiter:r',
+				'getSoftware' => 'basis/mitarbeiter:r',
 				'getStatus' => 'basis/mitarbeiter:r',
-				'updateStatus' => 'basis/mitarbeiter:r',
+				'updateStatus' => 'basis/mitarbeiter:rw',
 				'createSoftware' => 'basis/mitarbeiter:rw',
+				'updateSoftware' => 'basis/mitarbeiter:rw',
 				'deleteSoftware' => 'basis/mitarbeiter:rw'
 			)
 		);
@@ -77,6 +79,23 @@ class Software extends Auth_Controller
 
 		$this->outputJsonSuccess($dataPrefill);
 	}
+
+    /**
+     * Get Software
+     *
+     * @param
+     * @return object success or error
+     */
+    public function getSoftware($software_id)
+    {
+        $result = $this->SoftwareModel->load($software_id);
+
+        if (isError($result))
+        {
+            $this->terminateWithJsonError('Fehler beim Holen der Software');
+        }
+        $this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
+    }
 
 	/**
 	 * Get Softwarestatus
@@ -191,7 +210,19 @@ class Software extends Auth_Controller
 	 */
 	public function updateSoftware()
 	{
-		return $this->outputJsonSuccess(true);
+        $data = $this->getPostJson();
+
+        $result = $this->SoftwareModel->update(
+            $data->software_id,
+            $data
+        );
+
+        if (isError($result))
+        {
+            $this->terminateWithJsonError('Fehler beim Ändern des Softwarestatus');
+        }
+
+        $this->outputJsonSuccess(hasData($result) ? getData($result) : []);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
