@@ -1,0 +1,11 @@
+/* Fix transparent background of edit list */
+.tabulator-edit-list .tabulator-edit-list-item {
+    background-color: white;
+}
+
+/* Fix transparent background of edit list */
+.tabulator-edit-list .tabulator-edit-list-item:hover,
+.tabulator-edit-list .tabulator-edit-list-item.active {
+    color: white;
+}
+
