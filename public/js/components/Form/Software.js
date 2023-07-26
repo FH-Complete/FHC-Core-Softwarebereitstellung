@@ -121,6 +121,7 @@ export const SoftwareForm = {
 		resetSoftware(){
 			this.softwareId = null;
 			this.software = this.getDefaultSoftware();
+			this.errors = [];
 		}
 	},
 	template: `
