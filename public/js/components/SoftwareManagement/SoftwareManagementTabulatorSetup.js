@@ -43,13 +43,6 @@ export const SoftwareManagementTabulatorOptions = {
  *
  */
 export const SoftwareManagementTabulatorEventHandlers = [
-	//~ {
-		//~ // show issue text on row click
-		//~ event: "rowClick",
-		//~ handler: function(e, row) {
-			//~ alert(row.getData().Beschreibung);
-		//~ }
-	//~ },
 	{
 		event: "dataLoaded",
 		handler: function(data) {
@@ -87,7 +80,7 @@ function _appendChild(swArr, childSw) {
 	// get parent id
 	let parentId = childSw['software_id_parent'];
 
-	// loop thorugh all software
+	// loop through all software
 	for (let parentIdx = 0; parentIdx < swArr.length; parentIdx++)
 	{
 		let parentSw = swArr[parentIdx];

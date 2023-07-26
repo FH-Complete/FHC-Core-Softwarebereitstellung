@@ -18,9 +18,6 @@ class SoftwareManagement extends Auth_Controller
 			)
 		);
 
-		// Loads WidgetLib
-		$this->load->library('WidgetLib');
-
 		// Loads phrases system
 		//~ $this->loadPhrases(
 			//~ array(
