@@ -20,7 +20,8 @@ class Software extends Auth_Controller
 				'getDataPrefill' => 'basis/mitarbeiter:r',
 				'getSoftware' => 'basis/mitarbeiter:r',
 				'getStatus' => 'basis/mitarbeiter:r',
-				'updateStatus' => 'basis/mitarbeiter:rw',
+				'getLastSoftwarestatus' => 'basis/mitarbeiter:r',
+				'changeSoftwarestatus' => 'basis/mitarbeiter:rw',
 				'createSoftware' => 'basis/mitarbeiter:rw',
 				'updateSoftware' => 'basis/mitarbeiter:rw',
 				'deleteSoftware' => 'basis/mitarbeiter:rw'
@@ -117,12 +118,29 @@ class Software extends Auth_Controller
 	}
 
 	/**
-	 * Update Status
+	 * Get last Softwarestatus of given Software.
+	 *
+	 * @param $software_id integer
+	 */
+	public function getLastSoftwarestatus($software_id)
+	{
+		$result = $this->SoftwareSoftwarestatusModel->getLastSoftwarestatus($software_id);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen des Softwarestatus');
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
+	}
+
+	/**
+	 * Insert Softwarestatus after it has been changed.
 	 *
 	 * @param
 	 * @return object success or error
 	 */
-	public function updateStatus()
+	public function changeSoftwarestatus()
 	{
 		$data = $this->getPostJson();
 
