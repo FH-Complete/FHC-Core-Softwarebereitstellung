@@ -28,9 +28,6 @@ class Software extends Auth_Controller
 			)
 		);
 
-		// Loads WidgetLib
-		$this->load->library('WidgetLib');
-
 		$this->load->model('system/Sprache_model', 'SpracheModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwaretyp_model', 'SoftwaretypModel');

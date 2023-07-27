@@ -147,6 +147,7 @@ export const SoftwareForm = {
 			this.softwareId = null;
 			this.software = this.getDefaultSoftware();
 			this.softwarestatus = this.getDefaultSoftwarestatus();
+			this.errors = [];
 		}
 	},
 	template: `

@@ -21,6 +21,7 @@ import {SoftwareManagementTabulatorEventHandlers} from './SoftwareManagementTabu
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
 import {ActionsCmpt} from './ActionsCmpt.js';
+import {DetailsCmpt} from './DetailsCmpt.js';
 import SoftwareModal from '../Modals/SoftwareModal.js';
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 
@@ -29,6 +30,7 @@ export const SoftwareManagementCmpt = {
 		CoreNavigationCmpt,
 		CoreFilterCmpt,
 		ActionsCmpt,
+		DetailsCmpt,
 		SoftwareModal
 	},
 	data: function() {
@@ -118,9 +120,22 @@ export const SoftwareManagementCmpt = {
 		);
 	},
 	mounted(){
+		// set tabulator events
+
+		// in-table status edit event
 		this.$refs.softwareTable.tabulator.on("cellEdited", (cell) => {
 			this.changeStatus(cell.getValue(), cell.getRow().getIndex());
-		})
+		});
+
+		// row click event (showing software details)
+		this.$refs.softwareTable.tabulator.on("rowClick", (e, row) => {
+
+			// exclude other clicked elements like buttons, icons...
+			if (e.target.nodeName != 'DIV') return;
+
+			// get Orte for a software
+			this.$refs.details.getOrte(row.getIndex(), row.getData().software_kurzbz);
+		});
 	},
 	methods: {
 		handleHierarchyToggle(expandHierarchy) {
@@ -183,6 +198,9 @@ export const SoftwareManagementCmpt = {
 				}
 			);
 		},
+		editSoftware(event, software_id){
+			this.openModal(event, software_id);
+		},
 		deleteSoftware(software_id) {
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
@@ -191,16 +209,13 @@ export const SoftwareManagementCmpt = {
 				}
 			).then(
 				result => {
-					this.$refs.softwareTable.reloadTable(); // TODO use row update instead of reloadTable after solving datatree issues
+					this.$refs.softwareTable.reloadTable();
 				}
 			).catch(
 				error => {
 					alert('Error when deleting software: ' + error.message);
 				}
 			);
-		},
-		editSoftware(event, software_id){
-			this.openModal(event, software_id);
 		},
 		reloadTabulator() {
 			for (let option in this.softwareManagementTabulatorOptions)
@@ -240,13 +255,15 @@ export const SoftwareManagementCmpt = {
 						 </actions-cmpt>
 					 </template>
 				</core-filter-cmpt>
+				<br>
+				<!-- Details component -->
+				<details-cmpt ref="details">
+				</details-cmpt>
 				<!-- Software modal component -->
 				<software-modal
 					class="fade"
 					ref="modalForSave"
 					dialog-class="modal-lg"
-					title="Software anlegen"
-					:softwareId="softwareId"
 					@software-saved="handleSoftwareSaved">
 				</software-modal>
 			</div>

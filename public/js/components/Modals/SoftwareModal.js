@@ -12,23 +12,10 @@ export default {
 	mixins: [
 		BsModal
 	],
-	props: {
-		title: String,
-		//~ dialogClass: {
-			//~ type: [String,Array,Object],
-			//~ default: 'modal-dialog-centered'
-		//~ },
-		/*
-		 * NOTE(chris):
-		 * Hack to expose in "emits" declared events to $props which we use
-		 * in the v-bind directive to forward all events.
-		 * @see: https://github.com/vuejs/core/issues/3432
-		*/
-		//~ onHideBsModal: Function,
-		//~ onHiddenBsModal: Function,
-		//~ onHidePreventedBsModal: Function,
-		//onShowBsModal: Function,
-		//~ onShownBsModal: Function
+	data: function() {
+		return {
+			title: String
+		}
 	},
 	mounted() {
 		this.modal = this.$refs.modalContainer.modal;
@@ -45,6 +32,7 @@ export default {
 		},
 		openSoftwareModal(software_id) {
 			// Prefill form with Softwaredata
+			this.title = software_id ? 'Software bearbeiten' : 'Software anlegen';
 			this.$refs.softwareFormCmpt.prefillSoftware(software_id);
 			this.$refs.modalContainer.show();
 		}
