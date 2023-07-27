@@ -74,8 +74,27 @@ class Software extends Auth_Controller
 			}
 		}
 
+        // Get all Softwarestatus
+        $softwarestatus_arr = array();
+
+        $result = $this->SoftwarestatusModel->loadByLanguage($language_index);
+
+        if (isError($result))
+        {
+            $this->terminateWithJsonError('Fehler beim Holen der Softwarestatus');
+        }
+
+        if (hasData($result))
+        {
+            foreach (getData($result) as $softwarestatus)
+            {
+                $softwarestatus_arr[$softwarestatus->softwarestatus_kurzbz] = $softwarestatus->bezeichnung;
+            }
+        }
+
 		$dataPrefill = array(
-			'softwaretyp' => $softwaretypes
+			'softwaretyp' => $softwaretypes,
+            'softwarestatus' => $softwarestatus_arr
 		);
 
 		$this->outputJsonSuccess($dataPrefill);

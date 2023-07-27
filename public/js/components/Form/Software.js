@@ -17,6 +17,7 @@ export const SoftwareForm = {
 			dataPrefill: {},
 			softwareId: null,
 			software: {},
+			softwarestatus: [],
 			errors: []
 		}
 	},
@@ -39,7 +40,9 @@ export const SoftwareForm = {
 		);
 	},
 	created() {
+		// Prefill form with default values
 		this.software = this.getDefaultSoftware();
+		this.softwarestatus = this.getDefaultSoftwarestatus();
 	},
 	methods: {
 		getDefaultSoftware() {
@@ -48,11 +51,18 @@ export const SoftwareForm = {
 				aktiv: true
 			}
 		},
+		getDefaultSoftwarestatus() {
+			return {
+				softwarestatus_kurzbz: 'neu'
+			}
+		},
+		// Prefill form with software values
 		prefillSoftware(software_id){
 			this.softwareId = software_id;
 
 			if (Number.isInteger(this.softwareId))
 			{
+				// Get software data
 				CoreRESTClient.get(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware/' + software_id
 				).then(
@@ -61,6 +71,18 @@ export const SoftwareForm = {
 					error => {
 						let errorMessage = error.message ? error.message : 'Unknown error';
 						alert('Error when getting software: ' + errorMessage); //TODO beautiful alert
+					}
+				);
+
+				// Get last softwarestatus data
+				CoreRESTClient.get(
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLastSoftwarestatus/' + software_id
+				).then(
+					result => {this.softwarestatus = CoreRESTClient.getData(result.data);}
+				).catch(
+					error => {
+						let errorMessage = error.message ? error.message : 'Unknown error';
+						alert('Error when getting softwarestatus: ' + errorMessage);
 					}
 				);
 			}
@@ -93,7 +115,10 @@ export const SoftwareForm = {
 			{
 				CoreRESTClient.post(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/' + method,
-					this.software
+					{
+						software: this.software,
+						softwarestatus: this.softwarestatus
+					}
 				).then(
 					result => {
 						// display errors
@@ -121,6 +146,7 @@ export const SoftwareForm = {
 		resetSoftware(){
 			this.softwareId = null;
 			this.software = this.getDefaultSoftware();
+			this.softwarestatus = this.getDefaultSoftwarestatus();
 		}
 	},
 	template: `
