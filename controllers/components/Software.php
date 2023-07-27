@@ -180,10 +180,12 @@ class Software extends Auth_Controller
 	{
 		$this->load->library('form_validation');
 
-		$softwareData = json_decode($this->input->raw_input_stream, true);
+		$data = json_decode($this->input->raw_input_stream, true);
+        $software = $data['software'];
+        $softwarestatus = $data['softwarestatus'];
 
 		// validate data
-		$this->form_validation->set_data($softwareData);
+		$this->form_validation->set_data($software);
 
 		$this->form_validation->set_rules('software_kurzbz', 'Software Kurzbezeichnung', 'required', array('required' => '%s fehlt'));
 		$this->form_validation->set_rules('softwaretyp_kurzbz', 'Softwaretyp', 'required', array('required' => '%s fehlt'));
@@ -191,22 +193,25 @@ class Software extends Auth_Controller
 		if ($this->form_validation->run() == false)
 			return $this->outputJsonError($this->form_validation->error_array());
 
-		if (isset($softwareData['version']))
+		if (isset($software['version']))
 		{
 			// check if there is already a software with the kurzbz and version
 			$this->SoftwareModel->addSelect('1');
 			$softwareRes = $this->SoftwareModel->loadWhere(array(
-				'software_kurzbz' => $softwareData['software_kurzbz'],
-				'version' => $softwareData['version'])
+				'software_kurzbz' => $software['software_kurzbz'],
+				'version' => $software['version'])
 			);
 
 			if (isError($softwareRes) || hasData($softwareRes))
 				return $this->outputJsonError(array('Software Kurzbezeichnung mit dieser Version existiert bereits'));
 		}
 
-		$softwareData['insertvon'] = $this->_uid;
+		$software['insertvon'] = $this->_uid;
 
-		return $this->outputJson($this->SoftwareModel->insert($softwareData));
+		// Insert Software and Softwarestatus
+        $result = $this->SoftwareModel->insertSoftwarePlus($software, $softwarestatus['softwarestatus_kurzbz']);
+
+		return $this->outputJson($result);
 	}
 
 	/**
