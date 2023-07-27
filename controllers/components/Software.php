@@ -233,13 +233,6 @@ class Software extends Auth_Controller
 		if ($this->form_validation->run() == false)
 			return $this->outputJsonError($this->form_validation->error_array());
 
-		// check/delete dependencies before deleting software
-
-		// delete software_status
-		$softwareSoftwarestatusRes = $this->SoftwareSoftwarestatusModel->delete(array('software_id' => $softwareData['software_id']));
-
-		if (isError($softwareSoftwarestatusRes)) return $this->outputJsonError(array(getError($softwareSoftwarestatusRes)));
-
 		// delete software itself
 		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
 	}
