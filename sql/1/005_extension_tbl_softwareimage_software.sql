@@ -13,7 +13,7 @@ DO $$
 BEGIN
 	ALTER TABLE extension.tbl_softwareimage_software ADD CONSTRAINT tbl_softwareimage_software_software_fk FOREIGN KEY (software_id)
 	REFERENCES extension.tbl_software (software_id) MATCH FULL
-	ON DELETE RESTRICT ON UPDATE CASCADE;
+	ON DELETE CASCADE ON UPDATE CASCADE;
  	EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
@@ -21,7 +21,7 @@ DO $$
 BEGIN
 	ALTER TABLE extension.tbl_softwareimage_software ADD CONSTRAINT tbl_softwareimage_software_softwareimage_fk FOREIGN KEY (softwareimage_id)
 	REFERENCES extension.tbl_softwareimage (softwareimage_id) MATCH FULL
-	ON DELETE RESTRICT ON UPDATE CASCADE;
+	ON DELETE CASCADE ON UPDATE CASCADE;
 	EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 

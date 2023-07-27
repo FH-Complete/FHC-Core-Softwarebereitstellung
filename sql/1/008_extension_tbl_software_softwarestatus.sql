@@ -23,7 +23,7 @@ DO $$
 BEGIN
 	ALTER TABLE extension.tbl_software_softwarestatus ADD CONSTRAINT tbl_software_softwarestatu_software_fk FOREIGN KEY (software_id)
 	REFERENCES extension.tbl_software (software_id) MATCH FULL
-	ON DELETE RESTRICT ON UPDATE CASCADE;
+	ON DELETE CASCADE ON UPDATE CASCADE;
  	EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
@@ -31,7 +31,7 @@ DO $$
 BEGIN
 	ALTER TABLE extension.tbl_software_softwarestatus ADD CONSTRAINT tbl_software_softwarestatus_softwarestatus_fk FOREIGN KEY (softwarestatus_kurzbz)
 	REFERENCES extension.tbl_softwarestatus (softwarestatus_kurzbz) MATCH FULL
-	ON DELETE RESTRICT ON UPDATE CASCADE;
+	ON DELETE CASCADE ON UPDATE CASCADE;
  	EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
