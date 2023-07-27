@@ -253,18 +253,18 @@ class Software extends Auth_Controller
 	public function updateSoftware()
 	{
         $data = $this->getPostJson();
+        $software = $data->software;
+        $softwarestatus = $data->softwarestatus;
 
-        $result = $this->SoftwareModel->update(
-            $data->software_id,
-            $data
+		// Update Software and inserts newer Softwarestatus
+        $result = $this->SoftwareModel->updateSoftwarePlus(
+            $software,
+            $softwarestatus->softwarestatus_kurzbz
         );
 
-        if (isError($result))
-        {
-            $this->terminateWithJsonError('Fehler beim Ändern des Softwarestatus');
-        }
+        if (isError($result)) $this->terminateWithJsonError('Fehler beim Ändern der Software');
 
-        $this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+        $this->outputJsonSuccess('Success');
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
