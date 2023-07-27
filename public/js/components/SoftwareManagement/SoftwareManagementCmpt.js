@@ -53,7 +53,10 @@ export const SoftwareManagementCmpt = {
 					{title: 'Lizenzart', field: 'lizenzart', headerFilter: true},
 					{title: 'Anzahl Lizenzen', field: 'anzahl_lizenzen', headerFilter: true},
 					{title: 'Aktiv', field: 'aktiv', headerFilter: true, formatter:"tickCross", hozAlign: 'center'},
-					{title: 'Status', field: 'softwarestatus_kurzbz', headerFilter: true, editor: "list", editorParams:{values:[]}},
+					{title: 'Status', field: 'softwarestatus_kurzbz',
+						editor: "list", editorParams:{values:[]},
+						headerFilter: true, headerFilterParams:{values:[]}
+					},
 					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
@@ -140,6 +143,7 @@ export const SoftwareManagementCmpt = {
 
 			let statusCol = this.softwareManagementTabulatorOptions.columns.find(col => col.field === 'softwarestatus_kurzbz');
 			statusCol.editorParams = {values: result};
+			statusCol.headerFilterParams = {values: result};
 		},
 		changeStatus(softwarestatus_kurzbz, software_id = null) {
 			let software_ids = [];
