@@ -52,4 +52,39 @@ class Software_model extends DB_Model
 
         return success($lastInsert_id);
     }
+
+	/**
+	 * Update Software plus insert new Softwarestatus.
+	 * Rollback on error.
+	 *
+	 * @param $software object
+	 * @param $softwarestatus_kurzbz string
+	 * @return mixed
+	 */
+	public function updateSoftwarePlus($software, $softwarestatus_kurzbz)
+	{
+		// Start DB transaction
+		$this->db->trans_start(false);
+
+		// Update Software
+		$this->update($software->software_id, $software);
+
+		// Insert newer Softwarestatus
+		$this->load->model('SoftwareSoftwarestatus_Model', 'SoftwareSoftwarestatusModel');
+		$this->SoftwareSoftwarestatusModel->changeSoftwarestatus(
+			array($software->software_id),
+			$softwarestatus_kurzbz
+		);
+
+		// Transaction complete
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === false)
+		{
+			$this->db->trans_rollback();
+			return error('Fehler beim Update der Software', EXIT_ERROR);
+		}
+
+		return success();
+	}
 }
