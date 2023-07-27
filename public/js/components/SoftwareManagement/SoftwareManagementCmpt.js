@@ -168,7 +168,7 @@ export const SoftwareManagementCmpt = {
 			}
 
 			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/updateStatus',
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/changeSoftwarestatus',
 				{
 					software_ids: software_ids,
 					softwarestatus_kurzbz: softwarestatus_kurzbz

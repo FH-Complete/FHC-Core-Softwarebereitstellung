@@ -126,7 +126,7 @@ class Software extends Auth_Controller
 	{
 		$data = $this->getPostJson();
 
-		$result = $this->SoftwareSoftwarestatusModel->updateStatus($data->software_ids, $data->softwarestatus_kurzbz);
+		$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus($data->software_ids, $data->softwarestatus_kurzbz);
 
 		if (isError($result))
 		{
