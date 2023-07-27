@@ -148,6 +148,16 @@ export const SoftwareForm = {
 				  <input class="form-check-input" type="checkbox" :id="aktiv" v-model="software.aktiv" :true-value="true" :false-value="false" >
 				  <label class="form-check-label" for="flexCheckChecked">Aktiv</label>
 				</div>
+				<label :for="softwarestatus_kurzbz" class="form-label">Softwarestatus *</label>
+				<select
+					class="form-select mb-3"
+					required
+					:id="sofwarestatus_kurzbz"
+					v-model="softwarestatus.softwarestatus_kurzbz">
+					<option v-for="(bezeichnung, softwarestatus_kurzbz) in dataPrefill.softwarestatus" :key="index" :value="softwarestatus_kurzbz">
+						{{bezeichnung}}
+					</option>
+				</select>
 				<label :for="ansprechpartner_intern" class="form-label">Ansprechpartner (intern)</label>
 				<input type="text" class="form-control mb-3" :id="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
 					<label :for="ansprechpartner_extern" class="form-label">Ansprechpartner (extern)</label>
