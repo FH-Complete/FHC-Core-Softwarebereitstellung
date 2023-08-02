@@ -129,9 +129,8 @@ export const SoftwareForm = {
 						}
 						else
 						{
-							// everything ok - clear errors
-							this.errors = [];
-							// and emit event
+							// everything ok
+							// emit event
 							this.$emit("softwareFormSaved");
 						}
 					}

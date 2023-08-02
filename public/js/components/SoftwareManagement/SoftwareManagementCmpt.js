@@ -244,6 +244,8 @@ export const SoftwareManagementCmpt = {
 					:tabulator-events="softwareManagementTabulatorEventHandlers"
 					:new-btn-label="'Software'"
 					:new-btn-show="true"
+					:id-field="'software_id'"
+					:parent-id-field="'software_id_parent'"
 					@nw-new-entry="newSideMenuEntryHandler"
 					@click:new="openModal">
 					<template v-slot:actions>
