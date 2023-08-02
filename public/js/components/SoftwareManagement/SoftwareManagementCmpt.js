@@ -87,6 +87,7 @@ export const SoftwareManagementCmpt = {
 				]
 			},
 			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers,
+			tabulatorAdditionalColumns: ['actions'],
 			appSideMenuEntries: {},
 			softwarestatus: Array
 		}
@@ -242,6 +243,7 @@ export const SoftwareManagementCmpt = {
 					filter-type="SoftwareManagement"
 					:tabulator-options="softwareManagementTabulatorOptions"
 					:tabulator-events="softwareManagementTabulatorEventHandlers"
+					:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 					:new-btn-label="'Software'"
 					:new-btn-show="true"
 					:id-field="'software_id'"
