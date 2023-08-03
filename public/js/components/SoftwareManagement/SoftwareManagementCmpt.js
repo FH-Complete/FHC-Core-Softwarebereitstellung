@@ -39,6 +39,7 @@ export const SoftwareManagementCmpt = {
 				dataTreeStartExpanded: true,
 				columns: [
 					{
+						field: 'software_kurzbz',
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
 						hozAlign: 'left',
