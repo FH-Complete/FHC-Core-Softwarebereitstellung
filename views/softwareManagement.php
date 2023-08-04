@@ -1,13 +1,14 @@
 <?php
 	$includesArray = array(
 		'title' => 'Software Verwaltung',
+		'vue3' => true,
 		'axios027' => true,
 		'bootstrap5' => true,
-		'fontawesome6' => true,
-		'vue3' => true,
-		'filtercomponent' => true,
-		'navigationcomponent' => true,
 		'tabulator5' => true,
+		'fontawesome6' => true,
+		'primevue3' => true,
+		'navigationcomponent' => true,
+		'filtercomponent' => true,
 		//~ 'phrases' => array(
 			//~ 'global' => array('mailAnXversandt'),
 			//~ 'ui' => array('bitteEintragWaehlen')

@@ -23,4 +23,4 @@ const softwareManagementApp = Vue.createApp({
 	}
 });
 
-softwareManagementApp.mount('#main');
+softwareManagementApp.use(primevue.config.default,{zIndex: {overlay: 9999}}).mount('#main');

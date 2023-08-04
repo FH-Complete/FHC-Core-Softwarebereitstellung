@@ -19,6 +19,7 @@ class Software extends Auth_Controller
 				'index' => 'basis/mitarbeiter:r',
 				'getDataPrefill' => 'basis/mitarbeiter:r',
 				'getSoftware' => 'basis/mitarbeiter:r',
+				'getSoftwareByKurzbz' => 'basis/mitarbeiter:r',
 				'getStatus' => 'basis/mitarbeiter:r',
 				'getLastSoftwarestatus' => 'basis/mitarbeiter:r',
 				'changeSoftwarestatus' => 'basis/mitarbeiter:rw',
@@ -71,54 +72,65 @@ class Software extends Auth_Controller
 			}
 		}
 
-        // Get all Softwarestatus
-        $softwarestatus_arr = array();
+		// Get all Softwarestatus
+		$softwarestatus_arr = array();
 
-        $result = $this->SoftwarestatusModel->loadByLanguage($language_index);
+		$result = $this->SoftwarestatusModel->loadByLanguage($language_index);
 
-        if (isError($result))
-        {
-            $this->terminateWithJsonError('Fehler beim Holen der Softwarestatus');
-        }
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Softwarestatus');
+		}
 
-        if (hasData($result))
-        {
-            foreach (getData($result) as $softwarestatus)
-            {
-                $softwarestatus_arr[$softwarestatus->softwarestatus_kurzbz] = $softwarestatus->bezeichnung;
-            }
-        }
+		if (hasData($result))
+		{
+			foreach (getData($result) as $softwarestatus)
+			{
+				$softwarestatus_arr[$softwarestatus->softwarestatus_kurzbz] = $softwarestatus->bezeichnung;
+			}
+		}
 
 		$dataPrefill = array(
 			'softwaretyp' => $softwaretypes,
-            'softwarestatus' => $softwarestatus_arr
+			'softwarestatus' => $softwarestatus_arr
 		);
 
 		$this->outputJsonSuccess($dataPrefill);
 	}
 
-    /**
-     * Get Software
-     *
-     * @param
-     * @return object success or error
-     */
-    public function getSoftware($software_id)
-    {
-        $result = $this->SoftwareModel->load($software_id);
+	/**
+	 * Get Software
+	 */
+	public function getSoftware()
+	{
+		$software_id = $this->input->get('software_id');
+		$result = $this->SoftwareModel->load($software_id);
 
-        if (isError($result))
-        {
-            $this->terminateWithJsonError('Fehler beim Holen der Software');
-        }
-        $this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
-    }
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Software');
+		}
+		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
+	}
 
 	/**
-	 * Get Softwarestatus
-	 *
-	 * @param
-	 * @return object success or error
+	 * Get Software by software_kurzbz.
+	 */
+	public function getSoftwareByKurzbz()
+	{
+		$software_kurzbz = $this->input->get('software_kurzbz');
+		$result = $this->SoftwareModel->loadWhere('software_kurzbz LIKE '.$this->db->escape('%'.$software_kurzbz.'%'));
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Software');
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/**
+	 * Get Softwarestatus.
 	 */
 	public function getStatus()
 	{
@@ -178,8 +190,8 @@ class Software extends Auth_Controller
 		$this->load->library('form_validation');
 
 		$data = json_decode($this->input->raw_input_stream, true);
-        $software = $data['software'];
-        $softwarestatus = $data['softwarestatus'];
+		$software = $data['software'];
+		$softwarestatus = $data['softwarestatus'];
 
 		// validate data
 		$this->form_validation->set_data($software);
@@ -206,7 +218,7 @@ class Software extends Auth_Controller
 		$software['insertvon'] = $this->_uid;
 
 		// Insert Software and Softwarestatus
-        $result = $this->SoftwareModel->insertSoftwarePlus($software, $softwarestatus['softwarestatus_kurzbz']);
+		$result = $this->SoftwareModel->insertSoftwarePlus($software, $softwarestatus['softwarestatus_kurzbz']);
 
 		return $this->outputJson($result);
 	}
@@ -233,7 +245,7 @@ class Software extends Auth_Controller
 		if ($this->form_validation->run() == false)
 			return $this->outputJsonError($this->form_validation->error_array());
 
-		// delete software itself
+		// delete software
 		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
 	}
 
@@ -242,19 +254,19 @@ class Software extends Auth_Controller
 	 */
 	public function updateSoftware()
 	{
-        $data = $this->getPostJson();
-        $software = $data->software;
-        $softwarestatus = $data->softwarestatus;
+		$data = $this->getPostJson();
+		$software = $data->software;
+		$softwarestatus = $data->softwarestatus;
 
 		// Update Software and inserts newer Softwarestatus
-        $result = $this->SoftwareModel->updateSoftwarePlus(
-            $software,
-            $softwarestatus->softwarestatus_kurzbz
-        );
+		$result = $this->SoftwareModel->updateSoftwarePlus(
+			$software,
+			$softwarestatus->softwarestatus_kurzbz
+		);
 
-        if (isError($result)) $this->terminateWithJsonError('Fehler beim Ändern der Software');
+		if (isError($result)) return $this->outputJsonError(array('Fehler beim Ändern der Software'));
 
-        $this->outputJsonSuccess('Success');
+		$this->outputJsonSuccess('Success');
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------

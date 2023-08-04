@@ -1,10 +1,11 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import {CoreFetchCmpt} from '../../../../../js/components/Fetch.js';
 //import Phrasen from '../../../mixins/Phrasen.js';
+
+console.log(primevue);
 
 export const SoftwareForm = {
 	components: {
-		CoreFetchCmpt
+		AutoComplete: primevue.autocomplete
 	},
 	emits: [
 		'softwareFormSaved'
@@ -18,8 +19,19 @@ export const SoftwareForm = {
 			softwareId: null,
 			software: {},
 			softwarestatus: [],
+			parentSoftwareSuggestions: [],
+			parentSoftware: null,
 			errors: []
 		}
+	},
+	computed: {
+		extendedSoftware() {
+			return {...this.software, ...{software_id_parent: this.parentSoftware.software_id}}
+		},
+		selected_software_kurzbz() {
+			return this.parentSoftware ? this.parentSoftware.software_kurzbz : '';
+		},
+		pInputProps() {return {value: parentSoftware.software_kurzbz}},
 	},
 	beforeCreate() {
 		CoreRESTClient.get(
@@ -64,9 +76,17 @@ export const SoftwareForm = {
 			{
 				// Get software data
 				CoreRESTClient.get(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware/' + software_id
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware',
+					{
+						software_id: software_id
+					}
 				).then(
-					result => {this.software = CoreRESTClient.getData(result.data);}
+					result => {
+						let softwareData = CoreRESTClient.getData(result.data);
+						this.software = softwareData;
+						this.parentSoftware = {software_id: softwareData.software_id_parent, software_kurzbz: softwareData.software_kurzbz_parent};
+						console.log(this.parentSoftware);
+					}
 				).catch(
 					error => {
 						let errorMessage = error.message ? error.message : 'Unknown error';
@@ -116,7 +136,7 @@ export const SoftwareForm = {
 				CoreRESTClient.post(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/' + method,
 					{
-						software: this.software,
+						software: this.extendedSoftware,
 						softwarestatus: this.softwarestatus
 					}
 				).then(
@@ -137,7 +157,7 @@ export const SoftwareForm = {
 				).catch(
 					error => {
 						let errorMessage = error.message ? error.message : 'Unknown error';
-						this.errors.push('Error when saving software: ' + errorMessage); //TODO beautiful alert
+						this.errors.push('Error when saving software: ' + errorMessage); 
 					}
 				);
 			}
@@ -146,7 +166,37 @@ export const SoftwareForm = {
 			this.softwareId = null;
 			this.software = this.getDefaultSoftware();
 			this.softwarestatus = this.getDefaultSoftwarestatus();
+			this.parentSoftware = null
 			this.errors = [];
+		},
+		selectt(){
+			console.log("MUAHAHAH");
+		},
+		getSoftwareByKurzbz(event)
+		{
+			CoreRESTClient.get(
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
+					{
+						software_kurzbz: event.query
+					}
+				).then(
+					result => {
+						// display errors
+						if (CoreRESTClient.isError(result.data))
+						{
+							this.errors.push(result.data.retval);
+						}
+						else
+						{
+							this.parentSoftwareSuggestions = CoreRESTClient.getData(result.data);
+						}
+					}
+				).catch(
+					error => {
+						let errorMessage = error.message ? error.message : 'Unknown error';
+						this.errors.push('Error when getting software: ' + errorMessage);
+					}
+				);
 		}
 	},
 	template: `
@@ -184,6 +234,18 @@ export const SoftwareForm = {
 						{{bezeichnung}}
 					</option>
 				</select>
+				<label :for="software_parent_id" class="form-label">Übergeordnete Software</label>
+				<auto-complete
+					inputId="software_parent_id"
+					class="w-100 mb-3"
+					v-model="parentSoftware"
+					optionLabel="software_kurzbz"
+					dropdown
+					dropdown-current
+					forceSelection
+					:suggestions="parentSoftwareSuggestions"
+					@complete="getSoftwareByKurzbz">
+				</auto-complete>
 				<label :for="ansprechpartner_intern" class="form-label">Ansprechpartner (intern)</label>
 				<input type="text" class="form-control mb-3" :id="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
 					<label :for="ansprechpartner_extern" class="form-label">Ansprechpartner (extern)</label>

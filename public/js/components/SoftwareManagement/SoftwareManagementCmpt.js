@@ -63,6 +63,7 @@ export const SoftwareManagementCmpt = {
 					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
+					{title: 'Übergeordnete Software', field: 'software_kurzbz_parent', headerFilter: true},
 					{
 						title: 'Aktionen',
 						field: 'actions',
