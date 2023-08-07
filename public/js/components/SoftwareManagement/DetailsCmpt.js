@@ -8,13 +8,13 @@ export const DetailsCmpt = {
 	},
 	data() {
 		return {
-			show: false,
+			show: true,
 			softwareId: null,
 			softwareTitel: null,
 			orte: [],
 			orteTabulatorOptions: {
 				height: "100%",
-				layout: 'fitColumns',
+				layout: 'fitDataFill',
 				columns: [
 					{title: 'Raum', field: 'ort_kurzbz', headerFilter: true},
 					{title: 'Raum Bezeichnung', field: 'ort_bezeichnung', headerFilter: true, visible: false},
