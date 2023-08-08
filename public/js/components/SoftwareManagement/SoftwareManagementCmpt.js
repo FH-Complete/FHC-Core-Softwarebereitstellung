@@ -137,7 +137,7 @@ export const SoftwareManagementCmpt = {
 			if (e.target.nodeName != 'DIV') return;
 
 			// get Orte for a software
-			this.$refs.details.getOrte(row.getIndex(), row.getData().software_kurzbz);
+			this.$refs.details.getOrteBySoftware(row.getIndex(), row.getData().software_kurzbz);
 		});
 	},
 	methods: {
