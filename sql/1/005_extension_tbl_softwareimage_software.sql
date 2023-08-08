@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS extension.tbl_softwareimage_software (
 	software_id integer NOT NULL,
 	softwareimage_id integer NOT NULL,
-	insertamum timestamp,
+	insertamum timestamp DEFAULT NOW(),
 	insertvon varchar(32),
 	CONSTRAINT tbl_softwareimage_software_pk PRIMARY KEY (software_id, softwareimage_id)
 );
