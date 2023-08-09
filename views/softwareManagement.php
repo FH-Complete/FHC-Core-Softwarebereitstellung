@@ -20,7 +20,7 @@
 ?>
 
 	<div id="main">
-		<software-management-cmpt></software-management-cmpt>
+		<software-management></software-management>
 	</div>
 
 <?php $this->load->view('templates/FHC-Footer', $includesArray); ?>
