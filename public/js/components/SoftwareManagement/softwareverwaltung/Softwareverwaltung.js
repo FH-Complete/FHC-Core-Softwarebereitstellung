@@ -231,7 +231,6 @@ export const Softwareverwaltung = {
 		@nw-new-entry="updateFilterMenuEntries"
 		:id-field="'software_id'"
 		:parent-id-field="'software_id_parent'"
-		@nw-new-entry="newSideMenuEntryHandler"
 		@click:new="openModal">
 		<template v-slot:actions>
 			<actions
