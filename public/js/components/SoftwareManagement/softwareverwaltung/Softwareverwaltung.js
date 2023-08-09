@@ -1,5 +1,3 @@
-import {SoftwareManagementTabulatorOptions} from "./SoftwareManagementTabulatorSetup";
-import {SoftwareManagementTabulatorEventHandlers} from "./SoftwareManagementTabulatorSetup";
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareModal from "../../Modals/SoftwareModal";
@@ -18,8 +16,13 @@ export const Softwareverwaltung = {
 	],
 	data: function() {
 		return {
-			extraTabulatorOptions: { // tabulator options which can be modified after first render
+			softwareTabulatorOptions: { // tabulator options which can be modified after first render
 				dataTreeStartExpanded: true,
+				maxHeight: "100%",
+				minHeight: 50,
+				layout: 'fitColumns',
+				index: 'software_id',
+				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 				columns: [
 					{
 						field: 'software_kurzbz',
@@ -71,15 +74,9 @@ export const Softwareverwaltung = {
 					}
 				]
 			},
-			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers,
 			tabulatorAdditionalColumns: ['actions'],
 			softwarestatus: Array,
 			software_kurzbz: ''
-		}
-	},
-	computed: {
-		softwareManagementTabulatorOptions() { // default options + extra options
-			return {...SoftwareManagementTabulatorOptions, ...this.extraTabulatorOptions};
 		}
 	},
 	beforeCreate() {
@@ -128,7 +125,7 @@ export const Softwareverwaltung = {
 	},
 	methods: {
 		handleHierarchyToggle(expandHierarchy) {
-			this.extraTabulatorOptions.dataTreeStartExpanded = expandHierarchy;
+			this.softwareTabulatorOptions.dataTreeStartExpanded = expandHierarchy;
 			this.reloadTabulator();
 		},
 		openModal(event, softwareId) {
@@ -145,7 +142,7 @@ export const Softwareverwaltung = {
 				return res;
 			}, {});
 
-			let statusCol = this.softwareManagementTabulatorOptions.columns.find(col => col.field === 'softwarestatus_kurzbz');
+			let statusCol = this.softwareTabulatorOptions.columns.find(col => col.field === 'softwarestatus_kurzbz');
 			statusCol.editorParams = {values: result};
 			statusCol.headerFilterParams = {values: result};
 		},
@@ -207,10 +204,10 @@ export const Softwareverwaltung = {
 			);
 		},
 		reloadTabulator() {
-			for (let option in this.softwareManagementTabulatorOptions)
+			for (let option in this.softwareTabulatorOptions)
 			{
 				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
-					this.$refs.softwareTable.tabulator.options[option] = this.softwareManagementTabulatorOptions[option];
+					this.$refs.softwareTable.tabulator.options[option] = this.softwareTabulatorOptions[option];
 			}
 			this.$refs.softwareTable.reloadTable();
 		},
@@ -223,8 +220,7 @@ export const Softwareverwaltung = {
 	<core-filter-cmpt
 		ref="softwareTable"
 		filter-type="SoftwareManagement"
-		:tabulator-options="softwareManagementTabulatorOptions"
-		:tabulator-events="softwareManagementTabulatorEventHandlers"
+		:tabulator-options="softwareTabulatorOptions"
 		:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 		:new-btn-label="'Software'"
 		:new-btn-show="true"
@@ -235,7 +231,7 @@ export const Softwareverwaltung = {
 		<template v-slot:actions>
 			<actions
 				:softwarestatus="softwarestatus"
-				:expand-hierarchy="extraTabulatorOptions.dataTreeStartExpanded"
+				:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
 				 @set-status="changeStatus"
 				 @hierarchy-toggle="handleHierarchyToggle"/>
 			 </actions>
