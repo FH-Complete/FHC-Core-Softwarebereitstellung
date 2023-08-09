@@ -1,38 +1,21 @@
-/**
- * Copyright (C) 2023 fhcomplete.org
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+import {SoftwareManagementTabulatorOptions} from "./SoftwareManagementTabulatorSetup";
+import {SoftwareManagementTabulatorEventHandlers} from "./SoftwareManagementTabulatorSetup";
+import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
+import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
+import SoftwareModal from "../../Modals/SoftwareModal";
+import {Actions} from "./Actions";
+import {Raumzuordnung} from "../Raumzuordnung";
 
-import {SoftwareManagementTabulatorOptions} from './SoftwareManagementTabulatorSetup.js';
-import {SoftwareManagementTabulatorEventHandlers} from './SoftwareManagementTabulatorSetup.js';
-
-import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
-import {ActionsCmpt} from './ActionsCmpt.js';
-import {DetailsCmpt} from './DetailsCmpt.js';
-import SoftwareModal from '../Modals/SoftwareModal.js';
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-
-export const SoftwareManagementCmpt = {
+export const Softwareverwaltung = {
 	components: {
-		CoreNavigationCmpt,
 		CoreFilterCmpt,
-		ActionsCmpt,
-		DetailsCmpt,
-		SoftwareModal
+		SoftwareModal,
+		Actions,
+		Raumzuordnung
 	},
+	emits: [
+		'filterMenuUpdated',
+	],
 	data: function() {
 		return {
 			extraTabulatorOptions: { // tabulator options which can be modified after first render
@@ -87,8 +70,8 @@ export const SoftwareManagementCmpt = {
 				]
 			},
 			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers,
-			appSideMenuEntries: {},
-			softwarestatus: Array
+			softwarestatus: Array,
+			software_kurzbz: ''
 		}
 	},
 	computed: {
@@ -134,7 +117,10 @@ export const SoftwareManagementCmpt = {
 			if (e.target.nodeName != 'DIV') return;
 
 			// get Orte for a software
-			this.$refs.details.getOrte(row.getIndex(), row.getData().software_kurzbz);
+			this.$refs.raumzuordnung.getOrte(row.getIndex(), row.getData().software_kurzbz);
+
+			// get Softwarekurzbz
+			this.software_kurzbz = row.getData().software_kurzbz;
 		});
 	},
 	methods: {
@@ -225,48 +211,41 @@ export const SoftwareManagementCmpt = {
 			}
 			this.$refs.softwareTable.reloadTable();
 		},
-		newSideMenuEntryHandler: function(payload) {
-			this.appSideMenuEntries = payload;
+		updateFilterMenuEntries: function(payload) {
+			this.$emit('filterMenuUpdated', payload);
 		}
 	},
 	template: `
-		<!-- Navigation component -->
-		<core-navigation-cmpt v-bind:add-side-menu-entries="appSideMenuEntries"></core-navigation-cmpt>
-
-		<div id="content">
-			<div>
-				<!-- Filter component -->
-				<core-filter-cmpt
-					ref="softwareTable"
-					title="Software Verwaltung"
-					filter-type="SoftwareManagement"
-					:tabulator-options="softwareManagementTabulatorOptions"
-					:tabulator-events="softwareManagementTabulatorEventHandlers"
-					:new-btn-label="'Software'"
-					:new-btn-show="true"
-					@nw-new-entry="newSideMenuEntryHandler"
-					@click:new="openModal">
-					<template v-slot:actions>
-						<actions-cmpt
-							:softwarestatus="softwarestatus"
-							:expand-hierarchy="extraTabulatorOptions.dataTreeStartExpanded"
-							 @set-status="changeStatus"
-							 @hierarchy-toggle="handleHierarchyToggle"/>
-						 </actions-cmpt>
-					 </template>
-				</core-filter-cmpt>
-				<br>
-				<!-- Details component -->
-				<details-cmpt ref="details">
-				</details-cmpt>
-				<!-- Software modal component -->
-				<software-modal
-					class="fade"
-					ref="modalForSave"
-					dialog-class="modal-lg"
-					@software-saved="handleSoftwareSaved">
-				</software-modal>
-			</div>
-		</div>
-	`
+	<!-- Software Verwaltung Tabelle -->
+	<core-filter-cmpt
+		ref="softwareTable"
+		filter-type="SoftwareManagement"
+		:tabulator-options="softwareManagementTabulatorOptions"
+		:tabulator-events="softwareManagementTabulatorEventHandlers"
+		:new-btn-label="'Software'"
+		:new-btn-show="true"
+		@nw-new-entry="updateFilterMenuEntries"
+		@click:new="openModal">
+		<template v-slot:actions>
+			<actions
+				:softwarestatus="softwarestatus"
+				:expand-hierarchy="extraTabulatorOptions.dataTreeStartExpanded"
+				 @set-status="changeStatus"
+				 @hierarchy-toggle="handleHierarchyToggle"/>
+			 </actions>
+		 </template>
+	</core-filter-cmpt>
+	<!-- Software Details -->
+	<h2 class="h4 fhc-hr mt-5">Software Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>				
+	<div class="row">						
+		<raumzuordnung ref="raumzuordnung"></raumzuordnung>								
+	</div>	
+	<!-- Software modal component -->
+	<software-modal
+		class="fade"
+		ref="modalForSave"
+		dialog-class="modal-lg"
+		@software-saved="handleSoftwareSaved">
+	</software-modal>	
+`
 };
