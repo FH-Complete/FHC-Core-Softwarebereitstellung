@@ -1,4 +1,4 @@
-export const ActionsCmpt = {
+export const Actions = {
 	props: {
 		softwarestatus: Array,
 		expandHierarchy: Boolean
