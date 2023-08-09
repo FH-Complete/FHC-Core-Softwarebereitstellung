@@ -22,6 +22,7 @@ export const Softwareverwaltung = {
 				dataTreeStartExpanded: true,
 				columns: [
 					{
+						field: 'software_kurzbz',
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
 						hozAlign: 'left',
@@ -45,6 +46,7 @@ export const Softwareverwaltung = {
 					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
+					{title: 'Übergeordnete Software', field: 'software_kurzbz_parent', headerFilter: true},
 					{
 						title: 'Aktionen',
 						field: 'actions',
@@ -70,6 +72,7 @@ export const Softwareverwaltung = {
 				]
 			},
 			softwareManagementTabulatorEventHandlers: SoftwareManagementTabulatorEventHandlers,
+			tabulatorAdditionalColumns: ['actions'],
 			softwarestatus: Array,
 			software_kurzbz: ''
 		}
@@ -117,7 +120,7 @@ export const Softwareverwaltung = {
 			if (e.target.nodeName != 'DIV') return;
 
 			// get Orte for a software
-			this.$refs.raumzuordnung.getOrte(row.getIndex(), row.getData().software_kurzbz);
+			this.$refs.raumzuordnung.getOrteBySoftware(row.getIndex(), row.getData().software_kurzbz);
 
 			// get Softwarekurzbz
 			this.software_kurzbz = row.getData().software_kurzbz;
@@ -222,9 +225,13 @@ export const Softwareverwaltung = {
 		filter-type="SoftwareManagement"
 		:tabulator-options="softwareManagementTabulatorOptions"
 		:tabulator-events="softwareManagementTabulatorEventHandlers"
+		:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 		:new-btn-label="'Software'"
 		:new-btn-show="true"
 		@nw-new-entry="updateFilterMenuEntries"
+		:id-field="'software_id'"
+		:parent-id-field="'software_id_parent'"
+		@nw-new-entry="newSideMenuEntryHandler"
 		@click:new="openModal">
 		<template v-slot:actions>
 			<actions

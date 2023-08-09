@@ -17,8 +17,9 @@ class Software extends Auth_Controller
 		parent::__construct(
 			array(
 				'index' => 'basis/mitarbeiter:r',
-				'getDataPrefill' => 'basis/mitarbeiter:r',
+				'getSoftwareMetadata' => 'basis/mitarbeiter:r',
 				'getSoftware' => 'basis/mitarbeiter:r',
+				'getSoftwareByKurzbz' => 'basis/mitarbeiter:r',
 				'getStatus' => 'basis/mitarbeiter:r',
 				'getLastSoftwarestatus' => 'basis/mitarbeiter:r',
 				'changeSoftwarestatus' => 'basis/mitarbeiter:rw',
@@ -33,6 +34,7 @@ class Software extends Auth_Controller
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwaretyp_model', 'SoftwaretypModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
+
 
 		// Loads phrases system
 		//~ $this->loadPhrases(
@@ -54,12 +56,12 @@ class Software extends Auth_Controller
 	 * @param
 	 * @return object success or error
 	 */
-	public function getDataPrefill()
+	public function getSoftwareMetadata()
 	{
 		$language_index = $this->_getLanguageIndex();
 		$softwaretypRes = $this->SoftwaretypModel->getBezeichnungByLanguageIndex($language_index);
 
-		if (isError($softwaretypRes)) $this->terminateWithJsonError('Fehler beim Holen der Softwaretypen');
+		if (isError($softwaretypRes)) $this->terminateWithJsonError('Fehler beim Holen der Softwaretypen: '.getError($result));
 
 		$softwaretypes = array();
 
@@ -71,54 +73,89 @@ class Software extends Auth_Controller
 			}
 		}
 
-        // Get all Softwarestatus
-        $softwarestatus_arr = array();
+		// Get all Softwarestatus
+		$softwarestatus_arr = array();
 
-        $result = $this->SoftwarestatusModel->loadByLanguage($language_index);
+		$result = $this->SoftwarestatusModel->loadByLanguage($language_index);
 
-        if (isError($result))
-        {
-            $this->terminateWithJsonError('Fehler beim Holen der Softwarestatus');
-        }
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Softwarestatus: '.getError($result));
+		}
 
-        if (hasData($result))
-        {
-            foreach (getData($result) as $softwarestatus)
-            {
-                $softwarestatus_arr[$softwarestatus->softwarestatus_kurzbz] = $softwarestatus->bezeichnung;
-            }
-        }
+		if (hasData($result))
+		{
+			foreach (getData($result) as $softwarestatus)
+			{
+				$softwarestatus_arr[$softwarestatus->softwarestatus_kurzbz] = $softwarestatus->bezeichnung;
+			}
+		}
 
-		$dataPrefill = array(
+		$softwareMetadata = array(
 			'softwaretyp' => $softwaretypes,
-            'softwarestatus' => $softwarestatus_arr
+			'softwarestatus' => $softwarestatus_arr
 		);
 
-		$this->outputJsonSuccess($dataPrefill);
+		$this->outputJsonSuccess($softwareMetadata);
 	}
 
-    /**
-     * Get Software
-     *
-     * @param
-     * @return object success or error
-     */
-    public function getSoftware($software_id)
-    {
-        $result = $this->SoftwareModel->load($software_id);
+	/**
+	 * Get Software
+	 */
+	public function getSoftware()
+	{
+		$software_id = $this->input->get('software_id');
 
-        if (isError($result))
-        {
-            $this->terminateWithJsonError('Fehler beim Holen der Software');
-        }
-        $this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
-    }
+		$extendedSoftware = array();
+
+		$result = $this->SoftwareModel->load($software_id);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Software');
+		}
+
+		if (hasData($result))
+		{
+			$software = getData($result)[0];
+			$extendedSoftware['software'] = $software;
+
+			if (isset($software->software_id_parent))
+			{
+				// get parent
+				$this->SoftwareModel->addSelect('software_kurzbz');
+				$parentResult = $this->SoftwareModel->load($software->software_id_parent);
+
+				if (isError($result))
+				{
+					$this->terminateWithJsonError('Fehler beim Holen der parent Software');
+				}
+				if (hasData($parentResult)) $extendedSoftware['software_kurzbz_parent'] = getData($parentResult)[0]->software_kurzbz;
+			}
+		}
+
+		$this->outputJsonSuccess($extendedSoftware);
+	}
 
 	/**
-	 * Get Softwarestatus
-	 *
-	 * @param
-	 * @return object success or error
+	 * Get Software by software_kurzbz.
+	 */
+	public function getSoftwareByKurzbz()
+	{
+		$software_kurzbz = $this->input->get('software_kurzbz');
+		$this->SoftwareModel->addSelect("software_id, software_kurzbz");
+		$result = $this->SoftwareModel->loadWhere("software_kurzbz ILIKE '%".$this->SoftwareModel->escapeLike($software_kurzbz)."%'");
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Software: '.getError($result));
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/**
+	 * Get Softwarestatus.
 	 */
 	public function getStatus()
 	{
@@ -127,7 +164,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Softwarestatus');
+			$this->terminateWithJsonError('Fehler beim Holen der Softwarestatus: '.getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -144,7 +181,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen des Softwarestatus');
+			$this->terminateWithJsonError('Fehler beim Holen des Softwarestatus: '.getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
@@ -164,7 +201,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Ändern des Softwarestatus');
+			$this->terminateWithJsonError('Fehler beim Ändern des Softwarestatus: '.getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -175,38 +212,51 @@ class Software extends Auth_Controller
 	 */
 	public function createSoftware()
 	{
-		$this->load->library('form_validation');
-
 		$data = json_decode($this->input->raw_input_stream, true);
-        $software = $data['software'];
-        $softwarestatus = $data['softwarestatus'];
+		$software = $data['software'];
+		$softwarestatus = $data['softwarestatus'];
+		$softwareImageIds = $data['softwareImageIds'];
 
 		// validate data
-		$this->form_validation->set_data($software);
+		$validationRes = $this->_validateSoftware($software);
 
-		$this->form_validation->set_rules('software_kurzbz', 'Software Kurzbezeichnung', 'required', array('required' => '%s fehlt'));
-		$this->form_validation->set_rules('softwaretyp_kurzbz', 'Softwaretyp', 'required', array('required' => '%s fehlt'));
-
-		if ($this->form_validation->run() == false)
-			return $this->outputJsonError($this->form_validation->error_array());
-
-		if (isset($software['version']))
-		{
-			// check if there is already a software with the kurzbz and version
-			$this->SoftwareModel->addSelect('1');
-			$softwareRes = $this->SoftwareModel->loadWhere(array(
-				'software_kurzbz' => $software['software_kurzbz'],
-				'version' => $software['version'])
-			);
-
-			if (isError($softwareRes) || hasData($softwareRes))
-				return $this->outputJsonError(array('Software Kurzbezeichnung mit dieser Version existiert bereits'));
-		}
+		// return error if invalid
+		if (isError($validationRes)) return $this->outputJsonError(getError($validationRes));
 
 		$software['insertvon'] = $this->_uid;
 
 		// Insert Software and Softwarestatus
-        $result = $this->SoftwareModel->insertSoftwarePlus($software, $softwarestatus['softwarestatus_kurzbz']);
+		$result = $this->SoftwareModel->insertSoftwarePlus(
+			$software,
+			$softwarestatus['softwarestatus_kurzbz'],
+			$softwareImageIds
+		);
+
+		return $this->outputJson($result);
+	}
+
+	/**
+	 * Updates a software after performing necessary checks.
+	 */
+	public function updateSoftware()
+	{
+		$data = json_decode($this->input->raw_input_stream, true);
+		$software = $data['software'];
+		$softwarestatus = $data['softwarestatus'];
+		$softwareImageIds = $data['softwareImageIds'];
+
+		// validate data
+		$validationRes = $this->_validateSoftware($software);
+
+		// return error if invalid
+		if (isError($validationRes)) return $this->outputJsonError(getError($validationRes));
+
+		// Update Software and inserts newer Softwarestatus
+		$result = $this->SoftwareModel->updateSoftwarePlus(
+			$software,
+			$softwarestatus['softwarestatus_kurzbz'],
+			$softwareImageIds
+		);
 
 		return $this->outputJson($result);
 	}
@@ -233,32 +283,58 @@ class Software extends Auth_Controller
 		if ($this->form_validation->run() == false)
 			return $this->outputJsonError($this->form_validation->error_array());
 
-		// delete software itself
+		// delete software
 		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
-	}
-
-	/**
-	 * Updates a software after performing necessary checks.
-	 */
-	public function updateSoftware()
-	{
-        $data = $this->getPostJson();
-        $software = $data->software;
-        $softwarestatus = $data->softwarestatus;
-
-		// Update Software and inserts newer Softwarestatus
-        $result = $this->SoftwareModel->updateSoftwarePlus(
-            $software,
-            $softwarestatus->softwarestatus_kurzbz
-        );
-
-        if (isError($result)) $this->terminateWithJsonError('Fehler beim Ändern der Software');
-
-        $this->outputJsonSuccess('Success');
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Private methods
+
+	/**
+	 * Performs software validation checks.
+	 * @return object success if software data valid, error otherwise
+	 */
+	private function _validateSoftware($software)
+	{
+		// load ci validation lib
+		$this->load->library('form_validation');
+
+		// any errors will be stored here
+		$errorMessages = array();
+
+		// validate data with ci lib
+		$this->form_validation->set_data($software);
+
+		$this->form_validation->set_rules('software_kurzbz', 'Software Kurzbezeichnung', 'required', array('required' => '%s fehlt'));
+		$this->form_validation->set_rules('softwaretyp_kurzbz', 'Softwaretyp', 'required', array('required' => '%s fehlt'));
+
+		if ($this->form_validation->run() == false) $errorMessages = array_merge($errorMessages, $this->form_validation->error_array());
+
+		if (isset($software['version']))
+		{
+			$params = array(
+				'software_kurzbz' => $software['software_kurzbz'],
+				'version' => $software['version']
+			);
+
+			// if update, software id is present - check only entries other than the one updating
+			if (isset($software['software_id'])) $params['software_id !='] = $software['software_id'];
+
+			// check if there is already a software with the kurzbz and version
+			$this->SoftwareModel->addSelect('1');
+			$softwareRes = $this->SoftwareModel->loadWhere(
+				$params
+			);
+
+			if (isError($softwareRes) || hasData($softwareRes)) $errorMessages[] = 'Software Kurzbezeichnung mit dieser Version existiert bereits';
+		}
+
+		// return error array if there were errors
+		if (!isEmptyArray($errorMessages)) return error($errorMessages);
+
+		// return success if valid
+		return success($errorMessages);
+	}
 
 	/**
 	 * Retrieve the UID of the logged user and checks if it is valid

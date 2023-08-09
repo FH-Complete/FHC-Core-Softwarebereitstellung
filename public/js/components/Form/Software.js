@@ -1,10 +1,9 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import {CoreFetchCmpt} from '../../../../../js/components/Fetch.js';
 //import Phrasen from '../../../mixins/Phrasen.js';
 
 export const SoftwareForm = {
 	components: {
-		CoreFetchCmpt
+		AutoComplete: primevue.autocomplete
 	},
 	emits: [
 		'softwareFormSaved'
@@ -14,28 +13,46 @@ export const SoftwareForm = {
 	//~ ],
 	data() {
 		return {
-			dataPrefill: {},
+			softwareMetadata: {},
 			softwareId: null,
 			software: {},
-			softwarestatus: [],
+			softwarestatus: {},
+			parentSoftwareSuggestions: [],
+			parentSoftware: null,
+			softwareImageSuggestions: [],
+			softwareImages: [],
 			errors: []
+		}
+	},
+	computed: {
+		extendedSoftware() {
+			let parent_software_id = this.parentSoftware ? this.parentSoftware.software_id : null;
+			return {...this.software, ...{software_id_parent: parent_software_id}}
 		}
 	},
 	beforeCreate() {
 		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getDataPrefill',
+			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareMetadata',
 			null,
 			{
 				timeout: 2000
 			}
 		).then(
 			result => {
-				this.dataPrefill = CoreRESTClient.getData(result.data);
+				// display errors
+				if (CoreRESTClient.isError(result.data))
+				{
+					alert('Error when getting software metadata: ' + result.data.retval); //TODO beautiful alert
+				}
+				else
+				{
+					this.softwareMetadata = CoreRESTClient.getData(result.data);
+				}
 			}
 		).catch(
 			error => {
 				let errorMessage = error.message ? error.message : 'Unknown error';
-				alert('Error when getting data prefill: ' + errorMessage); //TODO beautiful alert
+				alert('Error when getting software metadata: ' + errorMessage); //TODO beautiful alert
 			}
 		);
 	},
@@ -57,16 +74,33 @@ export const SoftwareForm = {
 			}
 		},
 		// Prefill form with software values
-		prefillSoftware(software_id){
+		prefillSoftware(software_id) {
 			this.softwareId = software_id;
 
 			if (Number.isInteger(this.softwareId))
 			{
 				// Get software data
 				CoreRESTClient.get(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware/' + software_id
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware',
+					{
+						software_id: software_id
+					}
 				).then(
-					result => {this.software = CoreRESTClient.getData(result.data);}
+					result => {
+						if (CoreRESTClient.isError(result.data))
+						{
+							this.errors.push(result.data.retval);
+						}
+						else
+						{
+							if (CoreRESTClient.hasData(result.data)) {
+								let softwareData = CoreRESTClient.getData(result.data);
+								this.software = softwareData.software;
+								if (softwareData.hasOwnProperty('software_kurzbz_parent'))
+									this.parentSoftware = {software_id: softwareData.software_id_parent, software_kurzbz: softwareData.software_kurzbz_parent};
+							}
+						}
+					}
 				).catch(
 					error => {
 						let errorMessage = error.message ? error.message : 'Unknown error';
@@ -79,6 +113,45 @@ export const SoftwareForm = {
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLastSoftwarestatus/' + software_id
 				).then(
 					result => {this.softwarestatus = CoreRESTClient.getData(result.data);}
+				).catch(
+					error => {
+						let errorMessage = error.message ? error.message : 'Unknown error';
+						alert('Error when getting softwarestatus: ' + errorMessage);
+					}
+				);
+
+				// Get images and orte of software
+				CoreRESTClient.get(
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesBySoftware',
+					{
+						software_id: software_id
+					}
+				).then(
+					result => {
+						if (CoreRESTClient.isError(result.data))
+						{
+							this.errors.push(result.data.retval);
+						}
+						else if(CoreRESTClient.hasData(result.data))
+						{
+							this.softwareImages = CoreRESTClient.getData(result.data);
+
+							// display images
+							//~ for (let imageOrt of imageOrte)
+							//~ {
+								//~ let found = false;
+								//~ for (let softwareImage of this.softwareImages) {
+									//~ if (imageOrt.softwareimage_id == softwareImage.softwareimage_id) {
+										//~ found = true;
+										//~ break;
+									//~ }
+								//~ }
+
+								//~ if (!found)
+									//~ this.softwareImages.push({softwareimage_id: imageOrt.softwareimage_id, image_bezeichnung: imageOrt.image});
+							//}
+						}
+					}
 				).catch(
 					error => {
 						let errorMessage = error.message ? error.message : 'Unknown error';
@@ -116,8 +189,9 @@ export const SoftwareForm = {
 				CoreRESTClient.post(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/' + method,
 					{
-						software: this.software,
-						softwarestatus: this.softwarestatus
+						software: this.extendedSoftware,
+						softwarestatus: this.softwarestatus,
+						softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
 					}
 				).then(
 					result => {
@@ -125,20 +199,19 @@ export const SoftwareForm = {
 						if (CoreRESTClient.isError(result.data))
 						{
 							let errs = result.data.retval; // TODO fix get Error in rest client
-							for (let idx in errs) this.errors.push(errs[idx]);
+							for (let err of errs) this.errors.push(err);
 						}
 						else
 						{
-							// everything ok - clear errors
-							this.errors = [];
-							// and emit event
+							// everything ok
+							// emit event
 							this.$emit("softwareFormSaved");
 						}
 					}
 				).catch(
 					error => {
 						let errorMessage = error.message ? error.message : 'Unknown error';
-						this.errors.push('Error when saving software: ' + errorMessage); //TODO beautiful alert
+						this.errors.push('Error when saving software: ' + errorMessage);
 					}
 				);
 			}
@@ -147,14 +220,67 @@ export const SoftwareForm = {
 			this.softwareId = null;
 			this.software = this.getDefaultSoftware();
 			this.softwarestatus = this.getDefaultSoftwarestatus();
+			this.parentSoftware = null;
+			this.softwareImages = [];
 			this.errors = [];
+		},
+		getSoftwareByKurzbz(event)
+		{
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
+				{
+					software_kurzbz: event.query
+				}
+			).then(
+				result => {
+					// display errors
+					if (CoreRESTClient.isError(result.data))
+					{
+						this.errors.push(result.data.retval);
+					}
+					else
+					{
+						this.parentSoftwareSuggestions = CoreRESTClient.getData(result.data);
+					}
+				}
+			).catch(
+				error => {
+					let errorMessage = error.message ? error.message : 'Unknown error';
+					this.errors.push('Error when getting software: ' + errorMessage);
+				}
+			);
+		},
+		getImagesByBezeichnung(event)
+		{
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesByBezeichnung',
+				{
+					image_bezeichnung: event.query
+				}
+			).then(
+				result => {
+					// display errors
+					if (CoreRESTClient.isError(result.data))
+					{
+						this.errors.push(result.data.retval);
+					}
+					else
+					{
+						this.softwareImageSuggestions = CoreRESTClient.getData(result.data);
+					}
+				}
+			).catch(
+				error => {
+					let errorMessage = error.message ? error.message : 'Unknown error';
+					this.errors.push('Error when getting images: ' + errorMessage);
+				}
+			);
 		}
 	},
 	template: `
 	<div>
 		<form ref="softwareForm" class="row">
 			<div class="col-sm-9 mb-6">
-				<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
 				<label :for="software_kurzbz" class="form-label">Software Kurzbz *</label>
 				<input type="text" class="form-control mb-3" :id="software_kurzbz"  v-model="software.software_kurzbz" required>
 				<label :for="softwaretyp" class="form-label">Softwaretyp *</label>
@@ -163,31 +289,65 @@ export const SoftwareForm = {
 					required
 					:id="sofwaretyp_kurzbz"
 					v-model="software.softwaretyp_kurzbz">
-					<option v-for="(bezeichnung, softwaretyp_kurzbz) in dataPrefill.softwaretyp" :key="index" :value="softwaretyp_kurzbz">
+					<option v-for="(bezeichnung, softwaretyp_kurzbz) in softwareMetadata.softwaretyp" :key="index" :value="softwaretyp_kurzbz">
 						{{bezeichnung}}
 					</option>
 				</select>
-				<label :for="version" class="form-label">Version</label>
-				<input type="text" class="form-control mb-3" :id="version" v-model="software.version">
-				<label :for="os" class="form-label">Betriebssystem</label>
-				<input type="text" class="form-control mb-3" :id="os" v-model="software.os">
-				<div class="form-check mb-3">
-				  <input class="form-check-input" type="checkbox" :id="aktiv" v-model="software.aktiv" :true-value="true" :false-value="false" >
-				  <label class="form-check-label" for="flexCheckChecked">Aktiv</label>
-				</div>
 				<label :for="softwarestatus_kurzbz" class="form-label">Softwarestatus *</label>
 				<select
 					class="form-select mb-3"
 					required
 					:id="sofwarestatus_kurzbz"
 					v-model="softwarestatus.softwarestatus_kurzbz">
-					<option v-for="(bezeichnung, softwarestatus_kurzbz) in dataPrefill.softwarestatus" :key="index" :value="softwarestatus_kurzbz">
+					<option v-for="(bezeichnung, softwarestatus_kurzbz) in softwareMetadata.softwarestatus" :key="index" :value="softwarestatus_kurzbz">
 						{{bezeichnung}}
 					</option>
 				</select>
+				<label :for="version" class="form-label">Version</label>
+				<input type="text" class="form-control mb-3" :id="version" v-model="software.version">
+				<label :for="hersteller" class="form-label">Hersteller</label>
+				<input type="text" class="form-control mb-3" :id="hersteller" v-model="software.hersteller">
+				<label :for="os" class="form-label">Betriebssystem</label>
+				<input type="text" class="form-control mb-3" :id="os" v-model="software.os">
+				<label :for="beschreibung" class="form-label">Beschreibung</label>
+				<textarea
+					class="form-control mb-3"
+					v-model="software.beschreibung"
+					:id="beschreibung"
+					rows="5">
+				</textarea>
+				<div class="form-check mb-3">
+				  <input class="form-check-input" type="checkbox" :id="aktiv" v-model="software.aktiv" :true-value="true" :false-value="false" >
+				  <label class="form-check-label" for="flexCheckChecked">Aktiv</label>
+				</div>
+				<label :for="software_id_parent" class="form-label">Übergeordnete Software</label>
+				<auto-complete
+					inputId="software_id_parent"
+					class="w-100 mb-3"
+					v-model="parentSoftware"
+					optionLabel="software_kurzbz"
+					dropdown
+					dropdown-current
+					forceSelection
+					:suggestions="parentSoftwareSuggestions"
+					@complete="getSoftwareByKurzbz">
+				</auto-complete>
+				<label :for="software_image" class="form-label">Image</label>
+				<auto-complete
+					inputId="software_image"
+					class="w-100 mb-3"
+					v-model="softwareImages"
+					optionLabel="image_bezeichnung"
+					dropdown
+					dropdown-current
+					forceSelection
+					multiple
+					:suggestions="softwareImageSuggestions"
+					@complete="getImagesByBezeichnung">
+				</auto-complete>
 				<label :for="ansprechpartner_intern" class="form-label">Ansprechpartner (intern)</label>
 				<input type="text" class="form-control mb-3" :id="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
-					<label :for="ansprechpartner_extern" class="form-label">Ansprechpartner (extern)</label>
+				<label :for="ansprechpartner_extern" class="form-label">Ansprechpartner (extern)</label>
 				<input type="text" class="form-control mb-3" :id="ansprechpartner_extern" v-model="software.ansprechpartner_extern">
 				<label :for="anmerkung_extern" class="form-label">Anmerkung</label>
 				<textarea
@@ -199,5 +359,6 @@ export const SoftwareForm = {
 			</div>
 		</form>
 	</div>
+	<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
 	`
 }

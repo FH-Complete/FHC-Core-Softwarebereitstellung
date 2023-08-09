@@ -10,16 +10,17 @@ class SoftwareimageOrt_model extends DB_Model
 		parent::__construct();
 		$this->dbTable = 'extension.tbl_softwareimage_ort';
 		$this->pk = array('softwareimage_id', 'ort_kurzbz');
+		$this->hasSequence = false;
 	}
 
 	/**
 	 * Get Orte of a Software
 	 */
-	public function getOrtBySoftware($software_id)
+	public function getOrteBySoftware($software_id)
 	{
 		return $this->execQuery('
 			SELECT
-				swimage.bezeichnung AS image,
+				swimage.softwareimage_id, swimage.bezeichnung AS image,
 				swimage.verfuegbarkeit_start AS image_verfuegbarkeit_start, swimage.verfuegbarkeit_ende AS image_verfuegbarkeit_ende,
 				swimage_ort.verfuegbarkeit_start AS ort_verfuegbarkeit_start, swimage_ort.verfuegbarkeit_ende AS ort_verfuegbarkeit_ende,
 				ort.ort_kurzbz, ort.bezeichnung AS ort_bezeichnung

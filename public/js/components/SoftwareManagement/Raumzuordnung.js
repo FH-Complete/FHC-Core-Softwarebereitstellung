@@ -28,9 +28,9 @@ export const Raumzuordnung = {
 		}
 	},
 	methods: {
-		getOrte(software_id, software_titel) {
+		getOrteBySoftware(software_id, software_titel) {
 			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrte',
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteBySoftware',
 				{
 					software_id: software_id
 				},
