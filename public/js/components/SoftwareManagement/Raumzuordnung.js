@@ -1,7 +1,7 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 
-export const DetailsCmpt = {
+export const Raumzuordnung = {
 	components: {
 		CoreRESTClient,
 		CoreFilterCmpt
@@ -56,10 +56,9 @@ export const DetailsCmpt = {
 		}
 	},
 	template: `
+	<div class="col-md-6">
 		<div class="card" v-show="show">
-			<div class="card-header">
-				Zugeordnete Räume {{softwareTitel}}
-			</div>
+			<h3 class="h5 card-header">Raumzuordnung über Image</h3>
 			<div class="card-body">
 				<core-filter-cmpt
 					ref="raumTable"
@@ -69,5 +68,6 @@ export const DetailsCmpt = {
 				</core-filter-cmpt>
 			</div>
 		</div>
+	</div>	
 	`
 };
