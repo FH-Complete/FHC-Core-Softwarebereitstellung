@@ -1,10 +1,9 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import SoftwareModal from "../../Modals/SoftwareModal";
-
+import SoftwareimageModal from "../../Modals/SoftwareimageModal";
 export const Imageverwaltung = {
 	components: {
 		CoreFilterCmpt,
-		SoftwareModal
+		SoftwareimageModal
 	},
 	emits: [
 		'filterMenuUpdated',
@@ -56,9 +55,8 @@ export const Imageverwaltung = {
 		}
 	},
 	methods: {
-		openModal(event) {
-			console.log('* openModal');
-			console.log(event);
+		openModal(event, softwareimageId) {
+			this.$refs.softwareimageModal.open(softwareimageId);
 		},
 		editSoftwareimage(event, softwareimage_id){
 			console.log('* editSoftwareimage');
@@ -94,5 +92,13 @@ export const Imageverwaltung = {
 		@nw-new-entry="updateFilterMenuEntries"
 		@click:new="openModal">
 	</core-filter-cmpt>
+	
+	<!-- Softwareimage modal component -->
+	<softwareimage-modal
+		class="fade"
+		ref="softwareimageModal"
+		dialog-class="modal-lg"
+		@softwareimage-saved="saveSoftwareimage">
+	</softwareimage-modal>	
 	`
 };
