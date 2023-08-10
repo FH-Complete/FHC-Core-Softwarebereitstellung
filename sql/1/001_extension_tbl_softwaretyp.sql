@@ -10,7 +10,7 @@ GRANT SELECT ON TABLE extension.tbl_softwaretyp TO web;
 INSERT INTO extension.tbl_softwaretyp(softwaretyp_kurzbz, bezeichnung) VALUES
 ('paket','{Paket,Paket}'),
 ('software','{Software,Software}'),
-('modul','{Modul,Module}'),
+('modul','{Modul/Plugin,Module/Plugin}'),
 ('config','{Config,Config}')
 ON CONFLICT (softwaretyp_kurzbz) DO NOTHING;
 
