@@ -37,6 +37,8 @@ class Image extends Auth_Controller
 		$software_id = $this->input->get('software_id');
 		$this->SoftwareimageModel->addSelect('softwareimage_id, bezeichnung AS image_bezeichnung');
 		$this->SoftwareimageModel->addJoin('extension.tbl_softwareimage_software sw_image', 'softwareimage_id');
+		$this->SoftwareimageModel->addOrder('image_bezeichnung');
+		$this->SoftwareimageModel->addOrder('softwareimage_id', 'DESC');
 		$result = $this->SoftwareimageModel->loadWhere(array('software_id' => $software_id));
 
 		if (isError($result))
@@ -53,7 +55,10 @@ class Image extends Auth_Controller
 	public function getImagesByBezeichnung()
 	{
 		$image_bezeichnung = $this->input->get('image_bezeichnung');
+
 		$this->SoftwareimageModel->addSelect('softwareimage_id, bezeichnung AS image_bezeichnung');
+		$this->SoftwareimageModel->addOrder('image_bezeichnung');
+		$this->SoftwareimageModel->addOrder('softwareimage_id', 'DESC');
 		$result = $this->SoftwareimageModel->loadWhere("bezeichnung ILIKE '%".$this->SoftwareimageModel->escapeLike($image_bezeichnung)."%'");
 
 		if (isError($result))

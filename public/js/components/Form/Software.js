@@ -17,10 +17,10 @@ export const SoftwareForm = {
 			softwareId: null,
 			software: {},
 			softwarestatus: {},
-			parentSoftwareSuggestions: [],
-			parentSoftware: null,
-			softwareImageSuggestions: [],
-			softwareImages: [],
+			parentSoftwareSuggestions: [], // autocomplete suggestions
+			parentSoftware: null, // selected autocomplete values
+			softwareImageSuggestions: [], // autocomplete suggestions
+			softwareImages: [], // selected autocomplete values
 			errors: []
 		}
 	},
@@ -64,8 +64,7 @@ export const SoftwareForm = {
 	methods: {
 		getDefaultSoftware() {
 			return {
-				softwaretyp_kurzbz: 'software',
-				aktiv: true
+				softwaretyp_kurzbz: 'software'
 			}
 		},
 		getDefaultSoftwarestatus() {
@@ -100,12 +99,13 @@ export const SoftwareForm = {
 								{
 									// set software_kurzbz_version field for display in autocomplete
 									let parent = softwareData.software_parent;
+									console.log("prefill");
+									console.log(parent);
 									parent.software_kurzbz_version =
 										parent.version != null
-										? parent.software_kurzbz+' (version: '+parent.version+')'
+										? parent.software_kurzbz + ' (version: '+parent.version+')'
 										: parent.software_kurzbz;
 									this.parentSoftware = parent;
-									
 								}
 							}
 						}
@@ -119,7 +119,13 @@ export const SoftwareForm = {
 
 				// Get last softwarestatus data
 				CoreRESTClient.get(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLastSoftwarestatus/' + software_id
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLastSoftwarestatus',
+					{
+						software_id: software_id
+					},
+					{
+						timeout: 2000
+					}
 				).then(
 					result => {this.softwarestatus = CoreRESTClient.getData(result.data);}
 				).catch(
@@ -129,11 +135,14 @@ export const SoftwareForm = {
 					}
 				);
 
-				// Get images and orte of software
+				// Get images of software
 				CoreRESTClient.get(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesBySoftware',
 					{
 						software_id: software_id
+					},
+					{
+						timeout: 2000
 					}
 				).then(
 					result => {
@@ -149,7 +158,7 @@ export const SoftwareForm = {
 				).catch(
 					error => {
 						let errorMessage = error.message ? error.message : 'Unknown error';
-						alert('Error when getting softwarestatus: ' + errorMessage);
+						alert('Error when getting software images: ' + errorMessage);
 					}
 				);
 			}
@@ -177,6 +186,8 @@ export const SoftwareForm = {
 				// create the software if no Id present
 				method = 'createSoftware'
 			}
+
+			console.log(this.parentSoftware);
 
 			if (method)
 			{
@@ -224,6 +235,9 @@ export const SoftwareForm = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
 				{
 					software_kurzbz: event.query
+				},
+				{
+					timeout: 2000
 				}
 			).then(
 				result => {

@@ -1,6 +1,7 @@
 <?php
 class Software_model extends DB_Model
 {
+	private $_uid;
 
 	/**
 	 * Constructor
@@ -107,7 +108,6 @@ class Software_model extends DB_Model
 				$assignedSoftwareImageIds[] = $sw_image->softwareimage_id;
 			}
 
-
 			$softwareImageIdsToAdd = array_diff($softwareImageIds, $assignedSoftwareImageIds);
 			$softwareImageIdsToDelete = array_diff($assignedSoftwareImageIds, $softwareImageIds);
 
@@ -139,6 +139,29 @@ class Software_model extends DB_Model
 
 		return success();
 	}
+
+	/**
+	 * Gets all parents of a software.
+	 * @param $software_id
+	 * @return object
+	 */
+	public function getParents($software_id)
+	{
+		$query=
+		"WITH RECURSIVE software(software_id, software_id_parent) as
+		(
+			SELECT software_id, software_id_parent FROM extension.tbl_software
+			WHERE software_id=?
+			UNION ALL
+			SELECT s.software_id, s.software_id_parent FROM extension.tbl_software s, software
+			WHERE s.software_id=software.software_id_parent
+		)
+		SELECT software_id
+		FROM software";
+
+		return $this->execQuery($query, array($software_id));
+	}
+
 
 	/**
 	 * Gets dependencies of a software (needed e.g. for checks if a software can be deleted).

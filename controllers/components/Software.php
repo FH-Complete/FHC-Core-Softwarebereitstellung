@@ -29,12 +29,14 @@ class Software extends Auth_Controller
 			)
 		);
 
+		$this->_setAuthUID(); // sets property uid
+
+		// load models
 		$this->load->model('system/Sprache_model', 'SpracheModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwaretyp_model', 'SoftwaretypModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
-
 
 		// Loads phrases system
 		//~ $this->loadPhrases(
@@ -44,8 +46,6 @@ class Software extends Auth_Controller
 				//~ 'filter'
 			//~ )
 		//~ );
-
-		$this->_setAuthUID(); // sets property uid
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ class Software extends Auth_Controller
 			if (isset($software->software_id_parent))
 			{
 				// get parent
-				$this->SoftwareModel->addSelect('software_kurzbz, version');
+				$this->SoftwareModel->addSelect('software_id, software_kurzbz, version');
 				$parentResult = $this->SoftwareModel->load($software->software_id_parent);
 
 				if (isError($result))
@@ -143,7 +143,11 @@ class Software extends Auth_Controller
 	public function getSoftwareByKurzbz()
 	{
 		$software_kurzbz = $this->input->get('software_kurzbz');
-		$this->SoftwareModel->addSelect("software_id, software_kurzbz, version");
+
+		$this->SoftwareModel->addSelect('software_id, software_kurzbz, version');
+		$this->SoftwareModel->addOrder('software_kurzbz');
+		$this->SoftwareModel->addOrder('version', 'DESC');
+		$this->SoftwareModel->addOrder('software_id', 'DESC');
 		$result = $this->SoftwareModel->loadWhere("software_kurzbz ILIKE '%".$this->SoftwareModel->escapeLike($software_kurzbz)."%'");
 
 		if (isError($result))
@@ -175,8 +179,10 @@ class Software extends Auth_Controller
 	 *
 	 * @param $software_id integer
 	 */
-	public function getLastSoftwarestatus($software_id)
+	public function getLastSoftwarestatus()
 	{
+		$software_id = $this->input->get('software_id');
+
 		$result = $this->SoftwareSoftwarestatusModel->getLastSoftwarestatus($software_id);
 
 		if (isError($result))
@@ -213,6 +219,7 @@ class Software extends Auth_Controller
 	public function createSoftware()
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
+
 		$software = $data['software'];
 		$softwarestatus = $data['softwarestatus'];
 		$softwareImageIds = $data['softwareImageIds'];
@@ -241,6 +248,7 @@ class Software extends Auth_Controller
 	public function updateSoftware()
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
+
 		$software = $data['software'];
 		$softwarestatus = $data['softwarestatus'];
 		$softwareImageIds = $data['softwareImageIds'];
@@ -250,6 +258,8 @@ class Software extends Auth_Controller
 
 		// return error if invalid
 		if (isError($validationRes)) return $this->outputJsonError(getError($validationRes));
+
+		$software['updatevon'] = $this->_uid;
 
 		// Update Software and inserts newer Softwarestatus
 		$result = $this->SoftwareModel->updateSoftwarePlus(
@@ -358,6 +368,20 @@ class Software extends Auth_Controller
 			);
 
 			if (isError($softwareRes) || hasData($softwareRes)) $errorMessages[] = 'Software Kurzbezeichnung mit dieser Version existiert bereits';
+		}
+
+		if (isset($software['software_id_parent']) && isset($software['software_id']))
+		{
+			// check if there is already a software with the kurzbz and version
+			$softwareRes = $this->SoftwareModel->getParents($software['software_id_parent']);
+
+			$swParents = getData($softwareRes);
+
+			foreach ($swParents as $swParent)
+			{
+				if ($swParent->software_id == $software['software_id'])
+					$errorMessages[] = 'Zuweisung der übergeordneten Software führt zu zyklischer Abhängigkeit';
+			}
 		}
 
 		// return error array if there were errors

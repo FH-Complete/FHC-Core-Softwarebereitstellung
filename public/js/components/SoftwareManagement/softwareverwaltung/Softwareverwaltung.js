@@ -17,11 +17,11 @@ export const Softwareverwaltung = {
 	data: function() {
 		return {
 			softwareTabulatorOptions: { // tabulator options which can be modified after first render
-				dataTreeStartExpanded: true,
+				index: 'software_id',
 				maxHeight: "100%",
 				minHeight: 50,
 				layout: 'fitColumns',
-				index: 'software_id',
+				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 				columns: [
 					{
@@ -75,6 +75,7 @@ export const Softwareverwaltung = {
 				]
 			},
 			tabulatorAdditionalColumns: ['actions'],
+			selectedTabulatorRow: null, // currently selected tabulator row
 			softwarestatus: Array,
 			software_kurzbz: ''
 		}
@@ -116,11 +117,11 @@ export const Softwareverwaltung = {
 			// exclude other clicked elements like buttons, icons...
 			if (e.target.nodeName != 'DIV') return;
 
-			// get Orte for a software
-			this.$refs.raumzuordnung.getOrteBySoftware(row.getIndex(), row.getData().software_kurzbz);
+			// save currently clicked row
+			this.selectedTabulatorRow = row;
 
-			// get Softwarekurzbz
-			this.software_kurzbz = row.getData().software_kurzbz;
+			// get row data
+			this.getSoftwareRowDetails();
 		});
 	},
 	methods: {
@@ -134,8 +135,10 @@ export const Softwareverwaltung = {
 		handleSoftwareSaved() {
 			this.$refs.modalForSave.hide();
 			this.$refs.softwareTable.reloadTable();
+			// reload Raumzuordnung data
+			this.getSoftwareRowDetails();
 		},
-		populateTabulatorColumnStatus(status_arr){
+		populateTabulatorColumnStatus(status_arr) {
 			// Modify format
 			let result = status_arr.reduce((res, x) => {
 				res[x.softwarestatus_kurzbz] = x.bezeichnung;
@@ -145,6 +148,15 @@ export const Softwareverwaltung = {
 			let statusCol = this.softwareTabulatorOptions.columns.find(col => col.field === 'softwarestatus_kurzbz');
 			statusCol.editorParams = {values: result};
 			statusCol.headerFilterParams = {values: result};
+		},
+		getSoftwareRowDetails() {
+			if (!this.selectedTabulatorRow) return;
+
+			// get Orte for a software
+			this.$refs.raumzuordnung.getOrteBySoftware(this.selectedTabulatorRow.getIndex(), this.selectedTabulatorRow.getData().software_kurzbz);
+
+			// get Softwarekurzbz
+			this.software_kurzbz = this.selectedTabulatorRow.getData().software_kurzbz;
 		},
 		changeStatus(softwarestatus_kurzbz, software_id = null) {
 			let software_ids = [];
@@ -173,6 +185,9 @@ export const Softwareverwaltung = {
 				{
 					software_ids: software_ids,
 					softwarestatus_kurzbz: softwarestatus_kurzbz
+				},
+				{
+					timeout: 2000
 				}
 			).then(
 				result => {
@@ -192,6 +207,9 @@ export const Softwareverwaltung = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
 				{
 					software_id: software_id
+				},
+				{
+					timeout: 2000
 				}
 			).then(
 				result => {
@@ -245,16 +263,16 @@ export const Softwareverwaltung = {
 		 </template>
 	</core-filter-cmpt>
 	<!-- Software Details -->
-	<h2 class="h4 fhc-hr mt-5">Software Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>				
-	<div class="row">						
-		<raumzuordnung ref="raumzuordnung"></raumzuordnung>								
-	</div>	
+	<h2 class="h4 fhc-hr mt-5">Software Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
+	<div class="row">
+		<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+	</div>
 	<!-- Software modal component -->
 	<software-modal
 		class="fade"
 		ref="modalForSave"
 		dialog-class="modal-lg"
 		@software-saved="handleSoftwareSaved">
-	</software-modal>	
+	</software-modal>
 `
 };
