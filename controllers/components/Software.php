@@ -123,14 +123,14 @@ class Software extends Auth_Controller
 			if (isset($software->software_id_parent))
 			{
 				// get parent
-				$this->SoftwareModel->addSelect('software_kurzbz');
+				$this->SoftwareModel->addSelect('software_kurzbz, version');
 				$parentResult = $this->SoftwareModel->load($software->software_id_parent);
 
 				if (isError($result))
 				{
 					$this->terminateWithJsonError('Fehler beim Holen der parent Software');
 				}
-				if (hasData($parentResult)) $extendedSoftware['software_kurzbz_parent'] = getData($parentResult)[0]->software_kurzbz;
+				if (hasData($parentResult)) $extendedSoftware['software_parent'] = getData($parentResult)[0];
 			}
 		}
 
@@ -138,12 +138,12 @@ class Software extends Auth_Controller
 	}
 
 	/**
-	 * Get Software by software_kurzbz.
+	 * Get Software by software_kurzbz
 	 */
 	public function getSoftwareByKurzbz()
 	{
 		$software_kurzbz = $this->input->get('software_kurzbz');
-		$this->SoftwareModel->addSelect("software_id, software_kurzbz");
+		$this->SoftwareModel->addSelect("software_id, software_kurzbz, version");
 		$result = $this->SoftwareModel->loadWhere("software_kurzbz ILIKE '%".$this->SoftwareModel->escapeLike($software_kurzbz)."%'");
 
 		if (isError($result))
@@ -276,7 +276,7 @@ class Software extends Auth_Controller
 		$this->form_validation->set_rules(
 			'software_id',
 			'Software ID',
-			'required|numeric',
+			'required|numeric|callback_checkSoftwareDependencies',
 			array('required' => '%s fehlt', 'numeric' => '%s ungültig')
 		);
 
@@ -285,6 +285,37 @@ class Software extends Auth_Controller
 
 		// delete software
 		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
+	}
+
+	/**
+	 * Check dependencies of a software.
+	 * @param software_id
+	 * @return bool true if there are no dependencies, false if there is at least one dependency
+	 */
+	public function checkSoftwareDependencies($software_id)
+	{
+		$dependenciesRes = $this->SoftwareModel->getSoftwareDependencies($software_id);
+		$dependantFields = array();
+
+		if (!hasData($dependenciesRes)) return false;
+
+		$dependencies = getData($dependenciesRes);
+
+		foreach ($dependencies as $dependency)
+		{
+			foreach ($dependency as $field => $value)
+			{
+				if (!is_null($value) && !in_array($field, $dependantFields)) $dependantFields[] = $field;
+			}
+		}
+
+		if (!isEmptyArray($dependantFields))
+		{
+			$this->form_validation->set_message('checkSoftwareDependencies', 'Software hat Abhängigkeiten: '.implode(', ', $dependantFields));
+			return false;
+		}
+
+		return true;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------

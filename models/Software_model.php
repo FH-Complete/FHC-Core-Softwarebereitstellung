@@ -139,4 +139,26 @@ class Software_model extends DB_Model
 
 		return success();
 	}
+
+	/**
+	 * Gets dependencies of a software (needed e.g. for checks if a software can be deleted).
+	 * @param software_id
+	 * @return object success or error
+	 */
+	public function getSoftwareDependencies($software_id)
+	{
+		return $this->execQuery('
+			SELECT
+				sw_image.softwareimage_id, sw_child.software_id_parent
+			FROM
+				extension.tbl_software sw
+				LEFT JOIN extension.tbl_softwareimage_software sw_image USING (software_id)
+				LEFT JOIN extension.tbl_software sw_child ON sw.software_id = sw_child.software_id_parent
+			WHERE
+				sw.software_id = ?',
+			array(
+				$software_id
+			)
+		);
+	}
 }

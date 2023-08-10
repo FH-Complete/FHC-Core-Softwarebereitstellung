@@ -180,7 +180,7 @@ export const Softwareverwaltung = {
 				}
 			).catch(
 				error => {
-					alert('Error when updating softwarestatus: ' + error.message);
+					alert('Fehler bei softwarestatusupdate: ' + error.message);
 				}
 			);
 		},
@@ -195,11 +195,18 @@ export const Softwareverwaltung = {
 				}
 			).then(
 				result => {
-					this.$refs.softwareTable.reloadTable();
+					if (CoreRESTClient.isError(result.data))
+					{
+						alert('Fehler beim Löschen der Software: ' + Object.values(result.data.retval).join('; '));
+					}
+					else
+					{
+						this.$refs.softwareTable.reloadTable();
+					}
 				}
 			).catch(
 				error => {
-					alert('Error when deleting software: ' + error.message);
+					alert('Fehler beim Löschen der Software: ' + error.message);
 				}
 			);
 		},
