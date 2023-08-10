@@ -9,6 +9,12 @@
     color: white;
 }
 
+/* Fix transparent background of tooltip */
+.tabulator-tooltip {
+    background-color: black;
+    color: white;
+}
+
 /* Horizontal line */
 .fhc-hr {
     padding: 25px 0px 20px 0px;
