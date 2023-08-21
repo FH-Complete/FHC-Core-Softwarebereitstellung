@@ -16,6 +16,7 @@ class Image extends Auth_Controller
 	{
 		parent::__construct(
 			array(
+				'createImage' => 'basis/mitarbeiter:r',
 				'getImagesBySoftware' => 'basis/mitarbeiter:r',
 				'getImagesByBezeichnung' => 'basis/mitarbeiter:r'
 			)
@@ -28,6 +29,30 @@ class Image extends Auth_Controller
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Public methods
+	/**
+	 * Inserts Softwareimage and inserts Räume that were assigned to that image.
+	 *
+	 * @return mixed
+	 */
+	public function createImage(){
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		// Validate data
+		$result = $this->_validate($data);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
+		// Insert image and assign Räume to that image
+		$result = $this->SoftwareimageModel->insertSoftwareimage(
+			$data['softwareimage'],
+			$data['orte_kurzbz']
+		);
+
+		return $this->outputJson($result);
+	}
 
 		/**
 	 * Get all Images containing a Bezeichnung.
@@ -75,5 +100,26 @@ class Image extends Auth_Controller
 		$this->_uid = getAuthUID();
 
 		if (!$this->_uid) show_error('User authentification failed');
+	}
+	/**
+	 * Performs validation checks.
+	 * @return object
+	 */
+	private function _validate($data)
+	{
+		$this->load->library('form_validation');
+
+		// Validate required data
+		$this->form_validation->set_data($data['softwareimage']);
+		$this->form_validation->set_rules('bezeichnung', 'Softwareimage Bezeichnung', 'required', array('required' => '%s fehlt'));
+
+		// On error
+		if ($this->form_validation->run() == false)
+		{
+			return error($this->form_validation->error_array());
+		}
+
+		// On success
+		return success();
 	}
 }
