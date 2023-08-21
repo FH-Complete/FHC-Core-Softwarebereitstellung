@@ -7,7 +7,7 @@ export default {
 		Softwareimage
 	},
 	emits: [
-		'softwareimageSaved'
+		'onSaved'
 	],
 	mixins: [
 		BsModal
@@ -21,15 +21,6 @@ export default {
 		this.modal = this.$refs.modalContainer.modal;
 	},
 	methods: {
-		// onHiddenBsModal() {
-		// 	this.$refs.softwareimage.reset();
-		// },
-		// onBsModalSave() {
-		// 	this.$refs.softwareimage.save();
-		// },
-		// saveSoftwareimage() {
-		// 	this.$emit('softwareimageSaved');
-		// },
 		open(softwareimage_id) {
 			this.title = softwareimage_id ? 'Softwareimage bearbeiten' : 'Softwareimage anlegen';
 			this.$refs.softwareimage.prefill(softwareimage_id);
@@ -37,13 +28,13 @@ export default {
 		}
 	},
 	template: `
-		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @hidden-bs-modal="onHiddenBsModal">
+		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @hidden-bs-modal="$refs.softwareimage.reset()">
 			<template v-slot:title>{{title}}</template>
 			<template v-slot:default>
-				<softwareimage ref="softwareimage" @softwareimage-saved="saveSoftwareimage"></softwareimage>
+				<softwareimage ref="softwareimage" @on-saved="$emit('onSaved')"></softwareimage>
 			</template>
 			<template v-slot:footer>
-				<button type="button" class="btn btn-primary" @click="onBsModalSave">Speichern</button>
+				<button type="button" class="btn btn-primary" @click="$refs.softwareimage.save()">Speichern</button>
 			</template>
 		</bs-modal>
 	`

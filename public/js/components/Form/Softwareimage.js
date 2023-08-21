@@ -5,14 +5,14 @@ export const Softwareimage = {
 		AutoComplete: primevue.autocomplete
 	},
 	emits: [
-		'softwareimageFormSaved'
+		'onSaved'
 	],
 	data() {
 		return {
 			softwareimageId: null,
 			softwareimage: {},
-			softwareimageOrte: [],
-			softwareimageOrtSuggestions: [],
+			orte: [],
+			ortSuggestions: [],
 			errors: []
 		}
 	},
@@ -20,7 +20,53 @@ export const Softwareimage = {
 		prefill(softwareimage_id) {
 			console.log('* in prefill. Implement when editing softwareimage.');
 		},
-		getOrte(event)
+		save(){
+			// Check form fields
+			if (!this.$refs.softwareimageForm.checkValidity())
+			{
+				// Display form errors if not ok
+				this.$refs.softwareimageForm.reportValidity();
+				return;
+			}
+
+			// Decide if create or update image
+			let method = Number.isInteger(this.softwareimageId) ? 'updateImage' : 'createImage';
+
+			CoreRESTClient.post(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/' + method,
+				{
+					softwareimage: this.softwareimage,
+					orte_kurzbz: this.orte.map(ort => ort.ort_kurzbz)
+				}
+			).then(
+				result => {
+					// On error
+					if (CoreRESTClient.isError(result.data))
+					{
+						Object.entries(CoreRESTClient.getError(result.data))
+							.forEach(([key, value]) => {
+								this.errors.push(value);
+							});
+
+						return;
+					}
+
+					// On success
+					this.$emit('onSaved');
+				}
+			).catch(
+				error => {
+					let errorMessage = error.message ? error.message : 'Unknown error';
+					this.errors.push('Error when saving softwareimage: ' + errorMessage);
+				}
+			);
+		},
+		reset(){
+			console.log('* reset: Softwareimage.js');
+			this.errors = [];
+			
+		},
+		onComplete(event)
 		{
 			CoreRESTClient.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
@@ -34,7 +80,7 @@ export const Softwareimage = {
 				}
 				else
 				{
-					this.softwareimageOrtSuggestions = CoreRESTClient.getData(result.data);
+					this.ortSuggestions = CoreRESTClient.getData(result.data);
 				}
 			}
 			).catch(
@@ -50,9 +96,9 @@ export const Softwareimage = {
 		<form ref="softwareimageForm" class="row">
 			<div class="col-sm-9 mb-6">
 				<label :for="bezeichnung" class="form-label">Bezeichnung *</label>
-				<input type="text" class="form-control mb-3" :id="bezeichnung" v-model="softwareimage.bezeichnung" required>
-				<label :for="betriebssystem" class="form-label">Betriebssystem *</label>
-				<input type="text" class="form-control mb-3" :id="betriebssystem"  v-model="softwareimage.betriebssystem" required>	
+				<input type="text" class="form-control mb-3" :id="bezeichnung" v-model="softwareimage.bezeichnung" required >
+				<label :for="betriebssystem" class="form-label">Betriebssystem</label>
+				<input type="text" class="form-control mb-3" :id="betriebssystem"  v-model="softwareimage.betriebssystem">	
 				<label :for="verfuegbarkeit_start" class="form-label">Verfügbarkeit Start</label>
 				<input type="date" class="form-control mb-3" :id="verfuegbarkeit_start"  v-model="softwareimage.verfuegbarkeit_start">
 				<label :for="verfuegbarkeit_ende" class="form-label">Verfügbarkeit Ende</label>
@@ -61,14 +107,14 @@ export const Softwareimage = {
 				<auto-complete
 					inputId="softwareimage_ort"
 					class="w-100 mb-3"
-					v-model="softwareimageOrte"
+					v-model="orte"
 					optionLabel="ort_kurzbz"
 					dropdown
 					dropdown-current
 					forceSelection
 					multiple
-					:suggestions="softwareimageOrtSuggestions"
-					@complete="getOrte">
+					:suggestions="ortSuggestions"
+					@complete="onComplete">
 				</auto-complete>
 				<label :for="anmerkung" class="form-label">Anmerkung</label>
 				<textarea

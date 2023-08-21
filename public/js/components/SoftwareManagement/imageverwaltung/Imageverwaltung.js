@@ -10,7 +10,7 @@ export const Imageverwaltung = {
 	],
 	data: function() {
 		return {
-			imageVerwaltungTabulatorOptions: { // tabulator options which can be modified after first render
+			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
 				maxHeight: "100%",
 				layout: 'fitColumns',
 				index: 'softwareimage_id',
@@ -58,6 +58,10 @@ export const Imageverwaltung = {
 		openModal(event, softwareimageId) {
 			this.$refs.softwareimageModal.open(softwareimageId);
 		},
+		onSoftwareimageSaved() {
+			this.$refs.softwareimageModal.hide();
+			this.$refs.softwareimageTable.reloadTable();
+		},
 		editSoftwareimage(event, softwareimage_id){
 			console.log('* editSoftwareimage');
 			console.log(softwareimage_id);
@@ -72,20 +76,20 @@ export const Imageverwaltung = {
 			this.$emit('filterMenuUpdated', payload);
 		},
 		reloadTabulator() {
-			for (let option in this.imageVerwaltungTabulatorOptions)
+			for (let option in this.softwareimageTabulatorOptions)
 			{
-				if (this.$refs.imageVerwaltungTable.tabulator.options.hasOwnProperty(option))
-					this.$refs.imageVerwaltungTable.tabulator.options[option] = this.imageVerwaltungTabulatorOptions[option];
+				if (this.$refs.softwareimageTable.tabulator.options.hasOwnProperty(option))
+					this.$refs.softwareimageTable.tabulator.options[option] = this.softwareimageTabulatorOptions[option];
 			}
-			this.$refs.imageVerwaltungTable.reloadTable();
+			this.$refs.softwareimageTable.reloadTable();
 		},
 	},
 	template: `
 	<!-- Imageverwaltung Tabelle -->
 	<core-filter-cmpt
-		ref="imageVerwaltungTable"
+		ref="softwareimageTable"
 		filter-type="ImageVerwaltung"
-		:tabulator-options="imageVerwaltungTabulatorOptions"
+		:tabulator-options="softwareimageTabulatorOptions"
 		:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 		:new-btn-label="'Image'"
 		:new-btn-show="true"
@@ -98,7 +102,7 @@ export const Imageverwaltung = {
 		class="fade"
 		ref="softwareimageModal"
 		dialog-class="modal-lg"
-		@softwareimage-saved="saveSoftwareimage">
+		@on-saved="onSoftwareimageSaved">
 	</softwareimage-modal>	
 	`
 };
