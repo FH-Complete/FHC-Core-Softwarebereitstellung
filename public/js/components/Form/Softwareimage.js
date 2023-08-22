@@ -18,7 +18,58 @@ export const Softwareimage = {
 	},
 	methods: {
 		prefill(softwareimage_id) {
-			console.log('* in prefill. Implement when editing softwareimage.');
+			this.softwareimageId = softwareimage_id;
+
+			if (Number.isInteger(this.softwareimageId)) {
+				// Get softwareimage
+				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImage',
+					{
+						softwareimage_id: softwareimage_id
+					}
+				).then(
+					result => {
+						if (CoreRESTClient.isError(result.data)) {
+							this.errors.push(result.data.retval);
+						}
+						else {
+							if (CoreRESTClient.hasData(result.data)) {
+								// Prefill form with softwareimage
+								this.softwareimage = CoreRESTClient.getData(result.data);
+							}
+						}
+					}
+				).catch(
+					error => {
+						let errorMessage = error.message ? error.message : 'Unknown error';
+						alert('Error when getting softwareimage: ' + errorMessage);
+					}
+				);
+
+				// Get Räume assigned to softwareimage
+				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getOrteByImage',
+					{
+						softwareimage_id: softwareimage_id
+					}
+				).then(
+					result => {
+						if (CoreRESTClient.isError(result.data)) {
+							this.errors.push(result.data.retval);
+						}
+						else {
+							if (CoreRESTClient.hasData(result.data)) {
+								// Prefill form with Räume assigned to softwareimage
+								this.orte = CoreRESTClient.getData(result.data);
+							}
+						}
+					}
+				).catch(
+					error => {
+						let errorMessage = error.message ? error.message : 'Unknown error';
+						alert('Error when getting orte assigned to softwareimage: ' + errorMessage);
+					}
+				);
+
+			}
 		},
 		save(){
 			// Check form fields
@@ -30,7 +81,7 @@ export const Softwareimage = {
 			}
 
 			// Decide if create or update image
-			let method = Number.isInteger(this.softwareimageId) ? 'updateImage' : 'createImage';
+			let method = Number.isInteger(this.softwareimageId) ? 'updateImageAndOrte' : 'createImage';
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/' + method,
@@ -62,7 +113,9 @@ export const Softwareimage = {
 			);
 		},
 		reset(){
-			console.log('* reset: Softwareimage.js');
+			this.softwareimageId = null,
+			this.softwareimage = {},
+			this.orte = [];
 			this.errors = [];
 			
 		},

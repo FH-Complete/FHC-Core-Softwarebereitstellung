@@ -63,8 +63,7 @@ export const Imageverwaltung = {
 			this.$refs.softwareimageTable.reloadTable();
 		},
 		editSoftwareimage(event, softwareimage_id){
-			console.log('* editSoftwareimage');
-			console.log(softwareimage_id);
+			this.openModal(event, softwareimage_id);
 		},
 		deleteSoftwareimage(softwareimage_id) {
 			console.log('* deleteSoftwareimage');
