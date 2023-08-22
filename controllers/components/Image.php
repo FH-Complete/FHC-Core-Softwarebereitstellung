@@ -16,6 +16,9 @@ class Image extends Auth_Controller
 	{
 		parent::__construct(
 			array(
+				'getImage' => 'basis/mitarbeiter:r',
+				'updateImageAndOrte' => 'basis/mitarbeiter:r',
+				'getOrteByImage' => 'basis/mitarbeiter:r',
 				'createImage' => 'basis/mitarbeiter:r',
 				'getImagesBySoftware' => 'basis/mitarbeiter:r',
 				'getImagesByBezeichnung' => 'basis/mitarbeiter:r'
@@ -29,6 +32,23 @@ class Image extends Auth_Controller
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Public methods
+
+	/**
+	 *	Get Softwareimage.
+	 */
+	public function getImage(){
+		$softwareimage_id = $this->input->get('softwareimage_id');
+
+		$result = $this->SoftwareimageModel->load($softwareimage_id);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen des Softwareimages');
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
+	}
+
 	/**
 	 * Inserts Softwareimage and inserts Räume that were assigned to that image.
 	 *
@@ -54,7 +74,51 @@ class Image extends Auth_Controller
 		return $this->outputJson($result);
 	}
 
-		/**
+
+	/**
+	 * Update Softwareimage, add new Räume assigned to Softwareimage and delete Räume that were removed.
+	 *
+	 * @return mixed
+	 */
+	public function updateImageAndOrte()
+	{
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		// Validate data
+		$result = $this->_validate($data);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
+		// Update image
+		$result = $this->SoftwareimageModel->updateSoftwareimageAndOrte(
+			$data['softwareimage'],
+			$data['orte_kurzbz']
+		);
+
+		return $this->outputJson($result);
+	}
+
+	/**
+	 *	Get Räume that are assigned to given Softwareimage.
+	 */
+	public function getOrteByImage(){
+		$softwareimage_id = $this->input->get('softwareimage_id');
+
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareimageOrt_model', 'SoftwareimageOrtModel');
+		$result = $this->SoftwareimageOrtModel->loadWhere(array('softwareimage_id' => $softwareimage_id));
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der zugeordnenten Orte');
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/**
 	 * Get all Images containing a Bezeichnung.
 	 */
 	public function getImagesBySoftware()
