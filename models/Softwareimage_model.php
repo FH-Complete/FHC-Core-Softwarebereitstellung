@@ -20,7 +20,7 @@ class Softwareimage_model extends DB_Model
 	 * @param $orte_kurzbz array
 	 * @return mixed
 	 */
-	public function insertSoftwareimage($softwareimage, $orte_kurzbz)
+	public function insertSoftwareimageAndOrte($softwareimage, $orte_kurzbz)
 	{
 		// Start DB transaction
 		$this->db->trans_start(false);

@@ -19,7 +19,7 @@ class Image extends Auth_Controller
 				'getImage' => 'basis/mitarbeiter:r',
 				'updateImageAndOrte' => 'basis/mitarbeiter:r',
 				'getOrteByImage' => 'basis/mitarbeiter:r',
-				'createImage' => 'basis/mitarbeiter:r',
+				'createImageAndOrte' => 'basis/mitarbeiter:r',
 				'getImagesBySoftware' => 'basis/mitarbeiter:r',
 				'getImagesByBezeichnung' => 'basis/mitarbeiter:r'
 			)
@@ -54,7 +54,7 @@ class Image extends Auth_Controller
 	 *
 	 * @return mixed
 	 */
-	public function createImage(){
+	public function createImageAndOrte(){
 		$data = json_decode($this->input->raw_input_stream, true);
 
 		// Validate data
@@ -66,7 +66,7 @@ class Image extends Auth_Controller
 		}
 
 		// Insert image and assign Räume to that image
-		$result = $this->SoftwareimageModel->insertSoftwareimage(
+		$result = $this->SoftwareimageModel->insertSoftwareimageAndOrte(
 			$data['softwareimage'],
 			$data['orte_kurzbz']
 		);

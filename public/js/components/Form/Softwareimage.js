@@ -81,7 +81,7 @@ export const Softwareimage = {
 			}
 
 			// Decide if create or update image
-			let method = Number.isInteger(this.softwareimageId) ? 'updateImageAndOrte' : 'createImage';
+			let method = Number.isInteger(this.softwareimageId) ? 'updateImageAndOrte' : 'createImageAndOrte';
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/' + method,
