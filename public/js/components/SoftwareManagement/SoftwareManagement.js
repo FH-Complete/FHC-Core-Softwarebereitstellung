@@ -18,7 +18,6 @@
 import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
 import {BaseLayout} from "../Layout/BaseLayout";
 import {NavTabs} from "./NavTabs";
-import {Raumzuordnung} from "./Raumzuordnung";
 import {Notification} from "./sidebar/Notification";
 
 export const SoftwareManagement = {
@@ -26,8 +25,7 @@ export const SoftwareManagement = {
 		CoreNavigationCmpt,
 		BaseLayout,
 		Notification,
-		NavTabs,
-		DetailsCmpt: Raumzuordnung
+		NavTabs
 	},
 	data: function() {
 		return {
