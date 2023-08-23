@@ -238,7 +238,7 @@ export const Softwareverwaltung = {
 		 </template>
 	</core-filter-cmpt>
 	<!-- Software Details -->
-	<h2 class="h4 fhc-hr mt-5">Software Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>				
+	<h2 class="h4 fhc-hr mt-5">Details zu Software <span class="text-uppercase">{{ software_kurzbz }}</span></h2>				
 	<div class="row">						
 		<raumzuordnung ref="raumzuordnung"></raumzuordnung>								
 	</div>	

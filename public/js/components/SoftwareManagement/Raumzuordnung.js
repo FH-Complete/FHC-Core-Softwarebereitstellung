@@ -82,7 +82,7 @@ export const Raumzuordnung = {
 	template: `
 	<div class="col-md-6">
 		<div class="card" v-show="show">
-			<h3 class="h5 card-header">Raumzuordnung über Image</h3>
+			<h3 class="h5 card-header">Raumzuordnung<span class="fhc-subtitle">Zuordnung über Image</span></h3>
 			<div class="card-body">
 				<core-filter-cmpt
 					ref="raumTable"
