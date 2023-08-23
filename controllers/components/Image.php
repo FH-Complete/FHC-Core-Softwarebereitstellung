@@ -18,7 +18,6 @@ class Image extends Auth_Controller
 			array(
 				'getImage' => 'basis/mitarbeiter:r',
 				'updateImageAndOrte' => 'basis/mitarbeiter:r',
-				'getOrteByImage' => 'basis/mitarbeiter:r',
 				'createImageAndOrte' => 'basis/mitarbeiter:r',
 				'deleteImage' => 'basis/mitarbeiter:r',
 				'getImagesBySoftware' => 'basis/mitarbeiter:r',
@@ -35,7 +34,7 @@ class Image extends Auth_Controller
 	// Public methods
 
 	/**
-	 *	Get Softwareimage.
+	 * Get Softwareimage.
 	 */
 	public function getImage(){
 		$softwareimage_id = $this->input->get('softwareimage_id');
@@ -74,7 +73,6 @@ class Image extends Auth_Controller
 
 		return $this->outputJson($result);
 	}
-
 
 	/**
 	 * Update Softwareimage, add new Räume assigned to Softwareimage and delete Räume that were removed.
@@ -121,23 +119,6 @@ class Image extends Auth_Controller
 		$result = $this->SoftwareimageModel->delete($data['softwareimage_id']);
 
 		return $this->outputJson($result);
-	}
-
-	/**
-	 *	Get Räume that are assigned to given Softwareimage.
-	 */
-	public function getOrteByImage(){
-		$softwareimage_id = $this->input->get('softwareimage_id');
-
-		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareimageOrt_model', 'SoftwareimageOrtModel');
-		$result = $this->SoftwareimageOrtModel->loadWhere(array('softwareimage_id' => $softwareimage_id));
-
-		if (isError($result))
-		{
-			$this->terminateWithJsonError('Fehler beim Holen der zugeordnenten Orte');
-		}
-
-		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
 	}
 
 	/**

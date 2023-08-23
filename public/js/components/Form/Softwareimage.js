@@ -46,7 +46,7 @@ export const Softwareimage = {
 				);
 
 				// Get Räume assigned to softwareimage
-				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getOrteByImage',
+				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
 					{
 						softwareimage_id: softwareimage_id
 					}

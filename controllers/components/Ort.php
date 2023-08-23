@@ -17,7 +17,8 @@ class Ort extends Auth_Controller
 		parent::__construct(
 			array(
 				'autofill' => 'basis/mitarbeiter:r',
-				'getOrteBySoftware' => 'basis/mitarbeiter:r'
+				'getOrteBySoftware' => 'basis/mitarbeiter:r',
+				'getOrteByImage' => 'basis/mitarbeiter:r'
 			)
 		);
 
@@ -58,6 +59,22 @@ class Ort extends Auth_Controller
 		if (isError($result))
 		{
 			$this->terminateWithJsonError('Fehler beim Holen der Orte: '.getError($result));
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/**
+	 *	Get Räume that are assigned to given Softwareimage.
+	 */
+	public function getOrteByImage(){
+		$softwareimage_id = $this->input->get('softwareimage_id');
+
+		$result = $this->SoftwareimageOrtModel->loadWhere(array('softwareimage_id' => $softwareimage_id));
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der zugeordnenten Orte');
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);

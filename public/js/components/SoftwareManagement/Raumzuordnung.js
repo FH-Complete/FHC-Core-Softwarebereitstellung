@@ -56,7 +56,7 @@ export const Raumzuordnung = {
 		},
 		getOrteByImage(softwareimage_id) {
 			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getOrteByImage',
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
 				{
 					softwareimage_id: softwareimage_id
 				},
