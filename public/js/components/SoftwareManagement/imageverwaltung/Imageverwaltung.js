@@ -1,4 +1,5 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
+import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareimageModal from "../../Modals/SoftwareimageModal";
 export const Imageverwaltung = {
 	components: {
@@ -66,22 +67,26 @@ export const Imageverwaltung = {
 			this.openModal(event, softwareimage_id);
 		},
 		deleteSoftwareimage(softwareimage_id) {
-			console.log('* deleteSoftwareimage');
-			console.log(softwareimage_id);
+			CoreRESTClient.post(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/deleteImage',
+				{
+					softwareimage_id: softwareimage_id
+				}
+			).then(
+				result => {
+					this.$refs.softwareimageTable.reloadTable();
+				}
+			).catch(
+				error => {
+					alert('Error when deleting softwareimage: ' + error.message);
+				}
+			);
 		},
 		updateFilterMenuEntries: function(payload) {
-			console.log('* IMG / updateFilterMenuEntries: payload.children:');
-			console.log(payload.children[0]);
+			// console.log('* IMG / updateFilterMenuEntries: payload.children:');
+			// console.log(payload.children[0]);
 			this.$emit('filterMenuUpdated', payload);
-		},
-		reloadTabulator() {
-			for (let option in this.softwareimageTabulatorOptions)
-			{
-				if (this.$refs.softwareimageTable.tabulator.options.hasOwnProperty(option))
-					this.$refs.softwareimageTable.tabulator.options[option] = this.softwareimageTabulatorOptions[option];
-			}
-			this.$refs.softwareimageTable.reloadTable();
-		},
+		}
 	},
 	template: `
 	<!-- Imageverwaltung Tabelle -->
