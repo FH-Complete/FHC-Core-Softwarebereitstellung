@@ -53,6 +53,30 @@ export const Raumzuordnung = {
 					alert('Error when getting Raume: ' + errorMessage); //TODO beautiful alert
 				}
 			);
+		},
+		getOrteByImage(softwareimage_id) {
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getOrteByImage',
+				{
+					softwareimage_id: softwareimage_id
+				},
+				{
+					timeout: 2000
+				}
+			).then(
+				result => {
+					this.orte = [];
+					if (CoreRESTClient.hasData(result.data)) {
+						this.orte = CoreRESTClient.getData(result.data);
+					}
+					this.$refs.raumTable.tabulator.setData(this.orte);
+				}
+			).catch(
+				error => {
+					let errorMessage = error.message ? error.message : 'Unknown error';
+					alert('Error when getting Raume: ' + errorMessage);
+				}
+			);
 		}
 	},
 	template: `

@@ -1,10 +1,13 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareimageModal from "../../Modals/SoftwareimageModal";
+import {Raumzuordnung} from "../Raumzuordnung";
+
 export const Imageverwaltung = {
 	components: {
 		CoreFilterCmpt,
-		SoftwareimageModal
+		SoftwareimageModal,
+		Raumzuordnung
 	},
 	emits: [
 		'filterMenuUpdated',
@@ -52,8 +55,22 @@ export const Imageverwaltung = {
 					}
 				]
 			},
-			tabulatorAdditionalColumns: ['actions']
+			tabulatorAdditionalColumns: ['actions'],
+			softwareimage_bezeichnung: ''
 		}
+	},
+	mounted(){
+		// Row click event (showing softwareimage details)
+		this.$refs.softwareimageTable.tabulator.on('rowClick', (e, row) => {
+			// Exclude other clicked elements like buttons, icons...
+			if (e.target.nodeName != 'DIV') return;
+
+			// Get Orte
+			this.$refs.raumzuordnung.getOrteByImage(row.getIndex());
+
+			// Get Softwareimage Bezeichnung
+			this.softwareimage_bezeichnung = row.getData().bezeichnung;
+		});
 	},
 	methods: {
 		openModal(event, softwareimageId) {
@@ -100,6 +117,13 @@ export const Imageverwaltung = {
 		@nw-new-entry="updateFilterMenuEntries"
 		@click:new="openModal">
 	</core-filter-cmpt>
+	
+	<!-- Softwareimage Details -->
+	<h2 class="h4 fhc-hr mt-5">Details zu Softwareimage 
+		<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span></h2>				
+	<div class="row">						
+		<raumzuordnung ref="raumzuordnung"></raumzuordnung>								
+	</div>
 	
 	<!-- Softwareimage modal component -->
 	<softwareimage-modal
