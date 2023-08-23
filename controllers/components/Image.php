@@ -171,16 +171,25 @@ class Image extends Auth_Controller
 	 */
 	private function _validate($data)
 	{
-		$this->load->library('form_validation');
-
-		// Validate required data
-		$this->form_validation->set_data($data['softwareimage']);
-		$this->form_validation->set_rules('bezeichnung', 'Softwareimage Bezeichnung', 'required', array('required' => '%s fehlt'));
-
-		// On error
-		if ($this->form_validation->run() == false)
+		// Validate form data
+		if (isset($data['softwareimage']) && is_object($data['softwareimage']))
 		{
-			return error($this->form_validation->error_array());
+			$this->load->library('form_validation');
+
+			$this->form_validation->set_data($data['softwareimage']);
+			$this->form_validation->set_rules('bezeichnung', 'Softwareimage Bezeichnung', 'required', array('required' => '%s fehlt'));
+
+			// On error
+			if ($this->form_validation->run() == false)
+			{
+				return error($this->form_validation->error_array());
+			}
+		}
+
+		// Validate other vars
+		if (isset($data['softwareimage_id']) && !is_numeric($data['softwareimage_id']))
+		{
+			return error('Error on softwareimage_id');
 		}
 
 		// On success
