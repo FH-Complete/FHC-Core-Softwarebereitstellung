@@ -20,6 +20,7 @@ class Image extends Auth_Controller
 				'updateImageAndOrte' => 'basis/mitarbeiter:r',
 				'getOrteByImage' => 'basis/mitarbeiter:r',
 				'createImageAndOrte' => 'basis/mitarbeiter:r',
+				'deleteImage' => 'basis/mitarbeiter:r',
 				'getImagesBySoftware' => 'basis/mitarbeiter:r',
 				'getImagesByBezeichnung' => 'basis/mitarbeiter:r'
 			)
@@ -97,6 +98,27 @@ class Image extends Auth_Controller
 			$data['softwareimage'],
 			$data['orte_kurzbz']
 		);
+
+		return $this->outputJson($result);
+	}
+
+	/**
+	 * Delete Softwareimage.
+	 */
+	public function deleteImage()
+	{
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		// Validate data
+		$result = $this->_validate($data);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
+		// Delete Softwareimage
+		$result = $this->SoftwareimageModel->delete($data['softwareimage_id']);
 
 		return $this->outputJson($result);
 	}
