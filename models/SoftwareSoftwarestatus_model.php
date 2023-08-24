@@ -41,7 +41,7 @@ class SoftwareSoftwarestatus_model extends DB_Model
 			    -- Get last status of each given software
 				SELECT DISTINCT ON (software_id) *
 				FROM extension.tbl_software_softwarestatus
-				WHERE software_id IN ?			
+				WHERE software_id IN ?
 				ORDER BY software_id, datum DESC, software_status_id DESC
 			) tmp
 			-- Keep only where last softwarestatus is different from given softwarestatus
