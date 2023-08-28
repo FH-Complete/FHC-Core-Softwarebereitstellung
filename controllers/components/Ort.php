@@ -17,6 +17,9 @@ class Ort extends Auth_Controller
 		parent::__construct(
 			array(
 				'autofill' => 'basis/mitarbeiter:r',
+				'getImageort' => 'basis/mitarbeiter:r',
+				'updateImageort' => 'basis/mitarbeiter:r',
+				'deleteImageort' => 'basis/mitarbeiter:r',
 				'getOrteBySoftware' => 'basis/mitarbeiter:r',
 				'getOrteByImage' => 'basis/mitarbeiter:r'
 			)
@@ -46,6 +49,65 @@ class Ort extends Auth_Controller
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/**
+	 * Get Raum by Ort and Softwareimage.
+	 */
+	public function getImageort(){
+		$ort_kurzbz = $this->input->get('ort_kurzbz');
+		$softwareimage_id = $this->input->get('softwareimage_id');
+
+		$result = $this->SoftwareimageOrtModel->loadWhere(array(
+			'ort_kurzbz' => $ort_kurzbz,
+			'softwareimage_id' => $softwareimage_id
+		));
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen des zugeordnenten Ortes');
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
+	}
+
+	/**
+	 * Update Raum by Ort and Softwareimage.
+	 *
+	 * @return mixed
+	 */
+	public function updateImageort()
+	{
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		// Update image
+		$result = $this->SoftwareimageOrtModel->update(
+			array(
+				'softwareimage_id' => $data['softwareimage_id'],
+				'ort_kurzbz' => $data['softwareimageort']['ort_kurzbz']
+			),
+			array(
+				'verfuegbarkeit_start' => $data['softwareimageort']['verfuegbarkeit_start'],
+				'verfuegbarkeit_ende' => $data['softwareimageort']['verfuegbarkeit_ende']
+			)
+
+		);
+
+		return $this->outputJson($result);
+	}
+
+	/**
+	 * Deletes Raum by Ort and Softwareimage.
+	 */
+	public function deleteImageort()
+	{
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		// Delete softwareimageort
+		return $this->outputJson($this->SoftwareimageOrtModel->delete(array(
+			'softwareimage_id' => $data['softwareimage_id'],
+			'ort_kurzbz' => $data['ort_kurzbz']
+		)));
 	}
 
 	/**
