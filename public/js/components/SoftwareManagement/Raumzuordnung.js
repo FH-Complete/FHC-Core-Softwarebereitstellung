@@ -10,8 +10,7 @@ export const Raumzuordnung = {
 	},
 	data() {
 		return {
-			show: true,
-			softwareId: null,
+			softwareimageId: Vue.inject('softwareimageId'),
 			softwareTitel: null,
 			orte: [],
 			orteTabulatorOptions: {
@@ -63,6 +62,9 @@ export const Raumzuordnung = {
 				]
 			}
 		}
+	},
+	computed: {
+		showBtn() { return Number.isInteger(this.softwareimageId) ? true : false }
 	},
 	methods: {
 		openModal(softwareimageort_id) {
