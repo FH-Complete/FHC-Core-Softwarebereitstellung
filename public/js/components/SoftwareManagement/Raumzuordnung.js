@@ -136,7 +136,7 @@ export const Raumzuordnung = {
 					if (CoreRESTClient.hasData(result.data)) {
 						this.orte = CoreRESTClient.getData(result.data);
 					}
-					this.$refs.raumTable.tabulator.setData(this.orte);
+					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result.data));
 				}
 			).catch(
 				error => {
@@ -160,7 +160,7 @@ export const Raumzuordnung = {
 					if (CoreRESTClient.hasData(result.data)) {
 						this.orte = CoreRESTClient.getData(result.data);
 					}
-					this.$refs.raumTable.tabulator.setData(this.orte);
+					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result.data));
 				}
 			).catch(
 				error => {

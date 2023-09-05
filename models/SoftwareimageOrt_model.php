@@ -22,7 +22,7 @@ class SoftwareimageOrt_model extends DB_Model
 			SELECT
 				swimage.softwareimage_id, swimage.bezeichnung AS image,
 				swimage.verfuegbarkeit_start AS image_verfuegbarkeit_start, swimage.verfuegbarkeit_ende AS image_verfuegbarkeit_ende,
-				swimage_ort.verfuegbarkeit_start AS ort_verfuegbarkeit_start, swimage_ort.verfuegbarkeit_ende AS ort_verfuegbarkeit_ende,
+				swimage_ort.verfuegbarkeit_start, swimage_ort.verfuegbarkeit_ende,
 				ort.ort_kurzbz, ort.bezeichnung AS ort_bezeichnung
 			FROM
 				extension.tbl_software sw
