@@ -12,6 +12,11 @@ export const Imageverwaltung = {
 	emits: [
 		'filterMenuUpdated',
 	],
+	provide() {
+		return {
+			softwareimageId: Vue.computed(() => this.softwareimageId),
+		}
+	},
 	data: function() {
 		return {
 			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
@@ -56,6 +61,7 @@ export const Imageverwaltung = {
 				]
 			},
 			tabulatorAdditionalColumns: ['actions'],
+			softwareimageId: null,
 			softwareimage_bezeichnung: ''
 		}
 	},
@@ -69,6 +75,7 @@ export const Imageverwaltung = {
 			this.$refs.raumzuordnung.getOrteByImage(row.getIndex());
 
 			// Get Softwareimage Bezeichnung
+			this.softwareimageId = row.getData().softwareimage_id;
 			this.softwareimage_bezeichnung = row.getData().bezeichnung;
 		});
 	},

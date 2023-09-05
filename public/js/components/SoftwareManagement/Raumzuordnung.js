@@ -17,7 +17,7 @@ export const Raumzuordnung = {
 			orteTabulatorOptions: {
 				height: "100%",
 				layout: 'fitDataFill',
-				index: 'ort_kurzbz',
+				index: 'softwareimageort_id',
 				columns: [
 					{
 						field: 'select',
@@ -30,8 +30,8 @@ export const Raumzuordnung = {
 					{title: 'Image', field: 'image', headerFilter: true},
 					{title: 'Raum', field: 'ort_kurzbz', headerFilter: true},
 					{title: 'Raum Bezeichnung', field: 'ort_bezeichnung', headerFilter: true, visible: false},
-					{title: 'Verfügbarkeit Start', field: 'verfuegbarkeit_start', headerFilter: true},
-					{title: 'Verfügbarkeit Ende', field: 'verfuegbarkeit_ende', headerFilter: true},
+					{title: 'Verfügbar Start', field: 'verfuegbarkeit_start', headerFilter: true},
+					{title: 'Verfügbar Ende', field: 'verfuegbarkeit_ende', headerFilter: true},
 					{title: 'Image Verfügbarkeit Start', field: 'image_verfuegbarkeit_start', headerFilter: true, visible: false},
 					{title: 'Image Verfügbarkeit Ende', field: 'image_verfuegbarkeit_ende', headerFilter: true, visible: false},
 					{
@@ -45,7 +45,7 @@ export const Raumzuordnung = {
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-edit"></i>';
 							button.addEventListener('click', (event) =>
-								this.editOrt(event, cell.getRow().getIndex(), cell.getRow().getData().softwareimage_id)
+								this.editOrt(cell.getRow().getIndex())
 							);
 							container.append(button);
 
@@ -53,7 +53,7 @@ export const Raumzuordnung = {
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-xmark"></i>';
 							button.addEventListener('click', () =>
-								this.deleteOrt(cell.getRow().getIndex(), cell.getRow().getData().softwareimage_id)
+								this.deleteOrt(cell.getRow().getIndex())
 							);
 							container.append(button);
 
@@ -65,18 +65,17 @@ export const Raumzuordnung = {
 		}
 	},
 	methods: {
-		openModal(event, ort_kurzbz, softwareimage_id) {
-			this.$refs.raumModal.open(ort_kurzbz, softwareimage_id);
+		openModal(softwareimageort_id) {
+			this.$refs.raumModal.open(softwareimageort_id);
 		},
-		editOrt(event, ort_kurzbz, softwareimage_id){
-			this.openModal(event, ort_kurzbz, softwareimage_id);
+		editOrt(softwareimageort_id){
+			this.openModal(softwareimageort_id);
 		},
-		deleteOrt(ort_kurzbz, softwareimage_id){
+		deleteOrt(softwareimageort_id){
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/deleteImageort',
 				{
-					ort_kurzbz: ort_kurzbz,
-					softwareimage_id: softwareimage_id
+					softwareimageort_id: softwareimageort_id
 				},
 				{
 					timeout: 2000
@@ -89,7 +88,7 @@ export const Raumzuordnung = {
 					}
 					else
 					{
-						//this.$refs.raumTable.reloadTable(); // TODO fix, does not reload yet
+					//	this.$refs.raumTable.reloadTable(); // TODO fix, does not reload yet
 					}
 				}
 			).catch(
@@ -162,7 +161,10 @@ export const Raumzuordnung = {
 					ref="raumTable"
 					:side-menu="false"
 					:table-only=true
-					:tabulator-options="orteTabulatorOptions">
+					:tabulator-options="orteTabulatorOptions"
+					:new-btn-label="'Raum'"
+					:new-btn-show="showBtn" 
+					@click:new="openModal()">		
 				</core-filter-cmpt>
 			</div>
 		</div>

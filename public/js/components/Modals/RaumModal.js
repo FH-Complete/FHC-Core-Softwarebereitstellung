@@ -21,9 +21,9 @@ export default {
 		this.modal = this.$refs.modalContainer.modal;
 	},
 	methods: {
-		open(ort_kurzbz, softwareimage_id) {
-			this.title = ort_kurzbz ? 'Raumzuordnung bearbeiten' : 'Raumzuordnung anlegen';
-			this.$refs.raum.prefill(ort_kurzbz, softwareimage_id);
+		open(softwareimageort_id) {
+			this.title = softwareimageort_id ? 'Raumzuordnung bearbeiten' : 'Raumzuordnung anlegen';
+			if (softwareimageort_id) this.$refs.raum.prefill(softwareimageort_id);
 			this.$refs.modalContainer.show();
 		}
 	},

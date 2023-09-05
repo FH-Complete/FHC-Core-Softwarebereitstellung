@@ -9,23 +9,23 @@ export const Raum = {
 	],
 	data() {
 		return {
-			softwareimageId: null,
-			ort_kurzbz: null,
-			softwareimageort: {},
+			softwareimageort_id: null,
+			softwareimage_id : Vue.inject('softwareimageId'),
+			verfuegbarkeit_start: null,
+			verfuegbarkeit_ende: null,
 			errors: []
 		}
 	},
 	methods: {
-		prefill(ort_kurzbz, softwareimage_id){
-			this.ort_kurzbz = ort_kurzbz;
-			this.softwareimageId = softwareimage_id;
+		prefill(softwareimageort_id){
+			
+			if (Number.isInteger(softwareimageort_id)) {
+				this.softwareimageort_id = softwareimageort_id;
 
-			if (Number.isInteger(this.softwareimageId) && this.ort_kurzbz != null) {
 				// Get softwareimageort
 				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getImageort',
 					{
-						ort_kurzbz: ort_kurzbz,
-						softwareimage_id: softwareimage_id
+						softwareimageort_id: softwareimageort_id,
 					}
 				).then(
 					result => {
@@ -34,8 +34,14 @@ export const Raum = {
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
+
 								// Prefill form with softwareimageort
-								this.softwareimageort = CoreRESTClient.getData(result.data);
+								let data = CoreRESTClient.getData(result.data);
+								this.verfuegbarkeit_start = data.verfuegbarkeit_start;
+								this.verfuegbarkeit_ende = data.verfuegbarkeit_ende;
+
+								// Prefill form with Raum assigned to softwareimage
+								this.orte = [CoreRESTClient.getData(result.data)];
 							}
 						}
 					}
@@ -48,22 +54,22 @@ export const Raum = {
 			}
 		},
 		save(){
-			// Check form fields
-			if (!this.$refs.raumForm.checkValidity())
-			{
-				// Display form errors if not ok
-				this.$refs.raumForm.reportValidity();
-				return;
-			}
-			console.log('* in save');
-			console.log(this.softwareimageId);
-			console.log(this.softwareimageort);
+			// Decide if add or update Raumzuordnung
+			let method = this.softwareimageort_id == null ? 'insertImageort' : 'updateImageort';
 
 			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/updateImageort',
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/' + method,
+				method === 'insertImageort' ?
 				{
-					softwareimage_id: this.softwareimageId,
-					softwareimageort: this.softwareimageort
+					softwareimage_id: this.softwareimage_id,
+					orte_kurzbz: this.orte.map(ort => ort.ort_kurzbz),
+					verfuegbarkeit_start: this.verfuegbarkeit_start,
+					verfuegbarkeit_ende: this.verfuegbarkeit_ende
+				} :
+				{
+					softwareimageorte_id: [this.softwareimageort_id], // TODO selectedSoftwareimageorte
+					verfuegbarkeit_start: this.verfuegbarkeit_start,
+					verfuegbarkeit_ende: this.verfuegbarkeit_ende
 				}
 			).then(
 				result => {
@@ -84,14 +90,15 @@ export const Raum = {
 			).catch(
 				error => {
 					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when saving softwareimageort: ' + errorMessage);
+					this.errors.push('Error when saving or updating softwareimageort: ' + errorMessage);
 				}
 			);
 		},
 		reset(){
-			this.softwareimageId = null,
-			this.ort_kurzbz = null,
-			this.softwareimageort = {},
+			this.softwareimageort_id = null;
+			this.orte = [];
+			this.verfuegbarkeit_start = null;
+			this.verfuegbarkeit_ende = null;
 			this.errors = [];
 			
 		}
@@ -103,9 +110,9 @@ export const Raum = {
 				<label :for="ort_kurzbz" class="form-label">Ort Kurzbezeichnung</label>
 				<input type="text" class="form-control mb-3" :id="ort_kurzbz"  v-model="softwareimageort.ort_kurzbz" readonly>	
 				<label :for="verfuegbarkeit_start" class="form-label">Verfügbarkeit Start</label>
-				<input type="date" class="form-control mb-3" :id="verfuegbarkeit_start"  v-model="softwareimageort.verfuegbarkeit_start">
+				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_start">
 				<label :for="verfuegbarkeit_ende" class="form-label">Verfügbarkeit Ende</label>
-				<input type="date" class="form-control mb-3" :id="verfuegbarkeit_ende"  v-model="softwareimageort.verfuegbarkeit_ende">
+				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_ende">
 			</div>
 		</form>
 	</div>
