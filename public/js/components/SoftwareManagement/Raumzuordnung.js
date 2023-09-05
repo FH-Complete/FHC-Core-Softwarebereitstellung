@@ -1,12 +1,14 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import RaumModal from "../Modals/RaumModal";
+import {Actions} from "./imageverwaltung/Actions";
 
 export const Raumzuordnung = {
 	components: {
 		CoreRESTClient,
 		CoreFilterCmpt,
-		RaumModal
+		RaumModal,
+		Actions
 	},
 	data() {
 		return {
@@ -23,6 +25,9 @@ export const Raumzuordnung = {
 						title: 'rowSelection',
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
+						titleFormatterParams: {
+							rowRange: "active"
+						},
 						hozAlign: 'left',
 						width: 50,
 					},
@@ -60,7 +65,8 @@ export const Raumzuordnung = {
 						}
 					}
 				]
-			}
+			},
+			tabulatorAdditionalColumns: ['actions'],
 		}
 	},
 	computed: {
@@ -152,6 +158,17 @@ export const Raumzuordnung = {
 			this.$refs.raumModal.hide();
 			//this.$refs.raumTable.reloadTable(); // TODO fix, does not reload yet
 		},
+		onVerfuegbarkeitAendernClick(){
+			let selectedData = this.$refs.raumTable.tabulator.getSelectedData();
+
+			if (selectedData.length == 0)
+			{
+				alert( 'Bitte erst Zeilen auswählen');
+				return;
+			}
+
+			this.$refs.raumModal.openVerfuebarkeitAendernModal(selectedData);
+		}
 	},
 	template: `
 	<div class="col-md-6">
@@ -163,9 +180,13 @@ export const Raumzuordnung = {
 					:side-menu="false"
 					:table-only=true
 					:tabulator-options="orteTabulatorOptions"
+					:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 					:new-btn-label="'Raum'"
 					:new-btn-show="showBtn" 
-					@click:new="openModal()">		
+					@click:new="openModal()">	
+					<template v-if="showBtn" v-slot:actions>
+						<actions @on-click="onVerfuegbarkeitAendernClick()"></actions>
+					 </template>	
 				</core-filter-cmpt>
 			</div>
 		</div>

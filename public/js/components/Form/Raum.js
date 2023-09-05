@@ -9,7 +9,7 @@ export const Raum = {
 	],
 	data() {
 		return {
-			softwareimageort_id: null,
+			softwareimageorte_id: null,
 			softwareimage_id : Vue.inject('softwareimageId'),
 			softwareimage_bezeichnung: Vue.inject('softwareimage_bezeichnung'),
 			orte: [],
@@ -19,11 +19,14 @@ export const Raum = {
 			errors: []
 		}
 	},
+	computed: {
+		ortSelectionDisabled() { return this.softwareimageorte_id === null ? false : true; }
+	},
 	methods: {
 		prefill(softwareimageort_id){
 			
 			if (Number.isInteger(softwareimageort_id)) {
-				this.softwareimageort_id = softwareimageort_id;
+				this.softwareimageorte_id = [softwareimageort_id];
 
 				// Get softwareimageort
 				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getImageort',
@@ -56,9 +59,17 @@ export const Raum = {
 				);
 			}
 		},
+		prefillOrte(selectedData){
+			if (Array.isArray(selectedData)) {
+				this.softwareimageorte_id = selectedData.map(data => data.softwareimageort_id);
+
+				// Prefill form with Raum assigned to softwareimage
+				this.orte = selectedData.map(data => ({['ort_kurzbz']: data.ort_kurzbz}));
+			}
+		},
 		save(){
 			// Decide if add or update Raumzuordnung
-			let method = this.softwareimageort_id == null ? 'insertImageort' : 'updateImageort';
+			let method = this.softwareimageorte_id === null ? 'insertImageort' : 'updateImageort';
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/' + method,
@@ -70,7 +81,7 @@ export const Raum = {
 					verfuegbarkeit_ende: this.verfuegbarkeit_ende
 				} :
 				{
-					softwareimageorte_id: [this.softwareimageort_id], // TODO selectedSoftwareimageorte
+					softwareimageorte_id: this.softwareimageorte_id,
 					verfuegbarkeit_start: this.verfuegbarkeit_start,
 					verfuegbarkeit_ende: this.verfuegbarkeit_ende
 				}
@@ -98,7 +109,7 @@ export const Raum = {
 			);
 		},
 		reset(){
-			this.softwareimageort_id = null;
+			this.softwareimageorte_id = null;
 			this.orte = [];
 			this.verfuegbarkeit_start = null;
 			this.verfuegbarkeit_ende = null;
@@ -145,7 +156,7 @@ export const Raum = {
 					dropdown-current
 					forceSelection
 					multiple
-					:disabled="softwareimageort_id !== null"
+					:disabled="ortSelectionDisabled"
 					:suggestions="ortSuggestions"
 					@complete="onComplete">
 				</auto-complete>

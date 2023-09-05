@@ -25,6 +25,11 @@ export default {
 			this.title = softwareimageort_id ? 'Raumzuordnung bearbeiten' : 'Raumzuordnung anlegen';
 			if (softwareimageort_id) this.$refs.raum.prefill(softwareimageort_id);
 			this.$refs.modalContainer.show();
+		},
+		openVerfuebarkeitAendernModal(selectedData){
+			this.title = 'Verfügbarkeit bearbeiten';
+			this.$refs.raum.prefillOrte(selectedData);
+			this.$refs.modalContainer.show();
 		}
 	},
 	template: `
