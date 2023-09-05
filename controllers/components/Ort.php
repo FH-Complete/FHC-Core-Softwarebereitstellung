@@ -18,6 +18,7 @@ class Ort extends Auth_Controller
 			array(
 				'autofill' => 'basis/mitarbeiter:r',
 				'getImageort' => 'basis/mitarbeiter:r',
+				'insertImageort' => 'basis/mitarbeiter:r',
 				'updateImageort' => 'basis/mitarbeiter:r',
 				'deleteImageort' => 'basis/mitarbeiter:r',
 				'getOrteBySoftware' => 'basis/mitarbeiter:r',
@@ -65,6 +66,37 @@ class Ort extends Auth_Controller
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
+	}
+
+	/**
+	 * Insert new Softwareimageorte.
+	 * Handles array of Orte with same softwareimage_id, verfuegbarkeit_start and verfuegbarkeit_ende.
+	 *
+	 * @return mixed
+	 */
+	public function insertImageort()
+	{
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		foreach ($data['orte_kurzbz'] as $ort_kurzbz)
+		{
+			// Update image
+			$result = $this->SoftwareimageOrtModel->insert(
+				array(
+					'softwareimage_id' => $data['softwareimage_id'],
+					'ort_kurzbz' => $ort_kurzbz,
+					'verfuegbarkeit_start' => $data['verfuegbarkeit_start'],
+					'verfuegbarkeit_ende' => $data['verfuegbarkeit_ende']
+				)
+			);
+
+			if (isError($result))
+			{
+				$this->terminateWithJsonError(getError($result));
+			}
+		}
+
+		return $this->outputJsonSuccess('Gespeichert');
 	}
 
 	/**
