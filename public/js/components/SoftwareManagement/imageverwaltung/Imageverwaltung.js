@@ -15,6 +15,7 @@ export const Imageverwaltung = {
 	provide() {
 		return {
 			softwareimageId: Vue.computed(() => this.softwareimageId),
+			softwareimage_bezeichnung: Vue.computed(() => this.softwareimage_bezeichnung)
 		}
 	},
 	data: function() {

@@ -11,6 +11,9 @@ export const Raum = {
 		return {
 			softwareimageort_id: null,
 			softwareimage_id : Vue.inject('softwareimageId'),
+			softwareimage_bezeichnung: Vue.inject('softwareimage_bezeichnung'),
+			orte: [],
+			ortSuggestions: [],
 			verfuegbarkeit_start: null,
 			verfuegbarkeit_ende: null,
 			errors: []
@@ -100,15 +103,52 @@ export const Raum = {
 			this.verfuegbarkeit_start = null;
 			this.verfuegbarkeit_ende = null;
 			this.errors = [];
-			
+		},
+		onComplete(event)
+		{
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
+				{
+					ort_kurzbz: event.query
+				}
+			).then(result => {
+					if (CoreRESTClient.isError(result.data))
+					{
+						this.errors.push(result.data.retval);
+					}
+					else
+					{
+						this.ortSuggestions = CoreRESTClient.getData(result.data);
+					}
+				}
+			).catch(
+				error => {
+					let errorMessage = error.message ? error.message : 'Unknown error';
+					this.errors.push('Error when autofilling Orte: ' + errorMessage);
+				}
+			);
 		}
 	},
 	template: `
 	<div>
 		<form ref="raumForm" class="row">
 			<div class="col-sm-9 mb-6">
-				<label :for="ort_kurzbz" class="form-label">Ort Kurzbezeichnung</label>
-				<input type="text" class="form-control mb-3" :id="ort_kurzbz"  v-model="softwareimageort.ort_kurzbz" readonly>	
+				<label :for="softwareimage_bezeichnung" class="form-label">Softwareimage</label>
+				<input type="text" class="form-control mb-3" v-model="softwareimage_bezeichnung" readonly>	
+				<label :for="ort_kurzbz" class="form-label">Raum *</label>
+				<auto-complete
+					inputId="ort_kurzbz"
+					class="w-100 mb-3"
+					v-model="orte"
+					optionLabel="ort_kurzbz"
+					dropdown
+					dropdown-current
+					forceSelection
+					multiple
+					:disabled="softwareimageort_id !== null"
+					:suggestions="ortSuggestions"
+					@complete="onComplete">
+				</auto-complete>
 				<label :for="verfuegbarkeit_start" class="form-label">Verfügbarkeit Start</label>
 				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_start">
 				<label :for="verfuegbarkeit_ende" class="form-label">Verfügbarkeit Ende</label>
