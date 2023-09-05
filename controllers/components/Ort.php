@@ -52,16 +52,12 @@ class Ort extends Auth_Controller
 	}
 
 	/**
-	 * Get Raum by Ort and Softwareimage.
+	 * Get Softwareimageort.
 	 */
 	public function getImageort(){
-		$ort_kurzbz = $this->input->get('ort_kurzbz');
-		$softwareimage_id = $this->input->get('softwareimage_id');
+		$softwareimageort_id = $this->input->get('softwareimageort_id');
 
-		$result = $this->SoftwareimageOrtModel->loadWhere(array(
-			'ort_kurzbz' => $ort_kurzbz,
-			'softwareimage_id' => $softwareimage_id
-		));
+		$result = $this->SoftwareimageOrtModel->load(array('softwareimageort_id' => $softwareimageort_id));
 
 		if (isError($result))
 		{
@@ -72,7 +68,8 @@ class Ort extends Auth_Controller
 	}
 
 	/**
-	 * Update Raum by Ort and Softwareimage.
+	 * Update Softwareimageorte.
+	 * Handles array of Softwareimageorte, updates with same verfuegbarkeit_start and same verfuegbarkeit_ende.
 	 *
 	 * @return mixed
 	 */
@@ -80,24 +77,30 @@ class Ort extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		// Update image
-		$result = $this->SoftwareimageOrtModel->update(
-			array(
-				'softwareimage_id' => $data['softwareimage_id'],
-				'ort_kurzbz' => $data['softwareimageort']['ort_kurzbz']
-			),
-			array(
-				'verfuegbarkeit_start' => $data['softwareimageort']['verfuegbarkeit_start'],
-				'verfuegbarkeit_ende' => $data['softwareimageort']['verfuegbarkeit_ende']
-			)
+		foreach ($data['softwareimageorte_id'] as $softwareimageort_id)
+		{
+			// Update image
+			$result = $this->SoftwareimageOrtModel->update(
+				array(
+					'softwareimageort_id' => $softwareimageort_id,
+				),
+				array(
+					'verfuegbarkeit_start' => $data['verfuegbarkeit_start'],
+					'verfuegbarkeit_ende' => $data['verfuegbarkeit_ende']
+				)
+			);
 
-		);
+			if (isError($result))
+			{
+				$this->terminateWithJsonError(getError($result));
+			}
+		}
 
-		return $this->outputJson($result);
+		return $this->outputJsonSuccess('Gespeichert');
 	}
 
 	/**
-	 * Deletes Raum by Ort and Softwareimage.
+	 * Delete Softwareimageort.
 	 */
 	public function deleteImageort()
 	{
@@ -105,8 +108,7 @@ class Ort extends Auth_Controller
 
 		// Delete softwareimageort
 		return $this->outputJson($this->SoftwareimageOrtModel->delete(array(
-			'softwareimage_id' => $data['softwareimage_id'],
-			'ort_kurzbz' => $data['ort_kurzbz']
+			'softwareimageort_id' => $data['softwareimageort_id']
 		)));
 	}
 
