@@ -17,8 +17,8 @@ class Image extends Auth_Controller
 		parent::__construct(
 			array(
 				'getImage' => 'basis/mitarbeiter:r',
-				'updateImageAndOrte' => 'basis/mitarbeiter:r',
-				'createImageAndOrte' => 'basis/mitarbeiter:r',
+				'createImage' => 'basis/mitarbeiter:r',
+				'updateImage' => 'basis/mitarbeiter:r',
 				'deleteImage' => 'basis/mitarbeiter:r',
 				'getImagesBySoftware' => 'basis/mitarbeiter:r',
 				'getImagesByBezeichnung' => 'basis/mitarbeiter:r'
@@ -50,11 +50,11 @@ class Image extends Auth_Controller
 	}
 
 	/**
-	 * Inserts Softwareimage and inserts Räume that were assigned to that image.
+	 * Insert new Softwareimage.
 	 *
 	 * @return mixed
 	 */
-	public function createImageAndOrte(){
+	public function createImage(){
 		$data = json_decode($this->input->raw_input_stream, true);
 
 		// Validate data
@@ -66,20 +66,19 @@ class Image extends Auth_Controller
 		}
 
 		// Insert image and assign Räume to that image
-		$result = $this->SoftwareimageModel->insertSoftwareimageAndOrte(
-			$data['softwareimage'],
-			$data['orte_kurzbz']
+		$result = $this->SoftwareimageModel->insert(
+			$data['softwareimage']
 		);
 
 		return $this->outputJson($result);
 	}
 
 	/**
-	 * Update Softwareimage, add new Räume assigned to Softwareimage and delete Räume that were removed.
+	 * Update Softwareimage.
 	 *
 	 * @return mixed
 	 */
-	public function updateImageAndOrte()
+	public function updateImage()
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
@@ -92,9 +91,8 @@ class Image extends Auth_Controller
 		}
 
 		// Update image
-		$result = $this->SoftwareimageModel->updateSoftwareimageAndOrte(
-			$data['softwareimage'],
-			$data['orte_kurzbz']
+		$result = $this->SoftwareimageModel->update($data['softwareimage']['softwareimage_id'],
+			$data['softwareimage']
 		);
 
 		return $this->outputJson($result);
