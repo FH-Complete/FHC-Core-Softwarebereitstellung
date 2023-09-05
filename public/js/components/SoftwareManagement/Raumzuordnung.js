@@ -111,7 +111,6 @@ export const Raumzuordnung = {
 			).then(
 				result => {
 					this.orte = [];
-					this.show = true;
 					this.softwareTitel = software_titel
 					if (CoreRESTClient.hasData(result.data)) {
 						this.orte = CoreRESTClient.getData(result.data);
@@ -156,7 +155,7 @@ export const Raumzuordnung = {
 	},
 	template: `
 	<div class="col-md-6">
-		<div class="card" v-show="show">
+		<div class="card">
 			<h3 class="h5 card-header">Raumzuordnung<span class="fhc-subtitle">Zuordnung über Image</span></h3>
 			<div class="card-body">
 				<core-filter-cmpt
