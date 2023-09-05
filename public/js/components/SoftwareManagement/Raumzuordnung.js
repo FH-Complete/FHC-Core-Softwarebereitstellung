@@ -20,6 +20,23 @@ export const Raumzuordnung = {
 				layout: 'fitDataFill',
 				index: 'softwareimageort_id',
 				columns: [
+					{title: 'Raum', field: 'ort_kurzbz', headerFilter: true},
+					{title: 'Raum Bezeichnung', field: 'ort_bezeichnung', headerFilter: true, visible: false},
+					{title: 'Verfügbar Start', field: 'verfuegbarkeit_start', headerFilter: true},
+					{title: 'Verfügbar Ende', field: 'verfuegbarkeit_ende', headerFilter: true},
+				]
+			},
+			tabulatorAdditionalColumns: ['actions'],
+		}
+	},
+	mounted(){
+		this.$refs.raumTable.tabulator.on("tableBuilt", (e, row) => {
+
+			// Raumzuordnung can be readonly or editable. If editable...
+			if (this.$parent.$options.componentName === 'Imageverwaltung')
+			{
+				// ...add column with checkboxes as front column
+				this.$refs.raumTable.tabulator.addColumn(
 					{
 						field: 'select',
 						title: 'rowSelection',
@@ -30,14 +47,11 @@ export const Raumzuordnung = {
 						},
 						hozAlign: 'left',
 						width: 50,
-					},
-					{title: 'Image', field: 'image', headerFilter: true},
-					{title: 'Raum', field: 'ort_kurzbz', headerFilter: true},
-					{title: 'Raum Bezeichnung', field: 'ort_bezeichnung', headerFilter: true, visible: false},
-					{title: 'Verfügbar Start', field: 'verfuegbarkeit_start', headerFilter: true},
-					{title: 'Verfügbar Ende', field: 'verfuegbarkeit_ende', headerFilter: true},
-					{title: 'Image Verfügbarkeit Start', field: 'image_verfuegbarkeit_start', headerFilter: true, visible: false},
-					{title: 'Image Verfügbarkeit Ende', field: 'image_verfuegbarkeit_ende', headerFilter: true, visible: false},
+					}, true // front column
+				);
+
+				// ...add column with action buttons at the end
+				this.$refs.raumTable.tabulator.addColumn(
 					{
 						title: 'Aktionen',
 						field: 'actions',
@@ -63,11 +77,12 @@ export const Raumzuordnung = {
 
 							return container;
 						}
-					}
-				]
-			},
-			tabulatorAdditionalColumns: ['actions'],
-		}
+					}, false // append to end
+				);
+			}
+
+
+		});
 	},
 	computed: {
 		showBtn() { return Number.isInteger(this.softwareimageId) ? true : false }

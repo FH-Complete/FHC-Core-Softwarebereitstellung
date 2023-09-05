@@ -5,6 +5,7 @@ import {Actions} from "./Actions";
 import {Raumzuordnung} from "../Raumzuordnung";
 
 export const Softwareverwaltung = {
+	componentName: 'Softwareverwaltung',
 	components: {
 		CoreFilterCmpt,
 		SoftwareModal,

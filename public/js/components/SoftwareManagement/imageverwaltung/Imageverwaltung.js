@@ -4,6 +4,7 @@ import SoftwareimageModal from "../../Modals/SoftwareimageModal";
 import {Raumzuordnung} from "../Raumzuordnung";
 
 export const Imageverwaltung = {
+	componentName: 'Imageverwaltung',
 	components: {
 		CoreFilterCmpt,
 		SoftwareimageModal,
