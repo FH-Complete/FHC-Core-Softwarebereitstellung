@@ -90,30 +90,6 @@ export const Softwareimage = {
 			this.softwareimage = {},
 			this.errors = [];
 			
-		},
-		onComplete(event)
-		{
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
-				{
-					ort_kurzbz: event.query
-				}
-			).then(result => {
-				if (CoreRESTClient.isError(result.data))
-				{
-					this.errors.push(result.data.retval);
-				}
-				else
-				{
-					this.ortSuggestions = CoreRESTClient.getData(result.data);
-				}
-			}
-			).catch(
-				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when autofilling Orte: ' + errorMessage);
-				}
-			);
 		}
 	},
 	template: `
