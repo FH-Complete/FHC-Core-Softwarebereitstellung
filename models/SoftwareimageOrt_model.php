@@ -37,4 +37,29 @@ class SoftwareimageOrt_model extends DB_Model
 			)
 		);
 	}
+
+	/**
+	 * Get Softwareimageorte by Image.
+	 */
+	public function getOrteByImage($softwareimage_id)
+	{
+		$qry = '
+			SELECT
+				swi.softwareimage_id,
+			   	swi.bezeichnung AS image,
+				swi.verfuegbarkeit_start AS image_verfuegbarkeit_start,
+			    swi.verfuegbarkeit_ende AS image_verfuegbarkeit_ende,
+			   	swiort.ort_kurzbz,
+				swiort.verfuegbarkeit_start,
+			   	swiort.verfuegbarkeit_ende,
+				ort.bezeichnung AS ort_bezeichnung
+			FROM extension.tbl_softwareimage_ort swiort
+			JOIN extension.tbl_softwareimage swi USING (softwareimage_id)
+			JOIN public.tbl_ort ort USING (ort_kurzbz)
+			WHERE
+				swiort.softwareimage_id = ?';
+
+		return $this->execQuery($qry, array($softwareimage_id)
+		);
+	}
 }
