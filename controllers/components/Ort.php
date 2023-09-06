@@ -166,7 +166,7 @@ class Ort extends Auth_Controller
 	public function getOrteByImage(){
 		$softwareimage_id = $this->input->get('softwareimage_id');
 
-		$result = $this->SoftwareimageOrtModel->loadWhere(array('softwareimage_id' => $softwareimage_id));
+		$result = $this->SoftwareimageOrtModel->getOrteByImage($softwareimage_id);
 
 		if (isError($result))
 		{

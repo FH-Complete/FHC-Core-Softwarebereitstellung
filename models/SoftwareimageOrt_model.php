@@ -31,7 +31,8 @@ class SoftwareimageOrt_model extends DB_Model
 				JOIN extension.tbl_softwareimage_ort swimage_ort USING (softwareimage_id)
 				JOIN public.tbl_ort ort USING (ort_kurzbz)
 			WHERE
-				sw.software_id = ?',
+				sw.software_id = ?
+			ORDER BY ort_kurzbz, image',
 			array(
 				$software_id
 			)
@@ -57,7 +58,8 @@ class SoftwareimageOrt_model extends DB_Model
 			JOIN extension.tbl_softwareimage swi USING (softwareimage_id)
 			JOIN public.tbl_ort ort USING (ort_kurzbz)
 			WHERE
-				swiort.softwareimage_id = ?';
+				swiort.softwareimage_id = ?
+			ORDER BY ort_kurzbz';
 
 		return $this->execQuery($qry, array($softwareimage_id)
 		);
