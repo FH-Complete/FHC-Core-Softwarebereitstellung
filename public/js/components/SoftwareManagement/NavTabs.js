@@ -24,6 +24,12 @@ export const NavTabs = {
 	methods: {
 		updateFilterMenuEntries(payload){
 			this.$emit('filterMenuUpdated', payload);
+		},
+		onClick(tab){
+			this.currentTab = tab;
+
+			// TODO Hack! Check issue of multiple tables, they should be solved in Filter.js.
+			FHC_JS_DATA_STORAGE_OBJECT.called_method = '/' + this.currentTab;
 		}
 	},
 	template: `
@@ -34,8 +40,7 @@ export const NavTabs = {
 					<li class="nav-item" v-for="tab in tabs" :key="tab">
 						<a
 						   :class="['nav-link', { active: currentTab === tab }]"
-						   @click="currentTab = tab"
-						   href="#">{{ tab }}
+						   @click="onClick(tab)">{{ tab }}
 						</a>
 					</li>
 				</ul>
