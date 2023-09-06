@@ -170,7 +170,7 @@ class Ort extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der zugeordnenten Orte');
+			$this->terminateWithJsonError('Fehler beim Holen der zugeordneten Orte');
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
