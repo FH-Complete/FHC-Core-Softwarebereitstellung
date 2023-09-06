@@ -80,8 +80,6 @@ export const Raumzuordnung = {
 					}, false // append to end
 				);
 			}
-
-
 		});
 	},
 	computed: {
@@ -111,7 +109,8 @@ export const Raumzuordnung = {
 					}
 					else
 					{
-					//	this.$refs.raumTable.reloadTable(); // TODO fix, does not reload yet
+						// Refresh data in Raumzuordnungstabelle
+						this.getOrteByImage(this.softwareimageId);
 					}
 				}
 			).catch(
@@ -171,7 +170,9 @@ export const Raumzuordnung = {
 		},
 		onRaumzuordnungSaved() {
 			this.$refs.raumModal.hide();
-			//this.$refs.raumTable.reloadTable(); // TODO fix, does not reload yet
+
+			// Refresh data in Raumzuordnungstabelle
+			this.getOrteByImage(this.softwareimageId);
 		},
 		onVerfuegbarkeitAendernClick(){
 			let selectedData = this.$refs.raumTable.tabulator.getSelectedData();
