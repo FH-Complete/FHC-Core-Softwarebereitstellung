@@ -9,7 +9,7 @@ class SoftwareimageOrt_model extends DB_Model
 	{
 		parent::__construct();
 		$this->dbTable = 'extension.tbl_softwareimage_ort';
-		$this->pk = array('softwareimage_id', 'ort_kurzbz');
+		$this->pk = 'softwareimageort_id';
 		$this->hasSequence = false;
 	}
 

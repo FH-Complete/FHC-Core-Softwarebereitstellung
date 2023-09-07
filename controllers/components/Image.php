@@ -65,7 +65,7 @@ class Image extends Auth_Controller
 			$this->terminateWithJsonError(getError($result));
 		}
 
-		// Insert image and assign Räume to that image
+		// Insert image
 		$result = $this->SoftwareimageModel->insert(
 			$data['softwareimage']
 		);
