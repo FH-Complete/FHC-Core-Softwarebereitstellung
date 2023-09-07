@@ -11,7 +11,7 @@ export const Imageverwaltung = {
 		Raumzuordnung
 	},
 	emits: [
-		'filterMenuUpdated',
+		'newFilterEntry',
 	],
 	provide() {
 		return {
@@ -108,10 +108,8 @@ export const Imageverwaltung = {
 				}
 			);
 		},
-		updateFilterMenuEntries: function(payload) {
-			// console.log('* IMG / updateFilterMenuEntries: payload.children:');
-			// console.log(payload.children[0]);
-			this.$emit('filterMenuUpdated', payload);
+		emitNewFilterEntry: function(payload) {
+			this.$emit('newFilterEntry', payload);
 		}
 	},
 	template: `
@@ -123,7 +121,7 @@ export const Imageverwaltung = {
 		:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 		:new-btn-label="'Image'"
 		:new-btn-show="true"
-		@nw-new-entry="updateFilterMenuEntries"
+		@nw-new-entry="emitNewFilterEntry"
 		@click:new="openModal">
 	</core-filter-cmpt>
 	

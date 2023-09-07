@@ -38,7 +38,7 @@ export const SoftwareManagement = {
 		}
 	},
 	methods: {
-		updateFilterMenuEntries(payload){
+		updateSideMenuEntries(payload) {
 			this.sideMenuEntries = payload;
 		}
 	},
@@ -56,7 +56,7 @@ export const SoftwareManagement = {
 		:mainCols="mainCols"
 		:asideCols="asideCols">
 		<template v-slot:main>
-			<nav-tabs @filter-menu-updated="updateFilterMenuEntries"></nav-tabs>									
+			<nav-tabs @new-filter-entry="updateSideMenuEntries"></nav-tabs>									
 		</template>
       	<template v-slot:aside>
       		<notification></notification>	

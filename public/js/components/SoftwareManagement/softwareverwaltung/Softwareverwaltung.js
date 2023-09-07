@@ -13,7 +13,7 @@ export const Softwareverwaltung = {
 		Raumzuordnung
 	},
 	emits: [
-		'filterMenuUpdated',
+		'newFilterEntry',
 	],
 	data: function() {
 		return {
@@ -237,8 +237,10 @@ export const Softwareverwaltung = {
 			}
 			this.$refs.softwareTable.reloadTable();
 		},
-		updateFilterMenuEntries: function(payload) {
-			this.$emit('filterMenuUpdated', payload);
+		emitNewFilterEntry: function(payload) {
+			console.log('* Softwareverwaltung updateFilterMenuEntries: payload.children:');
+			console.log(payload.children[0]);
+			this.$emit('newFilterEntry', payload);
 		}
 	},
 	template: `
@@ -250,7 +252,7 @@ export const Softwareverwaltung = {
 		:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 		:new-btn-label="'Software'"
 		:new-btn-show="true"
-		@nw-new-entry="updateFilterMenuEntries"
+		@nw-new-entry="emitNewFilterEntry"
 		:id-field="'software_id'"
 		:parent-id-field="'software_id_parent'"
 		@click:new="openModal">

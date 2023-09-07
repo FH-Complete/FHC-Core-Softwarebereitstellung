@@ -9,7 +9,7 @@ export const NavTabs = {
 		Lizenzserververwaltung
 	},
 	emits: [
-		'filterMenuUpdated',
+		'newFilterEntry',
 	],
 	data: function() {
 		return {
@@ -22,8 +22,8 @@ export const NavTabs = {
 		}
 	},
 	methods: {
-		updateFilterMenuEntries(payload){
-			this.$emit('filterMenuUpdated', payload);
+		emitNewFilterEntry(payload){
+			this.$emit('newFilterEntry', payload);
 		},
 		onClick(tab){
 			this.currentTab = tab;
@@ -44,7 +44,7 @@ export const NavTabs = {
 						</a>
 					</li>
 				</ul>
-				<component :is="currentTab" @filter-menu-updated="updateFilterMenuEntries"></component>
+				<component :is="currentTab" @new-filter-entry="emitNewFilterEntry"></component>
 			</div>	
   		</div>
   </div>
