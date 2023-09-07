@@ -35,7 +35,7 @@ class Lizenzserver extends Auth_Controller
 	public function getLizenzserver(){
 		$lizenzserver_kurzbz = $this->input->get('lizenzserver_kurzbz');
 
-		$result = $this->SoftwarelizenzserverModel->load($lizenzserver_kurzbz);
+		$result = $this->SoftwarelizenzserverModel->load(array('lizenzserver_kurzbz' => $lizenzserver_kurzbz));
 
 		if (isError($result))
 		{
