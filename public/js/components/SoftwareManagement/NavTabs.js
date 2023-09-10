@@ -25,7 +25,7 @@ export const NavTabs = {
 		updateFilterMenuEntries(payload){
 			this.$emit('filterMenuUpdated', payload);
 		},
-		onClick(tab){
+		changeTab(tab){
 			this.currentTab = tab;
 
 			// TODO Hack! Check issue of multiple tables, they should be solved in Filter.js.
@@ -40,12 +40,12 @@ export const NavTabs = {
 					<li class="nav-item" v-for="tab in tabs" :key="tab">
 						<a
 						   :class="['nav-link', { active: currentTab === tab }]"
-						   @click="onClick(tab)">{{ tab }}
+						   @click="changeTab(tab)">{{ tab }}
 						</a>
 					</li>
 				</ul>
 				<component :is="currentTab" @filter-menu-updated="updateFilterMenuEntries"></component>
-			</div>	
+			</div>
   		</div>
   </div>
 	`
