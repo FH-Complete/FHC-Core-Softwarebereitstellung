@@ -23,6 +23,7 @@ export default {
 	methods: {
 		open(lizenzserver_kurzbz) {
 			this.title = lizenzserver_kurzbz === undefined ? 'Lizenzserver anlegen' : 'Lizenzserver bearbeiten';
+			if (lizenzserver_kurzbz !== undefined) this.$refs.lizenzserver.prefill(lizenzserver_kurzbz);
 			this.$refs.modalContainer.show();
 		}
 	},

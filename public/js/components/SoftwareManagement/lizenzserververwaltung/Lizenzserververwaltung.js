@@ -26,9 +26,33 @@ export const Lizenzserververwaltung = {
 					{title: 'IP-Adresse', field: 'ipadresse', headerFilter: true},
 					{title: 'Anpsprechpartner', field: 'ansprechpartner', headerFilter: true},
 					{title: 'Location', field: 'location', headerFilter: true, hozAlign: 'right'},
-					{title: 'Anmerkung', field: 'anmerkung', headerFilter: true, hozAlign: 'right'}
+					{title: 'Anmerkung', field: 'anmerkung', headerFilter: true, hozAlign: 'right'},
+					{
+						title: 'Aktionen',
+						field: 'actions',
+						hozAlign: 'center',
+						formatter: (cell, formatterParams, onRendered) => {
+							let container = document.createElement('div');
+							container.className = "d-flex gap-2";
+
+							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-edit"></i>';
+							button.addEventListener('click', (event) => this.editLizenzserver(event, cell.getRow().getIndex()));
+							container.append(button);
+
+							button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-xmark"></i>';
+							button.addEventListener('click', () => this.deleteLizenzserver(cell.getRow().getIndex()));
+							container.append(button);
+
+							return container;
+						}
+					}
 				]
-			}
+			},
+			tabulatorAdditionalColumns: ['actions'],
 		}
 	},
 	methods: {
@@ -39,11 +63,31 @@ export const Lizenzserververwaltung = {
 			this.$refs.lizenzserverModal.hide();
 			this.$refs.lizenzserverTable.reloadTable();
 		},
+		editLizenzserver(event, lizenzserver_kurzbz){
+			this.openModal(event, lizenzserver_kurzbz);
+		},
+		deleteLizenzserver(lizenzserver_kurzbz) {
+			CoreRESTClient.post(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/deleteLizenzserver',
+				{
+					lizenzserver_kurzbz: lizenzserver_kurzbz
+				}
+			).then(
+				result => {
+					this.$refs.lizenzserverTable.reloadTable();
+				}
+			).catch(
+				error => {
+					alert('Error when deleting Lizenzserver: ' + error.message);
+				}
+			);
+		},
 		emitNewFilterEntry: function(payload) {
 			this.$emit('newFilterEntry', payload);
 		}
 	},
 	template: `
+	<!-- Lizenzserververwaltung Tabelle -->
 	<core-filter-cmpt
 		ref="lizenzserverTable"
 		filter-type="LizenzserverVerwaltung"
@@ -55,7 +99,7 @@ export const Lizenzserververwaltung = {
 		@click:new="openModal">	
 	</core-filter-cmpt>
 	
-		<!-- Lizenzserver modal component -->
+	<!-- Lizenzserver modal component -->
 	<lizenzserver-modal
 		class="fade"
 		ref="lizenzserverModal"

@@ -17,7 +17,9 @@ class Lizenzserver extends Auth_Controller
 		parent::__construct(
 			array(
 				'getLizenzserver' => 'basis/mitarbeiter:r',
-				'createLizenzserver' => 'basis/mitarbeiter:r'
+				'createLizenzserver' => 'basis/mitarbeiter:r',
+				'updateLizenzserver' => 'basis/mitarbeiter:r',
+				'deleteLizenzserver' => 'basis/mitarbeiter:r',
 			)
 		);
 
@@ -77,6 +79,56 @@ class Lizenzserver extends Auth_Controller
 		// On success
 		return $this->outputJson($result);
 	}
+
+	/**
+	 * Update Softwarelizenzserver.
+	 *
+	 * @return mixed
+	 */
+	public function updateLizenzserver()
+	{
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		// Validate data
+		$result = $this->_validate($data);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
+		// Update Softwarelizenzserver
+		$result = $this->SoftwarelizenzserverModel->update(
+			array('lizenzserver_kurzbz' => $data['lizenzserver']['lizenzserver_kurzbz']),
+			$data['lizenzserver']
+		);
+
+		return $this->outputJson($result);
+	}
+
+	/**
+	 * Delete Softwarelizenzserver.
+	 */
+	public function deleteLizenzserver()
+	{
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		// Validate data
+		$result = $this->_validate($data);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
+		// Delete Softwarelizenzserver
+		$result = $this->SoftwarelizenzserverModel->delete(
+			array('lizenzserver_kurzbz' =>$data['lizenzserver_kurzbz']));
+
+		return $this->outputJson($result);
+	}
+
+
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Private methods

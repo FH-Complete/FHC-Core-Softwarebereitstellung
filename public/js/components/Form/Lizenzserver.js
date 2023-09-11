@@ -12,6 +12,36 @@ export const Lizenzserver = {
 		}
 	},
 	methods: {
+		prefill(lizenzserver_kurzbz) {
+			this.lizenzserver_kurzbz = lizenzserver_kurzbz;
+
+			if (this.lizenzserver_kurzbz !== null) {
+				// Get Softwarelizenzserver
+				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserver',
+					{
+						lizenzserver_kurzbz: lizenzserver_kurzbz
+					}
+				).then(
+					result => {
+						if (CoreRESTClient.isError(result.data)) {
+							this.errors.push(result.data.retval);
+						}
+						else {
+							if (CoreRESTClient.hasData(result.data)) {
+								// Prefill form with softwareimage
+								this.lizenzserver = CoreRESTClient.getData(result.data);
+							}
+						}
+					}
+				).catch(
+					error => {
+						let errorMessage = error.message ? error.message : 'Unknown error';
+						alert('Error when getting Softwarelizenzserver: ' + errorMessage);
+					}
+				);
+
+			}
+		},
 		save(){
 			// Check form fields
 			if (!this.$refs.lizenzserverForm.checkValidity())
