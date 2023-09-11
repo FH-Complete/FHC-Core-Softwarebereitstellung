@@ -20,6 +20,7 @@ class Lizenzserver extends Auth_Controller
 				'createLizenzserver' => 'basis/mitarbeiter:r',
 				'updateLizenzserver' => 'basis/mitarbeiter:r',
 				'deleteLizenzserver' => 'basis/mitarbeiter:r',
+				'getLizenzserverByKurzbz' => 'basis/mitarbeiter:r'
 			)
 		);
 
@@ -126,6 +127,27 @@ class Lizenzserver extends Auth_Controller
 			array('lizenzserver_kurzbz' =>$data['lizenzserver_kurzbz']));
 
 		return $this->outputJson($result);
+	}
+
+	/**
+	 * Get Softwarelizenzserver by autofill query for lizenzserver_kurzbz.
+	 */
+	public function getLizenzserverByKurzbz()
+	{
+		$lizenzserver_kurzbz = $this->input->get('lizenzserver_kurzbz');
+
+		$this->SoftwarelizenzserverModel->addSelect('lizenzserver_kurzbz');
+		$this->SoftwarelizenzserverModel->addOrder('lizenzserver_kurzbz');
+		$result = $this->SoftwarelizenzserverModel->loadWhere(
+			"lizenzserver_kurzbz ILIKE '%".$this->SoftwarelizenzserverModel->escapeLike($lizenzserver_kurzbz)."%'"
+		);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Lizenzserver: '.getError($result));
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
 	}
 
 

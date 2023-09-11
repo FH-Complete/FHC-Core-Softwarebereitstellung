@@ -21,6 +21,8 @@ export const SoftwareForm = {
 			parentSoftware: null, // selected autocomplete values
 			softwareImageSuggestions: [], // autocomplete suggestions
 			softwareImages: [], // selected autocomplete values
+			lizenzserverSuggestions: [], // autocomplete suggestions
+			lizenzserver_kurzbz: null, // selected autocomplete value
 			errors: []
 		}
 	},
@@ -72,7 +74,6 @@ export const SoftwareForm = {
 				softwarestatus_kurzbz: 'neu'
 			}
 		},
-		// Prefill form with software values
 		prefillSoftware(software_id) {
 			this.softwareId = software_id;
 
@@ -95,6 +96,7 @@ export const SoftwareForm = {
 							if (CoreRESTClient.hasData(result.data)) {
 								let softwareData = CoreRESTClient.getData(result.data);
 								this.software = softwareData.software;
+								this.lizenzserver_kurzbz = softwareData.software.lizenzserver_kurzbz;
 								if (softwareData.hasOwnProperty('software_parent'))
 								{
 									// set software_kurzbz_version field for display in autocomplete
@@ -194,7 +196,7 @@ export const SoftwareForm = {
 				CoreRESTClient.post(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/' + method,
 					{
-						software: this.extendedSoftware,
+						software: {...this.extendedSoftware, ...this.lizenzserver_kurzbz},
 						softwarestatus: this.softwarestatus,
 						softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
 					}
@@ -204,7 +206,10 @@ export const SoftwareForm = {
 						if (CoreRESTClient.isError(result.data))
 						{
 							let errs = result.data.retval; // TODO fix get Error in rest client
-							for (let err of errs) this.errors.push(err);
+
+							for (const [key, value] of Object.entries(errs)) {
+								this.errors.push (value);
+							}
 						}
 						else
 						{
@@ -227,6 +232,7 @@ export const SoftwareForm = {
 			this.softwarestatus = this.getDefaultSoftwarestatus();
 			this.parentSoftware = null;
 			this.softwareImages = [];
+			this.lizenzserver_kurzbz = null;
 			this.errors = [];
 		},
 		getSoftwareByKurzbz(event)
@@ -287,6 +293,31 @@ export const SoftwareForm = {
 				error => {
 					let errorMessage = error.message ? error.message : 'Unknown error';
 					this.errors.push('Error when getting images: ' + errorMessage);
+				}
+			);
+		},
+		getLizenzserverByKurzbz(event) {
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserverByKurzbz',
+				{
+					lizenzserver_kurzbz: event.query
+				}
+			).then(
+				result => {
+					// display errors
+					if (CoreRESTClient.isError(result.data))
+					{
+						this.errors.push(result.data.retval);
+					}
+					else
+					{
+						this.lizenzserverSuggestions = CoreRESTClient.getData(result.data);
+					}
+				}
+			).catch(
+				error => {
+					let errorMessage = error.message ? error.message : 'Unknown error';
+					this.errors.push('Error when getting Lizenzserver: ' + errorMessage);
 				}
 			);
 		}
@@ -355,6 +386,28 @@ export const SoftwareForm = {
 					:suggestions="softwareImageSuggestions"
 					@complete="getImagesByBezeichnung">
 				</auto-complete>
+				<label class="form-label">Lizenz-Art</label>
+				<input type="text" class="form-control mb-3" v-model="software.lizenzart">
+				<label class="form-label">Lizenz-Server Kurzbezeichnung</label>
+				<auto-complete
+					class="w-100 mb-3"
+					v-model="lizenzserver_kurzbz"
+					optionLabel="lizenzserver_kurzbz"
+					dropdown
+					dropdown-current
+					forceSelection
+					:suggestions="lizenzserverSuggestions"
+					@complete="getLizenzserverByKurzbz">
+				</auto-complete>
+				<label class="form-label">Lizenz-Anzahl</label>
+				<input type="text" class="form-control mb-3" v-model="software.anzahl_lizenzen">
+				<label class="form-label">Lizenz-Laufzeit</label>
+				<input type="date" class="form-control mb-3" v-model="software.lizenzlaufzeit">
+				<label class="form-label">Lizenz-Kosten</label>
+				<div class="input-group mb-3">
+				  	<input type="text" class="form-control" v-model="software.lizenzkosten">
+				  	<span class="input-group-text">€/Jahr</span>
+				</div>	
 				<label :for="ansprechpartner_intern" class="form-label">Ansprechpartner (intern)</label>
 				<input type="text" class="form-control mb-3" :id="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
 				<label :for="ansprechpartner_extern" class="form-label">Ansprechpartner (extern)</label>
