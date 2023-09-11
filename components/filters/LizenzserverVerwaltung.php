@@ -7,7 +7,7 @@
 				lizenzserver_kurzbz,
 			   	bezeichnung,
 			   	macadresse,
-			   	ipadresse
+			   	ipadresse,
 				ansprechpartner,
 			   	anmerkung,
 			   	location
