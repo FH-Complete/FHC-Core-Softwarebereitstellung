@@ -241,8 +241,6 @@ export const Softwareverwaltung = {
 			this.$refs.softwareTable.reloadTable();
 		},
 		emitNewFilterEntry: function(payload) {
-			console.log('* Softwareverwaltung updateFilterMenuEntries: payload.children:');
-			console.log(payload.children[0]);
 			this.$emit('newFilterEntry', payload);
 		}
 	},

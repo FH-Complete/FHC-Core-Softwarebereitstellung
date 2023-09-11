@@ -101,8 +101,6 @@ export const SoftwareForm = {
 								{
 									// set software_kurzbz_version field for display in autocomplete
 									let parent = softwareData.software_parent;
-									console.log("prefill");
-									console.log(parent);
 									parent.software_kurzbz_version =
 										parent.version != null
 										? parent.software_kurzbz + ' (version: '+parent.version+')'
@@ -189,8 +187,6 @@ export const SoftwareForm = {
 				method = 'createSoftware'
 			}
 
-			console.log(this.parentSoftware);
-
 			if (method)
 			{
 				CoreRESTClient.post(
@@ -235,8 +231,7 @@ export const SoftwareForm = {
 			this.lizenzserver_kurzbz = null;
 			this.errors = [];
 		},
-		getSoftwareByKurzbz(event)
-		{
+		getSoftwareByKurzbz(event) {
 			CoreRESTClient.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
 				{
@@ -270,8 +265,7 @@ export const SoftwareForm = {
 				}
 			);
 		},
-		getImagesByBezeichnung(event)
-		{
+		getImagesByBezeichnung(event) {
 			CoreRESTClient.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesByBezeichnung',
 				{

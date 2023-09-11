@@ -38,10 +38,7 @@ export const NavTabs = {
 			<div id="navTabs">
 				<ul class="nav nav-tabs" class="mb-5">
 					<li class="nav-item" v-for="tab in tabs" :key="tab">
-						<a
-						   :class="['nav-link', { active: currentTab === tab }]"
-						   @click="onClick(tab)">{{ tab }}
-						</a>
+						<a :class="['nav-link', { active: currentTab === tab }]" @click="onClick(tab)">{{ tab }}</a>
 					</li>
 				</ul>
 				<component :is="currentTab" @new-filter-entry="emitNewFilterEntry"></component>
