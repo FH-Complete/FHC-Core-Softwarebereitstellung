@@ -1,3 +1,8 @@
+/* Navtab cursor as pointer */
+a.nav-link {
+    cursor: pointer;
+}
+
 /* Fix transparent background of edit list */
 .tabulator-edit-list .tabulator-edit-list-item {
     background-color: white;
