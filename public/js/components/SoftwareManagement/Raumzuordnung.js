@@ -20,6 +20,7 @@ export const Raumzuordnung = {
 				layout: 'fitDataFill',
 				index: 'softwareimageort_id',
 				columns: [
+					{title: 'Img-Ort-ID', field: 'softwareimageort_id', headerFilter: true, visible: false},
 					{title: 'Image', field: 'image', headerFilter: true},
 					{title: 'Img-Verfügbarkeit Start', field: 'image_verfuegbarkeit_start', headerFilter: true,
 						hozAlign: 'center', visible: false},
@@ -195,7 +196,7 @@ export const Raumzuordnung = {
 			}
 
 			this.$refs.raumModal.openVerfuebarkeitAendernModal(selectedData);
-		}
+		},
 	},
 	template: `
 	<div class="col-md-6">
