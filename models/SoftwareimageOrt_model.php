@@ -10,7 +10,6 @@ class SoftwareimageOrt_model extends DB_Model
 		parent::__construct();
 		$this->dbTable = 'extension.tbl_softwareimage_ort';
 		$this->pk = 'softwareimageort_id';
-		$this->hasSequence = false;
 	}
 
 	/**
@@ -46,6 +45,7 @@ class SoftwareimageOrt_model extends DB_Model
 	{
 		$qry = '
 			SELECT
+				swiort.softwareimageort_id,
 				swi.softwareimage_id,
 			   	swi.bezeichnung AS image,
 				swi.verfuegbarkeit_start AS image_verfuegbarkeit_start,
