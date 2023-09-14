@@ -66,6 +66,14 @@ class Image extends Auth_Controller
 			$this->terminateWithJsonError(getError($result));
 		}
 
+		// Return if Imagebezeichnung already exixts
+		$result = $this->SoftwareimageModel->load(array('bezeichnung' => $data['softwareimage']['bezeichnung']));
+
+		if (hasData($result))
+		{
+			$this->terminateWithJsonError('Bezeichnung wird bereits verwendet. Wählen Sie eine neue Bezeichnung.');
+		}
+
 		// Insert image
 		$result = $this->SoftwareimageModel->insert(
 			$data['softwareimage']
