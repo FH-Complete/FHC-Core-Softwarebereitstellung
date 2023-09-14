@@ -20,6 +20,7 @@ class Image extends Auth_Controller
 				'createImage' => 'basis/mitarbeiter:r',
 				'updateImage' => 'basis/mitarbeiter:r',
 				'deleteImage' => 'basis/mitarbeiter:r',
+				'copyImageAndOrte' => 'basis/mitarbeiter:r',
 				'getImagesBySoftware' => 'basis/mitarbeiter:r',
 				'getImagesByBezeichnung' => 'basis/mitarbeiter:r'
 			)
@@ -115,6 +116,35 @@ class Image extends Auth_Controller
 
 		// Delete Softwareimage
 		$result = $this->SoftwareimageModel->delete($data['softwareimage_id']);
+
+		return $this->outputJson($result);
+	}
+
+
+	/**
+	 * Copy exixting Softwareimage and Orte, that are assigend to that image.
+	 * Check for different Bezeichnung.
+	 *
+	 * @return mixed
+	 */
+	public function copyImageAndOrte(){
+		$data = json_decode($this->input->raw_input_stream, true);
+
+		// Validate data
+		$result = $this->_validate($data);
+
+		if (isError($result)) $this->terminateWithJsonError(getError($result));
+
+		// Return if Imagebezeichnung already exixts
+		$result = $this->SoftwareimageModel->load(array('bezeichnung' => $data['softwareimage']['bezeichnung']));
+
+		if (hasData($result))
+		{
+			$this->terminateWithJsonError('Bezeichnung wird bereits verwendet. Wählen Sie eine neue Bezeichnung.');
+		}
+
+		// Insert image
+		$result = $this->SoftwareimageModel->copyImageAndOrteOf($data['softwareimage']);
 
 		return $this->outputJson($result);
 	}

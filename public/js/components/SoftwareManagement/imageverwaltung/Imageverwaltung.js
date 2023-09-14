@@ -53,6 +53,12 @@ export const Imageverwaltung = {
 
 							button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-copy"></i>';
+							button.addEventListener('click', (event) => this.copySoftwareimage(event, cell.getRow().getIndex()));
+							container.append(button);
+
+							button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-xmark"></i>';
 							button.addEventListener('click', () => this.deleteSoftwareimage(cell.getRow().getIndex()));
 							container.append(button);
@@ -82,8 +88,8 @@ export const Imageverwaltung = {
 		});
 	},
 	methods: {
-		openModal(event, softwareimageId) {
-			this.$refs.softwareimageModal.open(softwareimageId);
+		openModal(event, softwareimageId, copy = false) {
+			this.$refs.softwareimageModal.open(softwareimageId, copy);
 		},
 		onSoftwareimageSaved() {
 			this.$refs.softwareimageModal.hide();
@@ -91,6 +97,9 @@ export const Imageverwaltung = {
 		},
 		editSoftwareimage(event, softwareimage_id){
 			this.openModal(event, softwareimage_id);
+		},
+		copySoftwareimage(event, softwareimage_id){
+			this.openModal(event, softwareimage_id, true);
 		},
 		deleteSoftwareimage(softwareimage_id) {
 			CoreRESTClient.post(
@@ -101,12 +110,22 @@ export const Imageverwaltung = {
 			).then(
 				result => {
 					this.$refs.softwareimageTable.reloadTable();
+
+					// Empty Raumzuordnungstabelle
+					this.$refs.raumzuordnung.getOrteByImage(null);
 				}
 			).catch(
 				error => {
 					alert('Error when deleting softwareimage: ' + error.message);
 				}
 			);
+		},
+		onRaumzuordnungSaved(raumanzahlDifferenz) {
+
+			// Update Raumanzahl in Imagetabelle
+			let row = this.$refs.softwareimageTable.tabulator.getRow(this.softwareimageId);
+			let oldRaumanzahl = row.getData().ort_count;
+			row.update({ort_count: oldRaumanzahl + raumanzahlDifferenz})
 		},
 		emitNewFilterEntry: function(payload) {
 			this.$emit('newFilterEntry', payload);
@@ -129,7 +148,7 @@ export const Imageverwaltung = {
 	<h2 class="h4 fhc-hr mt-5">Details zu Softwareimage 
 		<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span></h2>				
 	<div class="row">						
-		<raumzuordnung ref="raumzuordnung"></raumzuordnung>								
+		<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
 	</div>
 	
 	<!-- Softwareimage modal component -->

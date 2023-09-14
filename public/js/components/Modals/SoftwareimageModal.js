@@ -21,9 +21,13 @@ export default {
 		this.modal = this.$refs.modalContainer.modal;
 	},
 	methods: {
-		open(softwareimage_id) {
-			this.title = softwareimage_id ? 'Softwareimage bearbeiten' : 'Softwareimage anlegen';
-			this.$refs.softwareimage.prefill(softwareimage_id);
+		open(softwareimage_id, copy = false) {
+			if (copy === true){
+				this.title = 'Softwareimage und zugeordnete Räume kopieren';
+			} else {
+				this.title = softwareimage_id ? 'Softwareimage bearbeiten' : 'Softwareimage anlegen';
+			}
+			this.$refs.softwareimage.prefill(softwareimage_id, copy);
 			this.$refs.modalContainer.show();
 		}
 	},

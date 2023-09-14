@@ -116,6 +116,9 @@ export const Raumzuordnung = {
 					{
 						// Refresh data in Raumzuordnungstabelle
 						this.getOrteByImage(this.softwareimageId);
+
+						// Emit deleted Raumanzahl to be updated in Imagetabelle
+						this.$emit('onSaved', -1);
 					}
 				}
 			).catch(
@@ -173,11 +176,14 @@ export const Raumzuordnung = {
 				}
 			);
 		},
-		onRaumzuordnungSaved() {
+		onRaumzuordnungSaved(raumanzahlDifferenz) {
 			this.$refs.raumModal.hide();
 
 			// Refresh data in Raumzuordnungstabelle
 			this.getOrteByImage(this.softwareimageId);
+
+			// Emit added Raumanzahl to be updated in Imagetabelle
+			this.$emit('onSaved', raumanzahlDifferenz);
 		},
 		onVerfuegbarkeitAendernClick(){
 			let selectedData = this.$refs.raumTable.tabulator.getSelectedData();

@@ -30,13 +30,16 @@ export default {
 			this.title = 'Verfügbarkeit bearbeiten';
 			this.$refs.raum.prefillOrte(selectedData);
 			this.$refs.modalContainer.show();
-		}
+		},
+		emitOnSaved(raumanzahlDifferenz){
+			this.$emit('onSaved', raumanzahlDifferenz);
+		},
 	},
 	template: `
 		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @hidden-bs-modal="$refs.raum.reset()">
 			<template v-slot:title>{{title}}</template>
 			<template v-slot:default>
-				<raum ref="raum" @on-saved="$emit('onSaved')"></raum>
+				<raum ref="raum" @on-saved="emitOnSaved"></raum>
 			</template>
 			<template v-slot:footer>
 				<button type="button" class="btn btn-primary" @click="$refs.raum.save()">Speichern</button>

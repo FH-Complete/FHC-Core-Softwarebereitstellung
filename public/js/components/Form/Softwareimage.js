@@ -11,12 +11,14 @@ export const Softwareimage = {
 		return {
 			softwareimageId: null,
 			softwareimage: {},
+			copy: false,
 			errors: []
 		}
 	},
 	methods: {
-		prefill(softwareimage_id) {
+		prefill(softwareimage_id, copy) {
 			this.softwareimageId = softwareimage_id;
+			this.copy = copy;
 
 			if (Number.isInteger(this.softwareimageId)) {
 				// Get softwareimage
@@ -54,8 +56,13 @@ export const Softwareimage = {
 				return;
 			}
 
-			// Decide if create or update image
-			let method = Number.isInteger(this.softwareimageId) ? 'updateImage' : 'createImage';
+			// Decide if copy, create or update image
+			if (this.copy === true) {
+				var method = 'copyImageAndOrte';
+			}
+			else {
+				var method = Number.isInteger(this.softwareimageId) ? 'updateImage' : 'createImage';
+			}
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/' + method,
@@ -67,10 +74,17 @@ export const Softwareimage = {
 					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						Object.entries(CoreRESTClient.getError(result.data))
-							.forEach(([key, value]) => {
-								this.errors.push(value);
-							});
+						if(typeof result.data.retval === 'string')
+						{
+							this.errors.push(result.data.retval);
+						}
+
+						if(typeof result.data.retval === 'object') {
+							Object.entries(CoreRESTClient.getError(result.data))
+								.forEach(([key, value]) => {
+									this.errors.push(value);
+								});
+						}
 
 						return;
 					}
@@ -88,6 +102,7 @@ export const Softwareimage = {
 		reset(){
 			this.softwareimageId = null,
 			this.softwareimage = {},
+			this.copy = false,
 			this.errors = [];
 			
 		}

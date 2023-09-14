@@ -98,8 +98,11 @@ export const Raum = {
 						return;
 					}
 
+					// Store added Räume to update Raumanzahl in Imagetabelle
+					let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
+
 					// On success
-					this.$emit('onSaved');
+					this.$emit('onSaved', raumanzahlDifferenz);
 				}
 			).catch(
 				error => {
