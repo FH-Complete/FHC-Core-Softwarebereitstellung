@@ -13,7 +13,7 @@ export const Softwareverwaltung = {
 		Raumzuordnung
 	},
 	emits: [
-		'newFilterEntry',
+		'filterMenuUpdated'
 	],
 	data: function() {
 		return {
@@ -78,6 +78,7 @@ export const Softwareverwaltung = {
 					}
 				]
 			},
+			showHierarchy: true, // display data as hierarchy tree or not
 			tabulatorAdditionalColumns: ['actions'],
 			selectedTabulatorRow: null, // currently selected tabulator row
 			softwarestatus: Array,
@@ -127,9 +128,33 @@ export const Softwareverwaltung = {
 			// get row data
 			this.getSoftwareRowDetails();
 		});
+
+		this.$refs.softwareTable.tabulator.on("dataLoaded", data => {
+			if (this.showHierarchy == true) return;
+
+			let allChildrenArr = [];
+
+			// loop through all data
+			for (let child of data)
+			{
+				// if it has children
+				if (child._children)
+				{
+					// promote children, i.e. put them on 0 level
+					this.promoteChildren(child._children, data);
+
+					// remove children from lower level
+					delete child._children;
+				}
+			}
+		});
 	},
 	methods: {
-		handleHierarchyToggle(expandHierarchy) {
+		handleHierarchyViewChange(showHierarchy) {
+			this.showHierarchy = showHierarchy;
+			this.reloadTabulator();
+		},
+		handleHierarchyExpansion(expandHierarchy) {
 			this.softwareTabulatorOptions.dataTreeStartExpanded = expandHierarchy;
 			this.reloadTabulator();
 		},
@@ -232,6 +257,21 @@ export const Softwareverwaltung = {
 				}
 			);
 		},
+
+		promoteChildren(children, resultArr) {
+			for (let child of children) {
+				// add child to result array
+				resultArr.push(child);
+
+				// if other children, descend into next level
+				if (child._children)
+				{
+					this.promoteChildren(child._children, resultArr);
+					// remove children from this level
+					delete child._children;
+				}
+			}
+		},
 		reloadTabulator() {
 			for (let option in this.softwareTabulatorOptions)
 			{
@@ -250,33 +290,34 @@ export const Softwareverwaltung = {
 		ref="softwareTable"
 		filter-type="SoftwareManagement"
 		:tabulator-options="softwareTabulatorOptions"
-		:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
+		:tabulator-additional-columns="tabulatorAdditionalColumns"
 		:new-btn-label="'Software'"
 		:new-btn-show="true"
-		@nw-new-entry="emitNewFilterEntry"
 		:id-field="'software_id'"
 		:parent-id-field="'software_id_parent'"
-		@click:new="openModal">
+		@click:new="openModal"
+		@nw-new-entry="emitNewFilterEntry">
 		<template v-slot:actions>
 			<actions
 				:softwarestatus="softwarestatus"
 				:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
 				 @set-status="changeStatus"
-				 @hierarchy-toggle="handleHierarchyToggle"/>
+				 @hierarchy-view-changed="handleHierarchyViewChange"
+				 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
 			 </actions>
 		 </template>
 	</core-filter-cmpt>
 	<!-- Software Details -->
-	<h2 class="h4 fhc-hr mt-5">Details zu Software <span class="text-uppercase">{{ software_kurzbz }}</span></h2>				
-	<div class="row">						
-		<raumzuordnung ref="raumzuordnung"></raumzuordnung>								
-	</div>	
+	<h2 class="h4 fhc-hr mt-5">Details zu Software <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
+	<div class="row">
+		<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+	</div>
 	<!-- Software modal component -->
 	<software-modal
 		class="fade"
 		ref="modalForSave"
 		dialog-class="modal-lg"
 		@software-saved="handleSoftwareSaved">
-	</software-modal>	
+	</software-modal>
 `
 };
