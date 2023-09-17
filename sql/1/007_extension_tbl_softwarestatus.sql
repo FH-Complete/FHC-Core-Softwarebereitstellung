@@ -9,7 +9,7 @@ GRANT SELECT ON TABLE extension.tbl_softwarestatus TO web;
 
 INSERT INTO extension.tbl_softwarestatus(softwarestatus_kurzbz, bezeichnung) VALUES
 ('inbearbeitung', '{"In Bearbeitung", "In progress"}'),
-('zumtestenbereite', '{"Zum Testen bereit", "Ready for testing"}'),
+('zumtestenbereit', '{"Zum Testen bereit", "Ready for testing"}'),
 ('veroeffentlicht', '{"Veröffentlicht", "Published"}'),
 ('endoflife', '{"End of life", "End of Life"}'),
 ('nichtverfuegbar', '{"Nicht verfügbar", "Not available"}')
