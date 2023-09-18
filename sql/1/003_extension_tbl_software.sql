@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS extension.tbl_software (
 	interne_kosten numeric(8,2),
 	ansprechpartner_intern text,
 	ansprechpartner_extern text,
-	aktiv boolean NOT NULL DEFAULT TRUE,
 	kostentraeger_oe_kurzbz varchar(32),
 	anmerkung_intern text,
 	insertamum timestamp DEFAULT NOW(),

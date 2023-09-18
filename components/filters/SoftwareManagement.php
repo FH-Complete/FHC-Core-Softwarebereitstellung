@@ -18,7 +18,6 @@
 				sw.anzahl_lizenzen,
 				sw.lizenzlaufzeit,
 				sw.lizenzkosten,
-				sw.aktiv,
 				sw_status.softwarestatus_kurzbz,
 				sw.anmerkung_intern,
 				sw.software_id,

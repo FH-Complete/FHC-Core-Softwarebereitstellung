@@ -45,7 +45,6 @@ export const Softwareverwaltung = {
 					{title: 'Lizenz-Anzahl', field: 'anzahl_lizenzen', headerFilter: true},
 					{title: 'Lizenz-Laufzeit', field: 'lizenzlaufzeit', headerFilter: true},
 					{title: 'Lizenz-Kosten', field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
-					{title: 'Aktiv', field: 'aktiv', headerFilter: true, formatter:"tickCross", hozAlign: 'center'},
 					{title: 'Status', field: 'softwarestatus_kurzbz',
 						editor: "list", editorParams:{values:[]},
 						headerFilter: true, headerFilterParams:{values:[]}
