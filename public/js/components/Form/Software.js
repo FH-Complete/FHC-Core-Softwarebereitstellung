@@ -15,14 +15,15 @@ export const SoftwareForm = {
 		return {
 			softwareMetadata: {},
 			softwareId: null,
-			software: {},
+			software: {
+				lizenzserver_kurzbz: null
+			},
 			softwarestatus: {},
 			parentSoftwareSuggestions: [], // autocomplete suggestions
 			parentSoftware: null, // selected autocomplete values
 			softwareImageSuggestions: [], // autocomplete suggestions
 			softwareImages: [], // selected autocomplete values
 			lizenzserverSuggestions: [], // autocomplete suggestions
-			lizenzserver_kurzbz: null, // selected autocomplete value
 			errors: []
 		}
 	},
@@ -96,7 +97,6 @@ export const SoftwareForm = {
 							if (CoreRESTClient.hasData(result.data)) {
 								let softwareData = CoreRESTClient.getData(result.data);
 								this.software = softwareData.software;
-								this.lizenzserver_kurzbz = softwareData.software.lizenzserver_kurzbz;
 								if (softwareData.hasOwnProperty('software_parent'))
 								{
 									// set software_kurzbz_version field for display in autocomplete
@@ -187,12 +187,17 @@ export const SoftwareForm = {
 				method = 'createSoftware'
 			}
 
+			// If Lizenzserver Kurzbz was selected, use lizenz_kurzbz string instead of object
+			this.software.lizenzserver_kurzbz = this.software.lizenzserver_kurzbz !== null
+				? this.software.lizenzserver_kurzbz.lizenzserver_kurzbz
+				: null;
+
 			if (method)
 			{
 				CoreRESTClient.post(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/' + method,
 					{
-						software: {...this.extendedSoftware, ...this.lizenzserver_kurzbz},
+						software: this.extendedSoftware,
 						softwarestatus: this.softwarestatus,
 						softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
 					}
@@ -228,7 +233,6 @@ export const SoftwareForm = {
 			this.softwarestatus = this.getDefaultSoftwarestatus();
 			this.parentSoftware = null;
 			this.softwareImages = [];
-			this.lizenzserver_kurzbz = null;
 			this.errors = [];
 		},
 		getSoftwareByKurzbz(event) {
@@ -385,7 +389,7 @@ export const SoftwareForm = {
 				<label class="form-label">Lizenz-Server Kurzbezeichnung</label>
 				<auto-complete
 					class="w-100 mb-3"
-					v-model="lizenzserver_kurzbz"
+					v-model="software.lizenzserver_kurzbz"
 					optionLabel="lizenzserver_kurzbz"
 					dropdown
 					dropdown-current
