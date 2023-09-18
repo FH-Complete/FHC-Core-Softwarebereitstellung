@@ -17,10 +17,10 @@ class Image extends Auth_Controller
 		parent::__construct(
 			array(
 				'getImage' => 'basis/mitarbeiter:r',
-				'createImage' => 'basis/mitarbeiter:r',
-				'updateImage' => 'basis/mitarbeiter:r',
-				'deleteImage' => 'basis/mitarbeiter:r',
-				'copyImageAndOrte' => 'basis/mitarbeiter:r',
+				'createImage' => 'basis/mitarbeiter:rw',
+				'updateImage' => 'basis/mitarbeiter:rw',
+				'deleteImage' => 'basis/mitarbeiter:rw',
+				'copyImageAndOrte' => 'basis/mitarbeiter:rw',
 				'getImagesBySoftware' => 'basis/mitarbeiter:r',
 				'getImagesByBezeichnung' => 'basis/mitarbeiter:r'
 			)
@@ -37,7 +37,8 @@ class Image extends Auth_Controller
 	/**
 	 * Get Softwareimage.
 	 */
-	public function getImage(){
+	public function getImage()
+	{
 		$softwareimage_id = $this->input->get('softwareimage_id');
 
 		$result = $this->SoftwareimageModel->load($softwareimage_id);
@@ -52,10 +53,9 @@ class Image extends Auth_Controller
 
 	/**
 	 * Insert new Softwareimage.
-	 *
-	 * @return mixed
 	 */
-	public function createImage(){
+	public function createImage()
+	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
 		// Validate data
@@ -216,12 +216,25 @@ class Image extends Auth_Controller
 	private function _validate($data)
 	{
 		// Validate form data
-		if (isset($data['softwareimage']) && is_object($data['softwareimage']))
+		if (isset($data['softwareimage']) && !isEmptyArray($data['softwareimage']))
 		{
+			$softwareimage = $data['softwareimage'];
 			$this->load->library('form_validation');
 
-			$this->form_validation->set_data($data['softwareimage']);
+			$this->form_validation->set_data($softwareimage);
 			$this->form_validation->set_rules('bezeichnung', 'Softwareimage Bezeichnung', 'required', array('required' => '%s fehlt'));
+			$this->form_validation->set_rules(
+				'softwareimage_id',
+				'Softwareimage ID',
+				'required|numeric',
+				array('required' => '%s fehlt', 'numeric' => '%s ungültig')
+			);
+			$this->form_validation->set_rules(
+				'verfuegbarkeit_start',
+				'Verfügbarkeit Start',
+				'callback_checkImageVerfuegbarkeit['.$softwareimage['verfuegbarkeit_ende'].']',
+				array('checkImageVerfuegbarkeit' => 'Verfügbarkeit ungültig, oder %s größer als Verfügbarkeit Ende')
+			);
 
 			// On error
 			if ($this->form_validation->run() == false)
@@ -230,13 +243,24 @@ class Image extends Auth_Controller
 			}
 		}
 
-		// Validate other vars
-		if (isset($data['softwareimage_id']) && !is_numeric($data['softwareimage_id']))
-		{
-			return error('Error on softwareimage_id');
-		}
-
 		// On success
 		return success();
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// Validation methods
+
+	/**
+	 * Check if Verfügbarkeit is valid.
+	 * @param verfuegbarkeit_start
+	 * @param verfuegbarkeit_ende
+	 * @return bool valid or not
+	 */
+	public function checkImageVerfuegbarkeit($verfuegbarkeit_start, $verfuegbarkeit_ende)
+	{
+		$start = strtotime($verfuegbarkeit_start);
+		$ende = strtotime($verfuegbarkeit_ende);
+
+		return $start && $ende && $start < $ende;
 	}
 }

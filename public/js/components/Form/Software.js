@@ -18,7 +18,7 @@ export const SoftwareForm = {
 			software: {},
 			softwarestatus: {},
 			parentSoftwareSuggestions: [], // autocomplete suggestions
-			parentSoftware: null, // selected autocomplete values
+			parentSoftware: null, // selected autocomplete value
 			softwareImageSuggestions: [], // autocomplete suggestions
 			softwareImages: [], // selected autocomplete values
 			lizenzserverSuggestions: [], // autocomplete suggestions
@@ -29,7 +29,7 @@ export const SoftwareForm = {
 	computed: {
 		extendedSoftware() {
 			let parent_software_id = this.parentSoftware ? this.parentSoftware.software_id : null;
-			return {...this.software, ...{software_id_parent: parent_software_id}}
+			return {...this.software, ...{software_id_parent: parent_software_id, lizenzserver_kurzbz: this.lizenzserver_kurzbz.lizenzserver_kurzbz}}
 		}
 	},
 	beforeCreate() {
@@ -192,7 +192,7 @@ export const SoftwareForm = {
 				CoreRESTClient.post(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/' + method,
 					{
-						software: {...this.extendedSoftware, ...this.lizenzserver_kurzbz},
+						software: this.extendedSoftware,
 						softwarestatus: this.softwarestatus,
 						softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
 					}

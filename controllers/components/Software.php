@@ -176,8 +176,6 @@ class Software extends Auth_Controller
 
 	/**
 	 * Get last Softwarestatus of given Software.
-	 *
-	 * @param $software_id integer
 	 */
 	public function getLastSoftwarestatus()
 	{
@@ -195,9 +193,6 @@ class Software extends Auth_Controller
 
 	/**
 	 * Insert Softwarestatus after it has been changed.
-	 *
-	 * @param
-	 * @return object success or error
 	 */
 	public function changeSoftwarestatus()
 	{
@@ -225,7 +220,7 @@ class Software extends Auth_Controller
 		$softwareImageIds = $data['softwareImageIds'];
 
 		// validate data
-		$validationRes = $this->_validateSoftware($software);
+		$validationRes = $this->_validate($software);
 
 		// return error if invalid
 		if (isError($validationRes)) return $this->outputJsonError(getError($validationRes));
@@ -254,7 +249,7 @@ class Software extends Auth_Controller
 		$softwareImageIds = $data['softwareImageIds'];
 
 		// validate data
-		$validationRes = $this->_validateSoftware($software);
+		$validationRes = $this->_validate($software);
 
 		// return error if invalid
 		if (isError($validationRes)) return $this->outputJsonError(getError($validationRes));
@@ -335,7 +330,7 @@ class Software extends Auth_Controller
 	 * Performs software validation checks.
 	 * @return object success if software data valid, error otherwise
 	 */
-	private function _validateSoftware($software)
+	private function _validate($software)
 	{
 		// load ci validation lib
 		$this->load->library('form_validation');
