@@ -71,7 +71,7 @@ export const SoftwareForm = {
 		},
 		getDefaultSoftwarestatus() {
 			return {
-				softwarestatus_kurzbz: 'neu'
+				softwarestatus_kurzbz: 'inbearbeitung'
 			}
 		},
 		prefillSoftware(software_id) {
