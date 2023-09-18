@@ -13,6 +13,7 @@
 				sw.beschreibung,
 				sw.hersteller,
 				sw.os,
+				sw.verantwortliche,
 				sw.lizenzart,
 				sw.lizenzserver_kurzbz,
 				sw.anzahl_lizenzen,

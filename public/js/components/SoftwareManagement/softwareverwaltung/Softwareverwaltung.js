@@ -40,6 +40,7 @@ export const Softwareverwaltung = {
 					{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
 					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
 					{title: 'Betriebssystem', field: 'os', headerFilter: true},
+					{title: 'Verantwortliche', field: 'verantwortliche', headerFilter: true},
 					{title: 'Lizenz-Art', field: 'lizenzart', headerFilter: true},
 					{title: 'Lizenz-Server', field: 'lizenzserver_kurzbz', headerFilter: true},
 					{title: 'Lizenz-Anzahl', field: 'anzahl_lizenzen', headerFilter: true},

@@ -352,6 +352,8 @@ export const SoftwareForm = {
 				<input type="text" class="form-control mb-3" :id="hersteller" v-model="software.hersteller">
 				<label :for="os" class="form-label">Betriebssystem</label>
 				<input type="text" class="form-control mb-3" :id="os" v-model="software.os">
+				<label class="form-label">Verantwortliche</label>
+				<input type="text" class="form-control mb-3" v-model="software.verantwortliche">
 				<label :for="beschreibung" class="form-label">Beschreibung</label>
 				<textarea
 					class="form-control mb-3"

@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS extension.tbl_software (
 	software_id_parent integer,
 	hersteller varchar(256),
 	os text,
+    verantwortliche varchar(128),
 	lizenzart text,
 	anzahl_lizenzen integer,
 	lizenzserver_kurzbz varchar(128),
@@ -62,3 +63,4 @@ BEGIN
 END $$;
 
 COMMENT ON TABLE extension.tbl_software IS 'List of Software';
+COMMENT ON COLUMN extension.tbl_software.verantwortlicher IS 'App Packager / Client Installer';
