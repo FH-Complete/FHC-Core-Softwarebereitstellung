@@ -386,46 +386,42 @@ export const SoftwareForm = {
 	<div>
 		<form ref="softwareForm" class="row">
 			<div class="col-sm-9 mb-6">
-				<label :for="software_kurzbz" class="form-label">Software Kurzbz *</label>
-				<input type="text" class="form-control mb-3" :id="software_kurzbz"  v-model="software.software_kurzbz" required>
-				<label :for="softwaretyp" class="form-label">Softwaretyp *</label>
+				<label class="form-label">Software Kurzbz *</label>
+				<input type="text" class="form-control mb-3" v-model="software.software_kurzbz" required>
+				<label class="form-label">Softwaretyp *</label>
 				<select
 					class="form-select mb-3"
 					required
-					:id="sofwaretyp_kurzbz"
 					v-model="software.softwaretyp_kurzbz">
 					<option v-for="(bezeichnung, softwaretyp_kurzbz) in softwareMetadata.softwaretyp" :key="index" :value="softwaretyp_kurzbz">
 						{{bezeichnung}}
 					</option>
 				</select>
-				<label :for="softwarestatus_kurzbz" class="form-label">Softwarestatus *</label>
+				<label class="form-label">Softwarestatus *</label>
 				<select
 					class="form-select mb-3"
-					required
-					:id="sofwarestatus_kurzbz"
+					required				
 					v-model="softwarestatus.softwarestatus_kurzbz">
 					<option v-for="(bezeichnung, softwarestatus_kurzbz) in softwareMetadata.softwarestatus" :key="index" :value="softwarestatus_kurzbz">
 						{{bezeichnung}}
 					</option>
 				</select>
-				<label :for="version" class="form-label">Version</label>
-				<input type="text" class="form-control mb-3" :id="version" v-model="software.version">
-				<label :for="hersteller" class="form-label">Hersteller</label>
-				<input type="text" class="form-control mb-3" :id="hersteller" v-model="software.hersteller">
-				<label :for="os" class="form-label">Betriebssystem</label>
-				<input type="text" class="form-control mb-3" :id="os" v-model="software.os">
+				<label class="form-label">Version</label>
+				<input type="text" class="form-control mb-3" v-model="software.version">
+				<label class="form-label">Hersteller</label>
+				<input type="text" class="form-control mb-3" v-model="software.hersteller">
+				<label class="form-label">Betriebssystem</label>
+				<input type="text" class="form-control mb-3" v-model="software.os">
 				<label class="form-label">Verantwortliche</label>
 				<input type="text" class="form-control mb-3" v-model="software.verantwortliche">
-				<label :for="beschreibung" class="form-label">Beschreibung</label>
+				<label class="form-label">Beschreibung</label>
 				<textarea
 					class="form-control mb-3"
 					v-model="software.beschreibung"
-					:id="beschreibung"
 					rows="5">
 				</textarea>
-				<label :for="software_id_parent" class="form-label">Übergeordnete Software</label>
+				<label class="form-label">Übergeordnete Software</label>
 				<auto-complete
-					inputId="software_id_parent"
 					class="w-100 mb-3"
 					v-model="parentSoftware"
 					optionLabel="software_kurzbz_version"
@@ -435,9 +431,8 @@ export const SoftwareForm = {
 					:suggestions="parentSoftwareSuggestions"
 					@complete="getSoftwareByKurzbz">
 				</auto-complete>
-				<label :for="software_image" class="form-label">Image</label>
+				<label class="form-label">Image</label>
 				<auto-complete
-					inputId="software_image"
 					class="w-100 mb-3"
 					v-model="softwareImages"
 					optionLabel="image_bezeichnung"
@@ -484,15 +479,14 @@ export const SoftwareForm = {
 					:suggestions="oeSuggestions"
 					@complete="getOeSuggestions">
 				</auto-complete>
-				<label :for="ansprechpartner_intern" class="form-label">Ansprechpartner (intern)</label>
-				<input type="text" class="form-control mb-3" :id="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
-				<label :for="ansprechpartner_extern" class="form-label">Ansprechpartner (extern)</label>
-				<input type="text" class="form-control mb-3" :id="ansprechpartner_extern" v-model="software.ansprechpartner_extern">
-				<label :for="anmerkung_extern" class="form-label">Anmerkung</label>
+				<label class="form-label">Ansprechpartner (intern)</label>
+				<input type="text" class="form-control mb-3" v-model="software.ansprechpartner_intern">
+				<label class="form-label">Ansprechpartner (extern)</label>
+				<input type="text" class="form-control mb-3" v-model="software.ansprechpartner_extern">
+				<label class="form-label">Anmerkung</label>
 				<textarea
 					class="form-control mb-3"
 					v-model="software.anmerkung_intern"
-					:id="anmerkung_intern"
 					rows="5">
 				</textarea>
 			</div>

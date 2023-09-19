@@ -147,11 +147,10 @@ export const Raum = {
 	<div>
 		<form ref="raumForm" class="row">
 			<div class="col-sm-9 mb-6">
-				<label :for="softwareimage_bezeichnung" class="form-label">Softwareimage</label>
+				<label class="form-label">Softwareimage</label>
 				<input type="text" class="form-control mb-3" v-model="softwareimage_bezeichnung" readonly>	
-				<label :for="ort_kurzbz" class="form-label">Raum *</label>
+				<label class="form-label">Raum *</label>
 				<auto-complete
-					inputId="ort_kurzbz"
 					class="w-100 mb-3"
 					v-model="orte"
 					optionLabel="ort_kurzbz"
@@ -163,9 +162,9 @@ export const Raum = {
 					:suggestions="ortSuggestions"
 					@complete="onComplete">
 				</auto-complete>
-				<label :for="verfuegbarkeit_start" class="form-label">Verfügbarkeit Start</label>
+				<label class="form-label">Verfügbarkeit Start</label>
 				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_start">
-				<label :for="verfuegbarkeit_ende" class="form-label">Verfügbarkeit Ende</label>
+				<label class="form-label">Verfügbarkeit Ende</label>
 				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_ende">
 			</div>
 		</form>

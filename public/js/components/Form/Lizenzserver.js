@@ -88,19 +88,19 @@ export const Lizenzserver = {
 	<div>
 		<form ref="lizenzserverForm" class="row">
 			<div class="col-sm-9 mb-6">
-				<label :for="lizenzserver_kurzbz" class="form-label">Kurzbezeichnung *</label>
+				<label class="form-label">Kurzbezeichnung *</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.lizenzserver_kurzbz" required >
-				<label :for="bezeichnung" class="form-label">Bezeichnung</label>
+				<label class="form-label">Bezeichnung</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.bezeichnung">	
-				<label :for="macadresse" class="form-label">Mac-Adresse</label>
+				<label class="form-label">Mac-Adresse</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.macadresse">
-				<label :for="ipadresse" class="form-label">IP-Adresse</label>
+				<label class="form-label">IP-Adresse</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.ipadresse">
-				<label :for="ansprechpartner" class="form-label">Ansprechpartner</label>
+				<label class="form-label">Ansprechpartner</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.ansprechpartner">
-				<label :for="location" class="form-label">Location</label>
+				<label class="form-label">Location</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.location">
-				<label :for="anmerkung" class="form-label">Anmerkung</label>
+				<label class="form-label">Anmerkung</label>
 				<textarea
 					class="form-control mb-3"
 					v-model="lizenzserver.anmerkung"

@@ -111,15 +111,15 @@ export const Softwareimage = {
 	<div>
 		<form ref="softwareimageForm" class="row">
 			<div class="col-sm-9 mb-6">
-				<label :for="bezeichnung" class="form-label">Bezeichnung *</label>
+				<label class="form-label">Bezeichnung *</label>
 				<input type="text" class="form-control mb-3" v-model="softwareimage.bezeichnung" required >
-				<label :for="betriebssystem" class="form-label">Betriebssystem</label>
+				<label class="form-label">Betriebssystem</label>
 				<input type="text" class="form-control mb-3" v-model="softwareimage.betriebssystem">	
-				<label :for="verfuegbarkeit_start" class="form-label">Verfügbarkeit Start</label>
+				<label class="form-label">Verfügbarkeit Start</label>
 				<input type="date" class="form-control mb-3" v-model="softwareimage.verfuegbarkeit_start">
-				<label :for="verfuegbarkeit_ende" class="form-label">Verfügbarkeit Ende</label>
+				<label class="form-label">Verfügbarkeit Ende</label>
 				<input type="date" class="form-control mb-3" v-model="softwareimage.verfuegbarkeit_ende">
-				<label :for="anmerkung" class="form-label">Anmerkung</label>
+				<label class="form-label">Anmerkung</label>
 				<textarea
 					class="form-control mb-3"
 					v-model="softwareimage.anmerkung"
