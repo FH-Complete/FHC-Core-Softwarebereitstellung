@@ -298,7 +298,30 @@ export const SoftwareForm = {
 					}
 					else
 					{
-						this.oeSuggestions = CoreRESTClient.getData(result.data);
+						let data = CoreRESTClient.getData(result.data);
+
+						let groupedData = {};
+
+						// Group data by 'organisationseinheittyp_kurzbz'
+						data.forEach(oe => {
+							let { organisationseinheittyp_kurzbz, oe_kurzbz, bezeichnung, aktiv } = oe;
+
+							if (!groupedData[organisationseinheittyp_kurzbz]) {
+								groupedData[organisationseinheittyp_kurzbz] = {
+									organisationseinheittyp_kurzbz,
+									oes: []
+								};
+							}
+
+							groupedData[organisationseinheittyp_kurzbz].oes.push({
+								oe_kurzbz,
+								bezeichnung,
+								aktiv
+							});
+						});
+
+						// Convert object to an array of grouped items
+						this.oeSuggestions = Object.values(groupedData);
 					}
 				}
 			).catch(
@@ -451,7 +474,10 @@ export const SoftwareForm = {
 				<auto-complete
 					class="w-100 mb-3"
 					v-model="selKostentraegerOE"
-					optionLabel="oe_kurzbz"
+					optionLabel="bezeichnung"
+					optionGroupLabel="organisationseinheittyp_kurzbz"
+					optionGroupChildren="oes"
+					:optionDisabled="option => !option.aktiv"
 					dropdown
 					dropdown-current
 					forceSelection
