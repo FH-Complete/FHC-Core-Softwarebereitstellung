@@ -31,7 +31,8 @@ export const SoftwareForm = {
 	computed: {
 		extendedSoftware() {
 			let parent_software_id = this.parentSoftware ? this.parentSoftware.software_id : null;
-			return {...this.software, ...{software_id_parent: parent_software_id, lizenzserver_kurzbz: this.lizenzserver_kurzbz.lizenzserver_kurzbz}}
+			let lizenzserver_kurzbz = this.selLizenzserver ? this.selLizenzserver.lizenzserver_kurzbz : null;
+			return {...this.software, ...{software_id_parent: parent_software_id, lizenzserver_kurzbz: lizenzserver_kurzbz}}
 		}
 	},
 	beforeCreate() {
