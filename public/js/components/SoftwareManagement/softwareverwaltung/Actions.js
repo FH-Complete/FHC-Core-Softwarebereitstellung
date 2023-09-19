@@ -5,20 +5,26 @@ export const Actions = {
 	},
 	emits: [
 		'setStatus',
-		'hierarchyToggle'
+		'hierarchyViewChanged',
+		'hierarchyExpansionChanged',
 	],
+	data: function() {
+		return {
+			selected: '',
+			hierarchyView: true
+		}
+	},
 	methods: {
 		changeStatus(softwarestatus_kurzbz) {
 			this.selected = softwarestatus_kurzbz;
 			this.$emit("setStatus", softwarestatus_kurzbz);
 		},
-		handleHierarchyToggle (event) {
-			this.$emit("hierarchyToggle", event.target.checked)
-		}
-	},
-	data: function() {
-		return {
-			selected: ''
+
+		handleHierarchyViewChange (event) {
+			this.$emit("hierarchyViewChanged", event.target.checked)
+		},
+		handleHierarchyExpansion (event) {
+			this.$emit("hierarchyExpansionChanged", event.target.checked)
 		}
 	},
 	template: `
@@ -33,11 +39,28 @@ export const Actions = {
 			</ul>
 		</div>
 		<div class="row">
-			<div class="col-12 text-end">
-				<div class="form-switch">
-					<input class="form-check-input text-end" type="checkbox" id="expandHierarchy" name="expandHierarchy" :checked="expandHierarchy" @input="handleHierarchyToggle">
+			<div class="col-12">
+				<div class="form-check form-check-inline">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						name="hierarchyView"
+						id="hierarchyView"
+						v-model="hierarchyView"
+						:checked="hierarchyView"
+						@change="handleHierarchyViewChange" >
+					<label class="form-check-label" for="hierarchyView">Hierarchie Ansicht</label>
+				</div>
+				<div class="form-switch form-check-inline" v-show="hierarchyView">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						id="expandHierarchy"
+						name="expandHierarchy"
+						:checked="expandHierarchy"
+						@input="handleHierarchyExpansion">
 					&nbsp;
-					<label class="form-check-label" for="expandHierarchy">Hierarchie {{ expandHierarchy ? 'aufgeklappt' : 'zugeklappt' }}</label>
+					<label class="form-check-label" for="expandHierarchy">{{ expandHierarchy ? 'aufgeklappt' : 'zugeklappt' }}</label>
 				</div>
 			</div>
 		</div>
