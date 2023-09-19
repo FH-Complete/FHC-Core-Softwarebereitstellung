@@ -223,12 +223,7 @@ class Image extends Auth_Controller
 
 			$this->form_validation->set_data($softwareimage);
 			$this->form_validation->set_rules('bezeichnung', 'Softwareimage Bezeichnung', 'required', array('required' => '%s fehlt'));
-			$this->form_validation->set_rules(
-				'softwareimage_id',
-				'Softwareimage ID',
-				'required|numeric',
-				array('required' => '%s fehlt', 'numeric' => '%s ungültig')
-			);
+			$this->form_validation->set_rules('softwareimage_id', 'Softwareimage ID', 'numeric', array('numeric' => '%s ungültig'));
 			$this->form_validation->set_rules(
 				'verfuegbarkeit_start',
 				'Verfügbarkeit Start',
