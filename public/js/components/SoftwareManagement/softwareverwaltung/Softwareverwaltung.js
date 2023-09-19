@@ -316,7 +316,7 @@ export const Softwareverwaltung = {
 	<software-modal
 		class="fade"
 		ref="modalForSave"
-		dialog-class="modal-lg"
+		dialog-class="modal-xl"
 		@software-saved="handleSoftwareSaved">
 	</software-modal>
 `

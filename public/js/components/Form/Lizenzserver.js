@@ -87,19 +87,31 @@ export const Lizenzserver = {
 	template: `
 	<div>
 		<form ref="lizenzserverForm" class="row">
-			<div class="col-sm-9 mb-6">
+			<div class="col-sm-4">
 				<label class="form-label">Kurzbezeichnung *</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.lizenzserver_kurzbz" required >
+			</div>
+			<div class="col-sm-8">
 				<label class="form-label">Bezeichnung</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.bezeichnung">	
+			</div>
+			<div class="col-sm-4">
 				<label class="form-label">Mac-Adresse</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.macadresse">
+			</div>
+			<div class="col-sm-4">
 				<label class="form-label">IP-Adresse</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.ipadresse">
-				<label class="form-label">Ansprechpartner</label>
-				<input type="text" class="form-control mb-3" v-model="lizenzserver.ansprechpartner">
+			</div>
+			<div class="col-sm-4">
 				<label class="form-label">Location</label>
 				<input type="text" class="form-control mb-3" v-model="lizenzserver.location">
+			</div>
+			<div class="col-sm-6">
+				<label class="form-label">Ansprechpartner</label>
+				<input type="text" class="form-control mb-3" v-model="lizenzserver.ansprechpartner">
+			</div>
+			<div class="col-sm-6">
 				<label class="form-label">Anmerkung</label>
 				<textarea
 					class="form-control mb-3"

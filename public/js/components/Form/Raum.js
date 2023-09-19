@@ -146,9 +146,11 @@ export const Raum = {
 	template: `
 	<div>
 		<form ref="raumForm" class="row">
-			<div class="col-sm-9 mb-6">
+			<div class="col-sm-6">
 				<label class="form-label">Softwareimage</label>
-				<input type="text" class="form-control mb-3" v-model="softwareimage_bezeichnung" readonly>	
+				<input type="text" class="form-control mb-3" v-model="softwareimage_bezeichnung" readonly>
+			</div>
+			<div class="col-sm-12">	
 				<label class="form-label">Raum *</label>
 				<auto-complete
 					class="w-100 mb-3"
@@ -162,8 +164,12 @@ export const Raum = {
 					:suggestions="ortSuggestions"
 					@complete="onComplete">
 				</auto-complete>
+			</div>
+			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Start</label>
 				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_start">
+			</div>
+			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Ende</label>
 				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_ende">
 			</div>

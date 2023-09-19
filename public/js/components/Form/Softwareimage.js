@@ -110,15 +110,23 @@ export const Softwareimage = {
 	template: `
 	<div>
 		<form ref="softwareimageForm" class="row">
-			<div class="col-sm-9 mb-6">
+			<div class="col-sm-6">
 				<label class="form-label">Bezeichnung *</label>
 				<input type="text" class="form-control mb-3" v-model="softwareimage.bezeichnung" required >
+			</div>
+			<div class="col-sm-6">
 				<label class="form-label">Betriebssystem</label>
 				<input type="text" class="form-control mb-3" v-model="softwareimage.betriebssystem">	
+			</div>
+			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Start</label>
 				<input type="date" class="form-control mb-3" v-model="softwareimage.verfuegbarkeit_start">
+			</div>
+			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Ende</label>
 				<input type="date" class="form-control mb-3" v-model="softwareimage.verfuegbarkeit_ende">
+			</div>
+			<div class="col-sm-6">
 				<label class="form-label">Anmerkung</label>
 				<textarea
 					class="form-control mb-3"

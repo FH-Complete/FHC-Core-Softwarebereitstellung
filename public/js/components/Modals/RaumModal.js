@@ -22,7 +22,7 @@ export default {
 	},
 	methods: {
 		open(softwareimageort_id) {
-			this.title = softwareimageort_id ? 'Raumzuordnung bearbeiten' : 'Raumzuordnung anlegen';
+			this.title = softwareimageort_id ? 'Raum zu Image bearbeiten' : 'Raum zu Image anlegen';
 			if (softwareimageort_id) this.$refs.raum.prefill(softwareimageort_id);
 			this.$refs.modalContainer.show();
 		},

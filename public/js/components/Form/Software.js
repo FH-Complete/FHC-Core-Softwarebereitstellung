@@ -384,10 +384,8 @@ export const SoftwareForm = {
 	},
 	template: `
 	<div>
-		<form ref="softwareForm" class="row">
-			<div class="col-sm-9 mb-6">
-				<label class="form-label">Software Kurzbz *</label>
-				<input type="text" class="form-control mb-3" v-model="software.software_kurzbz" required>
+		<form ref="softwareForm" class="row">	
+			<div class="col-sm-3">
 				<label class="form-label">Softwaretyp *</label>
 				<select
 					class="form-select mb-3"
@@ -397,6 +395,12 @@ export const SoftwareForm = {
 						{{bezeichnung}}
 					</option>
 				</select>
+			</div>
+			<div class="col-sm-5">
+				<label class="form-label">Software Kurzbz *</label>
+				<input type="text" class="form-control mb-3" v-model="software.software_kurzbz" required>
+			</div>
+			<div class="col-sm-4">
 				<label class="form-label">Softwarestatus *</label>
 				<select
 					class="form-select mb-3"
@@ -406,20 +410,24 @@ export const SoftwareForm = {
 						{{bezeichnung}}
 					</option>
 				</select>
+			</div>	
+			<div class="col-sm-1">
 				<label class="form-label">Version</label>
 				<input type="text" class="form-control mb-3" v-model="software.version">
-				<label class="form-label">Hersteller</label>
-				<input type="text" class="form-control mb-3" v-model="software.hersteller">
+			</div>
+			<div class="col-sm-5">
 				<label class="form-label">Betriebssystem</label>
 				<input type="text" class="form-control mb-3" v-model="software.os">
+			</div>
+			<div class="col-sm-6">
+				<label class="form-label">Hersteller</label>
+				<input type="text" class="form-control mb-3" v-model="software.hersteller">
+			</div>
+			<div class="col-sm-6">
 				<label class="form-label">Verantwortliche</label>
 				<input type="text" class="form-control mb-3" v-model="software.verantwortliche">
-				<label class="form-label">Beschreibung</label>
-				<textarea
-					class="form-control mb-3"
-					v-model="software.beschreibung"
-					rows="5">
-				</textarea>
+			</div>
+			<div class="col-sm-6">
 				<label class="form-label">Übergeordnete Software</label>
 				<auto-complete
 					class="w-100 mb-3"
@@ -431,9 +439,37 @@ export const SoftwareForm = {
 					:suggestions="parentSoftwareSuggestions"
 					@complete="getSoftwareByKurzbz">
 				</auto-complete>
-				<label class="form-label">Image</label>
+			</div>
+			<div class="col-sm-6">
+				<label class="form-label">Ansprechpartner (intern)</label>
+				<input type="text" class="form-control mb-3" v-model="software.ansprechpartner_intern">
+			</div>
+			<div class="col-sm-6">
+				<label class="form-label">Ansprechpartner (extern)</label>
+				<input type="text" class="form-control mb-3" v-model="software.ansprechpartner_extern">
+			</div>
+			<div class="col-sm-6">
+				<label class="form-label">Beschreibung</label>
+				<textarea
+					class="form-control"
+					v-model="software.beschreibung"
+					rows="3">
+				</textarea>
+			</div>
+			<div class="col-sm-6">
+				<label class="form-label">Anmerkung (intern)</label>
+				<textarea
+					class="form-control mb-3"
+					v-model="software.anmerkung_intern"
+					rows="3">
+				</textarea>
+			</div>
+			<!-- Imagezuordnung -->
+			<div class="fhc-hr"></div>
+			<div class="col-sm-12">
+				<label class="form-label">Zugeordnete Images</label>
 				<auto-complete
-					class="w-100 mb-3"
+					class="w-100"
 					v-model="softwareImages"
 					optionLabel="image_bezeichnung"
 					dropdown
@@ -443,8 +479,14 @@ export const SoftwareForm = {
 					:suggestions="softwareImageSuggestions"
 					@complete="getImagesByBezeichnung">
 				</auto-complete>
+			</div>
+			<!-- Lizenz -->
+			<div class="fhc-hr"></div>
+		 	<div class="col-sm-4">
 				<label class="form-label">Lizenz-Art</label>
 				<input type="text" class="form-control mb-3" v-model="software.lizenzart">
+			</div>
+			<div class="col-sm-8">
 				<label class="form-label">Lizenz-Server Kurzbezeichnung</label>
 				<auto-complete
 					class="w-100 mb-3"
@@ -456,15 +498,16 @@ export const SoftwareForm = {
 					:suggestions="lizenzserverSuggestions"
 					@complete="getLizenzserverByKurzbz">
 				</auto-complete>
+			</div>
+			<div class="col-sm-2">
 				<label class="form-label">Lizenz-Anzahl</label>
 				<input type="text" class="form-control mb-3" v-model="software.anzahl_lizenzen">
+			</div>
+			<div class="col-sm-2">
 				<label class="form-label">Lizenz-Laufzeit</label>
 				<input type="date" class="form-control mb-3" v-model="software.lizenzlaufzeit">
-				<label class="form-label">Lizenz-Kosten</label>
-				<div class="input-group mb-3">
-				  	<input type="text" class="form-control" v-model="software.lizenzkosten">
-				  	<span class="input-group-text">€/Jahr</span>
-				</div>	
+			</div>
+			<div class="col-sm-5">	
 				<label class="form-label">Kostenträger-OE</label>
 				<auto-complete
 					class="w-100 mb-3"
@@ -479,17 +522,14 @@ export const SoftwareForm = {
 					:suggestions="oeSuggestions"
 					@complete="getOeSuggestions">
 				</auto-complete>
-				<label class="form-label">Ansprechpartner (intern)</label>
-				<input type="text" class="form-control mb-3" v-model="software.ansprechpartner_intern">
-				<label class="form-label">Ansprechpartner (extern)</label>
-				<input type="text" class="form-control mb-3" v-model="software.ansprechpartner_extern">
-				<label class="form-label">Anmerkung</label>
-				<textarea
-					class="form-control mb-3"
-					v-model="software.anmerkung_intern"
-					rows="5">
-				</textarea>
 			</div>
+			<div class="col-sm-3">
+				<label class="form-label">Lizenz-Kosten</label>
+				<div class="input-group mb-3">
+					<input type="text" class="form-control" v-model="software.lizenzkosten">
+					<span class="input-group-text">€/Jahr</span>
+				</div>
+			</div>	
 		</form>
 	</div>
 	<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
