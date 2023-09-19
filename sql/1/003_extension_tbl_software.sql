@@ -63,4 +63,4 @@ BEGIN
 END $$;
 
 COMMENT ON TABLE extension.tbl_software IS 'List of Software';
-COMMENT ON COLUMN extension.tbl_software.verantwortlicher IS 'App Packager / Client Installer';
+COMMENT ON COLUMN extension.tbl_software.verantwortliche IS 'App Packager / Client Installer';
