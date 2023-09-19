@@ -20,6 +20,7 @@ class Software extends Auth_Controller
 				'getSoftwareMetadata' => 'basis/mitarbeiter:r',
 				'getSoftware' => 'basis/mitarbeiter:r',
 				'getSoftwareByKurzbz' => 'basis/mitarbeiter:r',
+				'getOeSuggestions' => 'basis/mitarbeiter:r',
 				'getStatus' => 'basis/mitarbeiter:r',
 				'getLastSoftwarestatus' => 'basis/mitarbeiter:r',
 				'changeSoftwarestatus' => 'basis/mitarbeiter:rw',
@@ -149,6 +150,26 @@ class Software extends Auth_Controller
 		$this->SoftwareModel->addOrder('version', 'DESC');
 		$this->SoftwareModel->addOrder('software_id', 'DESC');
 		$result = $this->SoftwareModel->loadWhere("software_kurzbz ILIKE '%".$this->SoftwareModel->escapeLike($software_kurzbz)."%'");
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Software: '.getError($result));
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/**
+	 * Get OE suggestions by query string. Use it for autoselect dropdowns.
+	 */
+	public function getOeSuggestions()
+	{
+		$eventQuery = $this->input->get('eventQuery');
+
+		// load models
+		$this->load->model('organisation/Organisationseinheit_model', 'OrganisationseinheitModel');
+
+		$result = $this->OrganisationseinheitModel->getAutocompleteSuggestions($eventQuery);
 
 		if (isError($result))
 		{

@@ -15,15 +15,16 @@ export const SoftwareForm = {
 		return {
 			softwareMetadata: {},
 			softwareId: null,
-			software: {
-				lizenzserver_kurzbz: null
-			},
+			software: {},
 			softwarestatus: {},
 			parentSoftwareSuggestions: [], // autocomplete suggestions
 			parentSoftware: null, // selected autocomplete values
 			softwareImageSuggestions: [], // autocomplete suggestions
 			softwareImages: [], // selected autocomplete values
 			lizenzserverSuggestions: [], // autocomplete suggestions
+			selLizenzserver: null,	// selected autocomplete values
+			oeSuggestions: [], // autocomplete suggestions
+			selKostentraegerOE: null,	// selected autocomplete values
 			errors: []
 		}
 	},
@@ -97,6 +98,8 @@ export const SoftwareForm = {
 							if (CoreRESTClient.hasData(result.data)) {
 								let softwareData = CoreRESTClient.getData(result.data);
 								this.software = softwareData.software;
+								this.selLizenzserver = softwareData.software.lizenzserver_kurzbz;
+								this.selKostentraegerOE = softwareData.software.kostentraeger_oe_kurzbz;
 								if (softwareData.hasOwnProperty('software_parent'))
 								{
 									// set software_kurzbz_version field for display in autocomplete
@@ -187,9 +190,14 @@ export const SoftwareForm = {
 				method = 'createSoftware'
 			}
 
-			// If Lizenzserver Kurzbz was selected, use lizenz_kurzbz string instead of object
-			this.software.lizenzserver_kurzbz = this.software.lizenzserver_kurzbz !== null
-				? this.software.lizenzserver_kurzbz.lizenzserver_kurzbz
+			// If Lizenzserver Kurzbz was selected, pass to software object
+			this.software.lizenzserver_kurzbz = this.selLizenzserver !== null
+				? this.selLizenzserver.lizenzserver_kurzbz
+				: null;
+
+			// If Kostentraeger OE Kurzbz was selected, pass to software object
+			this.software.kostentraeger_oe_kurzbz = this.selKostentraegerOE !== null
+				? this.selKostentraegerOE.oe_kurzbz
 				: null;
 
 			if (method)
@@ -233,6 +241,8 @@ export const SoftwareForm = {
 			this.softwarestatus = this.getDefaultSoftwarestatus();
 			this.parentSoftware = null;
 			this.softwareImages = [];
+			this.selLizenzserver = null;
+			this.selKostentraegerOE = null;
 			this.errors = [];
 		},
 		getSoftwareByKurzbz(event) {
@@ -265,7 +275,35 @@ export const SoftwareForm = {
 			).catch(
 				error => {
 					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when getting software: ' + errorMessage);
+					this.errors.push('Error when getting softwareByKurzbz: ' + errorMessage);
+				}
+			);
+		},
+		getOeSuggestions(event) {
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getOeSuggestions',
+				{
+					eventQuery: event.query
+				},
+				{
+					timeout: 2000
+				}
+			).then(
+				result => {
+					// display errors
+					if (CoreRESTClient.isError(result.data))
+					{
+						this.errors.push(result.data.retval);
+					}
+					else
+					{
+						this.oeSuggestions = CoreRESTClient.getData(result.data);
+					}
+				}
+			).catch(
+				error => {
+					let errorMessage = error.message ? error.message : 'Unknown error';
+					this.errors.push('Error when getting OeSuggestions: ' + errorMessage);
 				}
 			);
 		},
@@ -318,7 +356,7 @@ export const SoftwareForm = {
 					this.errors.push('Error when getting Lizenzserver: ' + errorMessage);
 				}
 			);
-		}
+		},
 	},
 	template: `
 	<div>
@@ -391,7 +429,7 @@ export const SoftwareForm = {
 				<label class="form-label">Lizenz-Server Kurzbezeichnung</label>
 				<auto-complete
 					class="w-100 mb-3"
-					v-model="software.lizenzserver_kurzbz"
+					v-model="selLizenzserver"
 					optionLabel="lizenzserver_kurzbz"
 					dropdown
 					dropdown-current
@@ -408,6 +446,17 @@ export const SoftwareForm = {
 				  	<input type="text" class="form-control" v-model="software.lizenzkosten">
 				  	<span class="input-group-text">€/Jahr</span>
 				</div>	
+				<label class="form-label">Kostenträger-OE</label>
+				<auto-complete
+					class="w-100 mb-3"
+					v-model="selKostentraegerOE"
+					optionLabel="oe_kurzbz"
+					dropdown
+					dropdown-current
+					forceSelection
+					:suggestions="oeSuggestions"
+					@complete="getOeSuggestions">
+				</auto-complete>
 				<label :for="ansprechpartner_intern" class="form-label">Ansprechpartner (intern)</label>
 				<input type="text" class="form-control mb-3" :id="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
 				<label :for="ansprechpartner_extern" class="form-label">Ansprechpartner (extern)</label>
