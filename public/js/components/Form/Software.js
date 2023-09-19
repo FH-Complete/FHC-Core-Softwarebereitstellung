@@ -303,25 +303,27 @@ export const SoftwareForm = {
 						let groupedData = {};
 
 						// Group data by 'organisationseinheittyp_kurzbz'
-						data.forEach(oe => {
-							let { organisationseinheittyp_kurzbz, oe_kurzbz, bezeichnung, aktiv } = oe;
+						if (data !== null && data.length > 0){
+							data.forEach(oe => {
+								let { organisationseinheittyp_kurzbz, oe_kurzbz, bezeichnung, aktiv } = oe;
 
-							if (!groupedData[organisationseinheittyp_kurzbz]) {
-								groupedData[organisationseinheittyp_kurzbz] = {
-									organisationseinheittyp_kurzbz,
-									oes: []
-								};
-							}
+								if (!groupedData[organisationseinheittyp_kurzbz]) {
+									groupedData[organisationseinheittyp_kurzbz] = {
+										organisationseinheittyp_kurzbz,
+										oes: []
+									};
+								}
 
-							groupedData[organisationseinheittyp_kurzbz].oes.push({
-								oe_kurzbz,
-								bezeichnung,
-								aktiv
+								groupedData[organisationseinheittyp_kurzbz].oes.push({
+									oe_kurzbz,
+									bezeichnung,
+									aktiv
+								});
 							});
-						});
 
-						// Convert object to an array of grouped items
-						this.oeSuggestions = Object.values(groupedData);
+							// Convert object to an array of grouped items
+							this.oeSuggestions = Object.values(groupedData);
+						}
 					}
 				}
 			).catch(
