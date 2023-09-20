@@ -16,8 +16,9 @@ export const Raumzuordnung = {
 			softwareTitel: null,
 			orte: [],
 			orteTabulatorOptions: {
-				height: "100%",
-				layout: 'fitDataFill',
+				maxHeight: "100%",
+				minHeight: 30,
+				layout: 'fitData',
 				index: 'softwareimageort_id',
 				columns: [
 					{title: 'Img-Ort-ID', field: 'softwareimageort_id', headerFilter: true, visible: false},

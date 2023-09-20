@@ -84,6 +84,9 @@ export const Raum = {
 					softwareimageorte_id: this.softwareimageorte_id,
 					verfuegbarkeit_start: this.verfuegbarkeit_start,
 					verfuegbarkeit_ende: this.verfuegbarkeit_ende
+				},
+				{
+					timeout: 30000
 				}
 			).then(
 				result => {
@@ -141,6 +144,27 @@ export const Raum = {
 					this.errors.push('Error when autofilling Orte: ' + errorMessage);
 				}
 			);
+		},
+		selectAllOrte(){
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrte',
+				null
+			).then(result => {
+					if (CoreRESTClient.isError(result.data))
+					{
+						this.errors.push(result.data.retval);
+					}
+					else
+					{
+						this.orte = CoreRESTClient.getData(result.data);
+					}
+				}
+			).catch(
+				error => {
+					let errorMessage = error.message ? error.message : 'Unknown error';
+					this.errors.push('Error when autofilling Orte: ' + errorMessage);
+				}
+			);
 		}
 	},
 	template: `
@@ -163,6 +187,9 @@ export const Raum = {
 					:disabled="ortSelectionDisabled"
 					:suggestions="ortSuggestions"
 					@complete="onComplete">
+					<template #header>
+						<button class="w-100 btn btn-secondary" @click="selectAllOrte">Alle wählen</button>
+					</template>
 				</auto-complete>
 			</div>
 			<div class="col-sm-3">

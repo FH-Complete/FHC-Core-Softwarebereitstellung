@@ -17,6 +17,7 @@ class Ort extends Auth_Controller
 		parent::__construct(
 			array(
 				'autofill' => 'basis/mitarbeiter:r',
+				'getOrte' => 'basis/mitarbeiter:r',
 				'getImageort' => 'basis/mitarbeiter:r',
 				'insertImageort' => 'basis/mitarbeiter:r',
 				'updateImageort' => 'basis/mitarbeiter:r',
@@ -43,6 +44,19 @@ class Ort extends Auth_Controller
 		$ort_kurzbz = $this->input->get('ort_kurzbz');
 		$this->OrtModel->addOrder('ort_kurzbz');
 		$result = $this->OrtModel->loadWhere("ort_kurzbz ILIKE '%".$this->OrtModel->escapeLike($ort_kurzbz)."%'");
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Holen der Orte: '.getError($result));
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	public function getOrte()
+	{
+		$this->OrtModel->addOrder('ort_kurzbz');
+		$result = $this->OrtModel->load();
 
 		if (isError($result))
 		{
