@@ -466,8 +466,6 @@ export const SoftwareForm = {
 					rows="3">
 				</textarea>
 			</div>
-			<!-- Imagezuordnung -->
-			<div class="fhc-hr"></div>
 			<div class="col-sm-12">
 				<label class="form-label">Zugeordnete Images</label>
 				<auto-complete
