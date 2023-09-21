@@ -22,6 +22,7 @@ class Software extends Auth_Controller
 				'getSoftwareByKurzbz' => 'basis/mitarbeiter:r',
 				'getOeSuggestions' => 'basis/mitarbeiter:r',
 				'getStatus' => 'basis/mitarbeiter:r',
+				'getLanguageIndex' => 'basis/mitarbeiter:r',
 				'getLastSoftwarestatus' => 'basis/mitarbeiter:r',
 				'changeSoftwarestatus' => 'basis/mitarbeiter:rw',
 				'createSoftware' => 'basis/mitarbeiter:rw',
@@ -193,6 +194,16 @@ class Software extends Auth_Controller
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/**
+	 * 
+	 * @param
+	 * @return object success or error
+	 */
+	public function getLanguageIndex()
+	{
+		$this->outputJsonSuccess($this->_getLanguageIndex());
 	}
 
 	/**
@@ -423,21 +434,12 @@ class Software extends Auth_Controller
 	 */
 	private function _getLanguageIndex()
 	{
-		$idx = 1;
+		$defaultIdx = 1;
+
+		$userLang = getUserLanguage();
 		$this->SpracheModel->addSelect('sprache, index');
-		$langRes = $this->SpracheModel->load();
+		$langRes = $this->SpracheModel->loadWhere(array('sprache' => $userLang));
 
-		if (hasData($langRes))
-		{
-			$userLang = getUserLanguage();
-			$lang = getData($langRes);
-
-			foreach ($lang as $l)
-			{
-				if ($l->sprache == $userLang) $idx = $l->index;
-			}
-		}
-
-		return $idx;
+		return hasData($langRes) ? getData($langRes)[0]->index : $defaultIdx;
 	}
 }

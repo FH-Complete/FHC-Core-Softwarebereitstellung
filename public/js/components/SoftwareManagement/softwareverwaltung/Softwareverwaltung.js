@@ -35,7 +35,15 @@ export const Softwareverwaltung = {
 						frozen: true
 					},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
-					{title: 'Softwaretyp', field: 'softwaretyp_kurzbz', headerFilter: true},
+					{
+						title: 'Softwaretyp',
+						field: 'softwaretyp_bezeichnung',
+						headerFilter: true,
+						formatter: (cell) => {
+							return cell.getValue()[this.languageIndex - 1];
+						}
+					},
+					{title: 'Softwaretyp Kurzbezeichnung', field: 'softwaretyp_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
 					{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
 					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
@@ -46,9 +54,24 @@ export const Softwareverwaltung = {
 					{title: 'Lizenz-Anzahl', field: 'anzahl_lizenzen', headerFilter: true},
 					{title: 'Lizenz-Laufzeit', field: 'lizenzlaufzeit', headerFilter: true},
 					{title: 'Lizenz-Kosten', field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
-					{title: 'Status', field: 'softwarestatus_kurzbz',
-						editor: "list", editorParams:{values:[]},
-						headerFilter: true, headerFilterParams:{values:[]}
+					{
+						title: 'Status',
+						field: 'softwarestatus_kurzbz',
+						editor: "list",
+						editorParams:{values:[]},
+						headerFilter: true,
+						headerFilterParams:{values:[]},
+						formatter: (cell) => {
+							return cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1];
+						}
+					},
+					{
+						title: 'Softwarestatus Bezeichnung',
+						field: 'softwarestatus_bezeichnung',
+						headerFilter: true,
+						formatter: (cell) => {
+							return cell.getValue()[this.languageIndex - 1];
+						}
 					},
 					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
@@ -78,6 +101,7 @@ export const Softwareverwaltung = {
 					}
 				]
 			},
+			languageIndex: null, // language of current user
 			showHierarchy: true, // display data as hierarchy tree or not
 			tabulatorAdditionalColumns: ['actions'],
 			selectedTabulatorRow: null, // currently selected tabulator row
@@ -107,6 +131,22 @@ export const Softwareverwaltung = {
 				alert('Error when getting softwarestatus: ' + errorMessage); //TODO beautiful alert
 			}
 		);
+		CoreRESTClient.get(
+			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex',
+			null,
+			{
+				timeout: 2000
+			}
+		).then(
+			result => {
+				this.languageIndex = CoreRESTClient.getData(result.data);
+			}
+		).catch(
+			error => {
+				let errorMessage = error.message ? error.message : 'Unknown error';
+				alert('Error when getting language index: ' + errorMessage); //TODO beautiful alert
+			}
+		);
 	},
 	mounted(){
 		// set tabulator events
@@ -130,23 +170,35 @@ export const Softwareverwaltung = {
 		});
 
 		this.$refs.softwareTable.tabulator.on("dataLoaded", data => {
-			if (this.showHierarchy == true) return;
-
-			let allChildrenArr = [];
-
-			// loop through all data
-			for (let child of data)
+			// no promoting of children if hierarchy shown
+			if (this.showHierarchy == false)
 			{
-				// if it has children
-				if (child._children)
-				{
-					// promote children, i.e. put them on 0 level
-					this.promoteChildren(child._children, data);
+				let allChildrenArr = [];
 
-					// remove children from lower level
-					delete child._children;
+				// loop through all data
+				for (let child of data)
+				{
+					// if it has children
+					if (child._children)
+					{
+						// promote children, i.e. put them on 0 level
+						this.promoteChildren(child._children, data);
+
+						// remove children from lower level
+						delete child._children;
+					}
 				}
+				// Resort data
+				data.sort((a, b) => {
+					let sort = a.software_kurzbz.localeCompare(b.software_kurzbz);
+
+					if (sort == 0) sort = b.version - a.version;
+					if (sort == 0) sort = b.software_id - a.software_id;
+
+					return sort;
+				});
 			}
+
 		});
 	},
 	methods: {
