@@ -32,8 +32,8 @@ export const Imageverwaltung = {
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
 					{title: 'Bezeichnung', field: 'bezeichnung', headerFilter: true, frozen: true},
 					{title: 'Betriebssystem', field: 'betriebssystem', headerFilter: true},
-					{title: 'Verfügbarkeit Start', field: 'verfuegbarkeit_start', headerFilter: true},
-					{title: 'Verfügbarkeit Ende', field: 'verfuegbarkeit_ende', headerFilter: true},
+					{title: 'Verfügbarkeit Start', field: 'verfuegbarkeit_start', headerFilter: true, hozAlign: 'center'},
+					{title: 'Verfügbarkeit Ende', field: 'verfuegbarkeit_ende', headerFilter: true, hozAlign: 'center'},
 					{title: 'Anzahl Räume', field: 'ort_count', headerFilter: true, hozAlign: 'right'},
 					{title: 'Anzahl Software', field: 'software_count', headerFilter: true, hozAlign: 'right'},
 					{title: 'Anmerkung', field: 'anmerkung', headerFilter: true},
@@ -47,14 +47,14 @@ export const Imageverwaltung = {
 
 							let button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
-							button.innerHTML = '<i class="fa fa-edit"></i>';
-							button.addEventListener('click', (event) => this.editSoftwareimage(event, cell.getRow().getIndex()));
+							button.innerHTML = '<i class="fa fa-copy"></i>';
+							button.addEventListener('click', (event) => this.copySoftwareimage(event, cell.getRow().getIndex()));
 							container.append(button);
 
 							button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
-							button.innerHTML = '<i class="fa fa-copy"></i>';
-							button.addEventListener('click', (event) => this.copySoftwareimage(event, cell.getRow().getIndex()));
+							button.innerHTML = '<i class="fa fa-edit"></i>';
+							button.addEventListener('click', (event) => this.editSoftwareimage(event, cell.getRow().getIndex()));
 							container.append(button);
 
 							button = document.createElement('button');
