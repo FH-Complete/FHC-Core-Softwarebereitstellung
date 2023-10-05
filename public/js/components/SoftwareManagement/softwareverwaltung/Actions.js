@@ -49,18 +49,17 @@ export const Actions = {
 						v-model="hierarchyView"
 						:checked="hierarchyView"
 						@change="handleHierarchyViewChange" >
-					<label class="form-check-label" for="hierarchyView">Hierarchie Ansicht</label>
+					<label class="form-check-label" for="hierarchyView">Hierarchie-Ansicht</label>
 				</div>
-				<div class="form-switch form-check-inline" v-show="hierarchyView">
+				<div class="form-check form-check-inline" v-show="hierarchyView">
 					<input
 						class="form-check-input"
 						type="checkbox"
 						id="expandHierarchy"
 						name="expandHierarchy"
 						:checked="expandHierarchy"
-						@input="handleHierarchyExpansion">
-					&nbsp;
-					<label class="form-check-label" for="expandHierarchy">{{ expandHierarchy ? 'aufgeklappt' : 'zugeklappt' }}</label>
+						@change="handleHierarchyExpansion">
+					<label class="form-check-label" for="expandHierarchy">aufgeklappt</label>
 				</div>
 			</div>
 		</div>
