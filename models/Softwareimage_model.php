@@ -33,8 +33,10 @@ class Softwareimage_model extends DB_Model
 
 		// Get zugeordnete Räume of given Image...
 		$this->SoftwareimageOrtModel->addSelect('ort_kurzbz');
-		$result = $this->SoftwareimageOrtModel->loadWhere(array(
-			'softwareimage_id' => $softwareimage_id_toBeCopied)
+		$result = $this->SoftwareimageOrtModel->loadWhere(
+			array(
+				'softwareimage_id' => $softwareimage_id_toBeCopied
+			)
 		);
 
 		// ...and copy them to new image
