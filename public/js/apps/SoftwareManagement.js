@@ -24,3 +24,5 @@ const softwareManagementApp = Vue.createApp({
 });
 
 softwareManagementApp.use(primevue.config.default,{zIndex: {overlay: 9999}}).mount('#main');
+softwareManagementApp.use(primevue.toastservice);
+softwareManagementApp.use(primevue.confirmationservice);

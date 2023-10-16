@@ -29,8 +29,7 @@ export const Softwareverwaltung = {
 						field: 'software_kurzbz',
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
-						hozAlign: 'left',
-						width: 150,
+						width: 50,
 						headerSort: false,
 						frozen: true
 					},
