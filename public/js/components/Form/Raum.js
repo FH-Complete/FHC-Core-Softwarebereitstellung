@@ -1,4 +1,5 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import {Alert} from "../SoftwareManagement/Alert";
 
 export const Raum = {
 	components: {
@@ -7,6 +8,7 @@ export const Raum = {
 	emits: [
 		 'onSaved'
 	],
+	mixins: [Alert],
 	data() {
 		return {
 			softwareimageorte_id: null,
@@ -36,7 +38,7 @@ export const Raum = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.errors.push(result.data.retval);
+							this.alertSystemMessage(result.data.retval); // TODO Check Backend Fehlermeldung
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -52,10 +54,7 @@ export const Raum = {
 						}
 					}
 				).catch(
-					error => {
-						let errorMessage = error.message ? error.message : 'Unknown error';
-						alert('Error when getting softwareimageort: ' + errorMessage);
-					}
+					error => {this.alertSystemError(error);}
 				);
 			}
 		},
@@ -95,8 +94,8 @@ export const Raum = {
 					{
 						Object.entries(CoreRESTClient.getError(result.data))
 							.forEach(([key, value]) => {
-								this.errors.push(value);
-							});
+								this.alertSystemMessage(value);
+							}); // TODO Check Backend Result
 
 						return;
 					}
@@ -105,12 +104,12 @@ export const Raum = {
 					let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
 
 					// On success
+					this.alertSuccess('Gespeichert!');
 					this.$emit('onSaved', raumanzahlDifferenz);
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when saving or updating softwareimageort: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},
@@ -131,7 +130,7 @@ export const Raum = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.errors.push(result.data.retval);
+						this.alertSystemMessage(result.data.retval); // TODO Check backend result
 					}
 					else
 					{
@@ -140,8 +139,7 @@ export const Raum = {
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when autofilling Orte: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},
@@ -152,7 +150,7 @@ export const Raum = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.errors.push(result.data.retval);
+						this.alertSystemMessage(result.data.retval); // TODO check backend result
 					}
 					else
 					{
@@ -161,8 +159,7 @@ export const Raum = {
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when autofilling Orte: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		}

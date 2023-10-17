@@ -3,6 +3,7 @@ import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareModal from "../../Modals/SoftwareModal";
 import {Actions} from "./Actions";
 import {Raumzuordnung} from "../Raumzuordnung";
+import {Alert} from "../Alert";
 
 export const Softwareverwaltung = {
 	componentName: 'Softwareverwaltung',
@@ -12,6 +13,7 @@ export const Softwareverwaltung = {
 		Actions,
 		Raumzuordnung
 	},
+	mixins: [Alert],
 	emits: [
 		'filterMenuUpdated'
 	],
@@ -126,8 +128,7 @@ export const Softwareverwaltung = {
 			}
 		).catch(
 			error => {
-				let errorMessage = error.message ? error.message : 'Unknown error';
-				alert('Error when getting softwarestatus: ' + errorMessage); //TODO beautiful alert
+				this.alertSystemError(error);
 			}
 		);
 		CoreRESTClient.get(
@@ -142,8 +143,7 @@ export const Softwareverwaltung = {
 			}
 		).catch(
 			error => {
-				let errorMessage = error.message ? error.message : 'Unknown error';
-				alert('Error when getting language index: ' + errorMessage); //TODO beautiful alert
+				this.alertSystemError(error);
 			}
 		);
 	},
@@ -253,7 +253,7 @@ export const Softwareverwaltung = {
 
 				if (selectedData.length == 0)
 				{
-					alert( 'Bitte erst Zeilen auswählen');
+					this.alertSystemMessage( 'Bitte erst Zeilen auswählen');
 					return;
 				}
 
@@ -275,14 +275,19 @@ export const Softwareverwaltung = {
 				}
 			).catch(
 				error => {
-					alert('Fehler bei softwarestatusupdate: ' + error.message);
+					this.alertSystemError(error);
 				}
 			);
 		},
 		editSoftware(event, software_id){
 			this.openModal(event, software_id);
 		},
-		deleteSoftware(software_id) {
+		async deleteSoftware(software_id) {
+
+			// TODO check
+			if (!await this.confirmDelete()) return;
+			console.log('* jetzt wird gelöscht...');
+
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
 				{
@@ -293,18 +298,25 @@ export const Softwareverwaltung = {
 				}
 			).then(
 				result => {
+
+					// TODO CHECK CoreRestClient.getError...
+					// console.log(result.data.retval); // TODO gibt message aus
+					//console.log(CoreRESTClient.getError(result.data)); // TODO methode .getError gibt 'Generic error' aus. Ggf ÄNDERN, dass message zurückgibt?
+					// console.log(CoreRESTClient.getError(result.data.retval)); // TODO methode .getError gibt 'Generic error' aus. Ggf ÄNDERN, dass message zurückgibt?
+
 					if (CoreRESTClient.isError(result.data))
 					{
-						alert('Fehler beim Löschen der Software: ' + Object.values(result.data.retval).join('; '));
+						this.alertSystemMessage(result.data.retval);
 					}
 					else
 					{
+						this.alertSuccess('Gelöscht!');
 						this.$refs.softwareTable.reloadTable();
 					}
 				}
 			).catch(
 				error => {
-					alert('Fehler beim Löschen der Software: ' + error.message);
+					this.alertSystemError(error);
 				}
 			);
 		},

@@ -2,6 +2,7 @@ import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareimageModal from "../../Modals/SoftwareimageModal";
 import {Raumzuordnung} from "../Raumzuordnung";
+import {Alert} from "../Alert";
 
 export const Imageverwaltung = {
 	componentName: 'Imageverwaltung',
@@ -101,7 +102,10 @@ export const Imageverwaltung = {
 		copySoftwareimage(event, softwareimage_id){
 			this.openModal(event, softwareimage_id, true);
 		},
-		deleteSoftwareimage(softwareimage_id) {
+		async deleteSoftwareimage(softwareimage_id) {
+
+			if (await this.confirmDelete() === false) return;
+
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/deleteImage',
 				{
@@ -109,6 +113,7 @@ export const Imageverwaltung = {
 				}
 			).then(
 				result => {
+					this.alertSuccess('Gelöscht!');
 					this.$refs.softwareimageTable.reloadTable();
 
 					// Empty Raumzuordnungstabelle
@@ -116,7 +121,7 @@ export const Imageverwaltung = {
 				}
 			).catch(
 				error => {
-					alert('Error when deleting softwareimage: ' + error.message);
+					this.alertSystemError(error);
 				}
 			);
 		},

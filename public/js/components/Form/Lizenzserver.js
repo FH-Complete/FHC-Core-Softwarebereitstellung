@@ -1,9 +1,11 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import {Alert} from "../SoftwareManagement/Alert"
 
 export const Lizenzserver = {
 	emits: [
 		'onSaved'
 	],
+	mixins: [Alert],
 	data() {
 		return {
 			lizenzserver_kurzbz: null,
@@ -24,7 +26,7 @@ export const Lizenzserver = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.errors.push(result.data.retval);
+							this.alertSystemMessage(result.data.retval);  // TODO Check Result from Backend
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -35,8 +37,7 @@ export const Lizenzserver = {
 					}
 				).catch(
 					error => {
-						let errorMessage = error.message ? error.message : 'Unknown error';
-						alert('Error when getting Softwarelizenzserver: ' + errorMessage);
+						this.alertSystemError(error);
 					}
 				);
 
@@ -64,16 +65,16 @@ export const Lizenzserver = {
 					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.errors.push(result.data.retval);
+						this.alertSystemMessage(result.data.retval); // TODO Check RESULT from Backend
 					}
 
 					// On success
+					this.alertSuccess('Gespeichert');
 					this.$emit('onSaved');
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when saving Lizenzserver: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},

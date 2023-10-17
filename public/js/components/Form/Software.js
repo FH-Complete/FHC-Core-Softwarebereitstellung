@@ -1,4 +1,5 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import {Alert} from "../SoftwareManagement/Alert";
 //import Phrasen from '../../../mixins/Phrasen.js';
 
 export const SoftwareForm = {
@@ -8,9 +9,7 @@ export const SoftwareForm = {
 	emits: [
 		'softwareFormSaved'
 	],
-	//~ mixins: [
-		//~ Phrasen
-	//~ ],
+	mixins: [Alert],
 	data() {
 		return {
 			softwareMetadata: {},
@@ -92,7 +91,7 @@ export const SoftwareForm = {
 					result => {
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.errors.push(result.data.retval);
+							this.alertSystemMessage(result.data.retval); // TODO CHECK result
 						}
 						else
 						{
@@ -116,8 +115,7 @@ export const SoftwareForm = {
 					}
 				).catch(
 					error => {
-						let errorMessage = error.message ? error.message : 'Unknown error';
-						alert('Error when getting software: ' + errorMessage); //TODO beautiful alert
+						this.alertSystemError(error);
 					}
 				);
 
@@ -134,8 +132,7 @@ export const SoftwareForm = {
 					result => {this.softwarestatus = CoreRESTClient.getData(result.data);}
 				).catch(
 					error => {
-						let errorMessage = error.message ? error.message : 'Unknown error';
-						alert('Error when getting softwarestatus: ' + errorMessage);
+						this.alertSystemError(error);
 					}
 				);
 
@@ -152,7 +149,7 @@ export const SoftwareForm = {
 					result => {
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.errors.push(result.data.retval);
+							this.alertSystemMessage(result.data.retval); // TODO CHECK result from backend
 						}
 						else if(CoreRESTClient.hasData(result.data))
 						{
@@ -161,8 +158,7 @@ export const SoftwareForm = {
 					}
 				).catch(
 					error => {
-						let errorMessage = error.message ? error.message : 'Unknown error';
-						alert('Error when getting software images: ' + errorMessage);
+						this.alertSystemError(error);
 					}
 				);
 			}
@@ -225,13 +221,13 @@ export const SoftwareForm = {
 						{
 							// everything ok
 							// emit event
+							this.alertSuccess('Gespeichert');
 							this.$emit("softwareFormSaved");
 						}
 					}
 				).catch(
 					error => {
-						let errorMessage = error.message ? error.message : 'Unknown error';
-						this.errors.push('Error when saving software: ' + errorMessage);
+						this.alertSystemError(error);
 					}
 				);
 			}
@@ -260,7 +256,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.errors.push(result.data.retval);
+						this.alertSystemMessage(result.data.retval); // TODO check RESULT from backend
 					}
 					else
 					{
@@ -275,8 +271,7 @@ export const SoftwareForm = {
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when getting softwareByKurzbz: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},
@@ -294,7 +289,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.errors.push(result.data.retval);
+						this.alertSystemMessage(result.data.retval); // TODO Check Result from Backend
 					}
 					else
 					{
@@ -328,8 +323,7 @@ export const SoftwareForm = {
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when getting OeSuggestions: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},
@@ -344,7 +338,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.errors.push(result.data.retval);
+						this.alertSystemMessage(result.data.retval); // TODO Check RESULT from Backend
 					}
 					else
 					{
@@ -353,8 +347,7 @@ export const SoftwareForm = {
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when getting images: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},
@@ -369,7 +362,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.errors.push(result.data.retval);
+						this.alertSystemMessage(result.data.retval); // TODO Check RESULT from Backend
 					}
 					else
 					{
@@ -378,8 +371,7 @@ export const SoftwareForm = {
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when getting Lizenzserver: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},

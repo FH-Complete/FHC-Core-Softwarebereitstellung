@@ -2,6 +2,7 @@ import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import RaumModal from "../Modals/RaumModal";
 import {Actions} from "./imageverwaltung/Actions";
+import {Alert} from "./Alert";
 
 export const Raumzuordnung = {
 	components: {
@@ -10,6 +11,7 @@ export const Raumzuordnung = {
 		RaumModal,
 		Actions
 	},
+	mixins: [Alert],
 	data() {
 		return {
 			softwareimageId: Vue.inject('softwareimageId'),
@@ -99,7 +101,10 @@ export const Raumzuordnung = {
 		editOrt(softwareimageort_id){
 			this.openModal(softwareimageort_id);
 		},
-		deleteOrt(softwareimageort_id){
+		async deleteOrt(softwareimageort_id){
+
+			if (await this.confirmDelete() === false) return;
+
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/deleteImageort',
 				{
@@ -112,10 +117,11 @@ export const Raumzuordnung = {
 				result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						alert('Fehler beim Löschen des Softwareimageortes: ' + Object.values(result.data.retval).join('; '));
+						this.alertSystemMessage(Object.values(result.data.retval).join('; '));  // TODO backend result anpassen
 					}
 					else
 					{
+						this.alertSuccess('Gelöscht!');
 						// Refresh data in Raumzuordnungstabelle
 						this.getOrteByImage(this.softwareimageId);
 
@@ -125,7 +131,7 @@ export const Raumzuordnung = {
 				}
 			).catch(
 				error => {
-					alert('Fehler beim Löschen des Softwareimageortes: ' + error.message);
+					this.alertSystemError(error);
 				}
 			);
 		},
@@ -149,8 +155,7 @@ export const Raumzuordnung = {
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					alert('Error when getting Raume: ' + errorMessage); //TODO beautiful alert
+					this.alertSystemError(error);
 				}
 			);
 		},
@@ -173,8 +178,7 @@ export const Raumzuordnung = {
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					alert('Error when getting Raume: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},
@@ -192,7 +196,7 @@ export const Raumzuordnung = {
 
 			if (selectedData.length == 0)
 			{
-				alert( 'Bitte erst Zeilen auswählen');
+				this.alertSystemMessage('Bitte erst Zeilen auswählen');
 				return;
 			}
 
