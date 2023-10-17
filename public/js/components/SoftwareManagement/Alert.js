@@ -54,7 +54,8 @@ export const Alert = {
 						]
 					}}),
 					Vue.h(primevue.confirmdialog, {
-						ref: 'pvConfirmdialog'
+						ref: 'pvConfirmdialog',
+						'^ref': 'pvConfirmdialog'
 					})
 				]
 			},
@@ -142,7 +143,9 @@ export const Alert = {
 			}
 
 			// Fallback
-			this.alertSystemError('alertSystemMessage throws Generic Error.');
+			let errMsg = 'alertSystemError throws Generic Error\n';
+			errMsg += 'Error Controller Path: ' + FHC_JS_DATA_STORAGE_OBJECT.called_path + '/' +  FHC_JS_DATA_STORAGE_OBJECT.called_method;
+			this.alertSystemError(errMsg);
 		},
 		alertSystemError(error){
 			// Error is string
@@ -175,8 +178,12 @@ export const Alert = {
 
 				if (error.hasOwnProperty('config')){
 					if (error.config.hasOwnProperty('url')){
-						errMsg += 'Error Method: ' + error.config.url + '\r\n';
+						errMsg += 'Error ConfigURL: ' + error.config.url + '\r\n';
 					}
+				}
+
+				if (error.hasOwnProperty('stack')){
+					errMsg += 'Error Stack: ' + error.stack + '\r\n';
 				}
 
 				// Fallback object error message
@@ -184,12 +191,16 @@ export const Alert = {
 					errMsg = 'Error Message: ' + JSON.stringify(error);
 				}
 
+				errMsg += 'Error Controller Path: ' + FHC_JS_DATA_STORAGE_OBJECT.called_path + '/' + FHC_JS_DATA_STORAGE_OBJECT.called_method;
+
 				this.pvSystemErrorToast.add({ severity: 'error', summary: 'Systemfehler', detail: errMsg});
 				return;
 			}
 
 			// Fallback
-			this.pvSystemErrorToast.add({ severity: 'error', summary: 'Systemfehler', detail: 'alertSystemError throws Generic Error'});
+			let errMsg = 'alertSystemError throws Generic Error';
+			errMsg += 'Error Controller Path: ' + FHC_JS_DATA_STORAGE_OBJECT.called_path + '/' + FHC_JS_DATA_STORAGE_OBJECT.called_method;
+			this.pvSystemErrorToast.add({ severity: 'error', summary: 'Systemfehler', detail: errMsg});
 
 
 		},
