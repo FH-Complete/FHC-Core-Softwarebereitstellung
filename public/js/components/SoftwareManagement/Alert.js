@@ -204,7 +204,6 @@ export const Alert = {
 					rejectClass: 'btn btn-outline-secondary',
 					accept: () => {
 						resolve(true);
-						this.alertSuccess('Gelöscht!');
 					},
 					reject: () => {
 						resolve(false);
