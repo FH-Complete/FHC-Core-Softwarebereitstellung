@@ -2,7 +2,8 @@ import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 
 export const Softwareimage = {
 	components: {
-		AutoComplete: primevue.autocomplete
+		AutoComplete: primevue.autocomplete,
+		"datepicker": VueDatePicker
 	},
 	emits: [
 		'onSaved'
@@ -104,7 +105,6 @@ export const Softwareimage = {
 			this.softwareimage = {},
 			this.copy = false,
 			this.errors = [];
-			
 		}
 	},
 	template: `
@@ -116,15 +116,33 @@ export const Softwareimage = {
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Betriebssystem</label>
-				<input type="text" class="form-control mb-3" v-model="softwareimage.betriebssystem">	
+				<input type="text" class="form-control mb-3" v-model="softwareimage.betriebssystem">
 			</div>
 			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Start</label>
-				<input type="date" class="form-control mb-3" v-model="softwareimage.verfuegbarkeit_start">
+				<datepicker
+					v-model="softwareimage.verfuegbarkeit_start"
+					v-bind:enable-time-picker="false"
+					v-bind:placeholder="'TT.MM.YY'"
+					v-bind:text-input="true"
+					v-bind:auto-apply="true"
+					locale="de"
+					format="dd.MM.yyyy"
+					model-type="yyyy-MM-dd">
+				</datepicker>
 			</div>
 			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Ende</label>
-				<input type="date" class="form-control mb-3" v-model="softwareimage.verfuegbarkeit_ende">
+				<datepicker
+					v-model="softwareimage.verfuegbarkeit_ende"
+					v-bind:enable-time-picker="false"
+					v-bind:placeholder="'TT.MM.YY'"
+					v-bind:text-input="true"
+					v-bind:auto-apply="true"
+					locale="de"
+					format="dd.MM.yyyy"
+					model-type="yyyy-MM-dd">
+				</datepicker>
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Anmerkung</label>

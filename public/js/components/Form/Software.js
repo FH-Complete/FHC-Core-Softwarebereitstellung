@@ -378,7 +378,7 @@ export const SoftwareForm = {
 	},
 	template: `
 	<div>
-		<form ref="softwareForm" class="row">	
+		<form ref="softwareForm" class="row">
 			<div class="col-sm-3">
 				<label class="form-label">Softwaretyp *</label>
 				<select
@@ -398,13 +398,13 @@ export const SoftwareForm = {
 				<label class="form-label">Softwarestatus *</label>
 				<select
 					class="form-select mb-3"
-					required				
+					required
 					v-model="softwarestatus.softwarestatus_kurzbz">
 					<option v-for="(bezeichnung, softwarestatus_kurzbz) in softwareMetadata.softwarestatus" :key="index" :value="softwarestatus_kurzbz">
 						{{bezeichnung}}
 					</option>
 				</select>
-			</div>	
+			</div>
 			<div class="col-sm-1">
 				<label class="form-label">Version</label>
 				<input type="text" class="form-control mb-3" v-model="software.version">
@@ -499,7 +499,7 @@ export const SoftwareForm = {
 				<label class="form-label">Lizenz-Laufzeit</label>
 				<input type="date" class="form-control mb-3" v-model="software.lizenzlaufzeit">
 			</div>
-			<div class="col-sm-5">	
+			<div class="col-sm-5">
 				<label class="form-label">Kostenträger-OE</label>
 				<auto-complete
 					class="w-100 mb-3"
@@ -521,7 +521,7 @@ export const SoftwareForm = {
 					<input type="text" class="form-control" v-model="software.lizenzkosten">
 					<span class="input-group-text">€/Jahr</span>
 				</div>
-			</div>	
+			</div>
 		</form>
 	</div>
 	<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>

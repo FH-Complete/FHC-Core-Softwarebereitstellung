@@ -13,8 +13,12 @@
 			//~ 'global' => array('mailAnXversandt'),
 			//~ 'ui' => array('bitteEintragWaehlen')
 		//~ ),
+		'customJSs' => array('vendor/vuejs/vuedatepicker_js/vue-datepicker.iife.js'),
 		'customJSModules' => array('public/extensions/FHC-Core-Softwarebereitstellung/js/apps/SoftwareManagement.js'),
-        'customCSSs' => array('public/extensions/FHC-Core-Softwarebereitstellung/css/SoftwareManagement.css')
+		'customCSSs' => array(
+			'vendor/vuejs/vuedatepicker_css/main.css',
+			'public/extensions/FHC-Core-Softwarebereitstellung/css/SoftwareManagement.css'
+		)
 	);
 
 	$this->load->view('templates/FHC-Header', $includesArray);
