@@ -11,6 +11,7 @@ export const Imageverwaltung = {
 		SoftwareimageModal,
 		Raumzuordnung
 	},
+	mixins: [Alert],
 	emits: [
 		'newFilterEntry',
 	],
