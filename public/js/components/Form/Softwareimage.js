@@ -1,10 +1,12 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import {Alert} from "../SoftwareManagement/Alert";
 
 export const Softwareimage = {
 	components: {
 		AutoComplete: primevue.autocomplete,
 		"datepicker": VueDatePicker
 	},
+	mixins: [Alert],
 	emits: [
 		'onSaved'
 	],
@@ -30,7 +32,7 @@ export const Softwareimage = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.errors.push(result.data.retval);
+							this.alertSystemMessage(result.data.retval);
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -41,8 +43,7 @@ export const Softwareimage = {
 					}
 				).catch(
 					error => {
-						let errorMessage = error.message ? error.message : 'Unknown error';
-						alert('Error when getting softwareimage: ' + errorMessage);
+						this.alertSystemError(error);
 					}
 				);
 
@@ -75,36 +76,24 @@ export const Softwareimage = {
 					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						if(typeof result.data.retval === 'string')
-						{
-							this.errors.push(result.data.retval);
-						}
-
-						if(typeof result.data.retval === 'object') {
-							Object.entries(CoreRESTClient.getError(result.data))
-								.forEach(([key, value]) => {
-									this.errors.push(value);
-								});
-						}
-
+						this.alertSystemMessage(result.data.retval);
 						return;
 					}
 
 					// On success
+					this.alertSuccess('Gespeichert!');
 					this.$emit('onSaved');
 				}
 			).catch(
 				error => {
-					let errorMessage = error.message ? error.message : 'Unknown error';
-					this.errors.push('Error when saving softwareimage: ' + errorMessage);
+					this.alertSystemError(error);
 				}
 			);
 		},
 		reset(){
 			this.softwareimageId = null,
 			this.softwareimage = {},
-			this.copy = false,
-			this.errors = [];
+			this.copy = false
 		}
 	},
 	template: `
@@ -154,6 +143,5 @@ export const Softwareimage = {
 			</div>
 		</form>
 	</div>
-	<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
 	`
 }
