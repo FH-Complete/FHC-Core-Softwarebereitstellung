@@ -1,8 +1,8 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
-import SoftwareimageModal from "../../Modals/SoftwareimageModal";
-import {Raumzuordnung} from "../Raumzuordnung";
-import {Alert} from "../Alert";
+import SoftwareimageModal from "../../Modals/SoftwareimageModal.js";
+import {Raumzuordnung} from "../Raumzuordnung.js";
+import {Alert} from "../Alert.js";
 
 export const Imageverwaltung = {
 	componentName: 'Imageverwaltung',

@@ -1,7 +1,7 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
-import LizenzserverModal from "../../Modals/LizenzserverModal";
-import {Alert} from "../Alert";
+import LizenzserverModal from "../../Modals/LizenzserverModal.js";
+import {Alert} from "../Alert.js";
 
 export const Lizenzserververwaltung = {
 	components: {

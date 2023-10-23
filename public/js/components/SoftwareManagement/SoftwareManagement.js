@@ -16,9 +16,9 @@
  */
 
 import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
-import {BaseLayout} from "../Layout/BaseLayout";
-import {NavTabs} from "./NavTabs";
-import {Notification} from "./sidebar/Notification";
+import {BaseLayout} from "../Layout/BaseLayout.js";
+import {NavTabs} from "./NavTabs.js";
+import {Notification} from "./sidebar/Notification.js";
 
 export const SoftwareManagement = {
 	components: {

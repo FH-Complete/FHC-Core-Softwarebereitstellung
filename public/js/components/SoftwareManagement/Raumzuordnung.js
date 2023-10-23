@@ -1,8 +1,8 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import RaumModal from "../Modals/RaumModal";
-import {Actions} from "./imageverwaltung/Actions";
-import {Alert} from "./Alert";
+import RaumModal from "../Modals/RaumModal.js";
+import {Actions} from "./imageverwaltung/Actions.js";
+import {Alert} from "./Alert.js";
 
 export const Raumzuordnung = {
 	components: {

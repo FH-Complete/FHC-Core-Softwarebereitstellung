@@ -1,9 +1,9 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
-import SoftwareModal from "../../Modals/SoftwareModal";
-import {Actions} from "./Actions";
-import {Raumzuordnung} from "../Raumzuordnung";
-import {Alert} from "../Alert";
+import SoftwareModal from "../../Modals/SoftwareModal.js";
+import {Actions} from "./Actions.js";
+import {Raumzuordnung} from "../Raumzuordnung.js";
+import {Alert} from "../Alert.js";
 
 export const Softwareverwaltung = {
 	componentName: 'Softwareverwaltung',

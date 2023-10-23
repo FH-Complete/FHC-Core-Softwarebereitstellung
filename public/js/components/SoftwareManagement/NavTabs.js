@@ -1,6 +1,6 @@
-import {Softwareverwaltung} from "./softwareverwaltung/Softwareverwaltung";
-import {Imageverwaltung} from "./imageverwaltung/Imageverwaltung";
-import {Lizenzserververwaltung} from "./lizenzserververwaltung/Lizenzserververwaltung";
+import {Softwareverwaltung} from "./softwareverwaltung/Softwareverwaltung.js";
+import {Imageverwaltung} from "./imageverwaltung/Imageverwaltung.js";
+import {Lizenzserververwaltung} from "./lizenzserververwaltung/Lizenzserververwaltung.js";
 
 export const NavTabs = {
 	components: {

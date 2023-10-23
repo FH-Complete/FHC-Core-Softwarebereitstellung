@@ -1,5 +1,5 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import {Alert} from "../SoftwareManagement/Alert"
+import {Alert} from "../SoftwareManagement/Alert.js"
 
 export const Lizenzserver = {
 	emits: [
