@@ -162,6 +162,32 @@ class Software_model extends DB_Model
 		return $this->execQuery($query, array($software_id));
 	}
 
+	/**
+	 * Get Software by Image. (Zugeordnete Software)
+	 */
+	public function getSoftwareByImage($softwareimage_id, $language_index)
+	{
+		$qry = '
+			SELECT
+				swisw.software_id,
+				sw.softwaretyp_kurzbz,
+				sw.software_kurzbz,
+				sw.version,
+				(
+					SELECT DISTINCT ON (swswstat.software_id) swstat.bezeichnung[?]
+					FROM extension.tbl_software_softwarestatus swswstat
+					JOIN extension.tbl_softwarestatus swstat USING (softwarestatus_kurzbz)
+					WHERE swswstat.software_id = swisw.software_id
+					ORDER BY swswstat.software_id, swswstat.datum DESC, swswstat.software_status_id DESC
+				) AS softwarestatus_bezeichnung
+			FROM extension.tbl_softwareimage_software swisw
+			JOIN extension.tbl_software sw USING (software_id)
+			WHERE swisw.softwareimage_id = ?
+			ORDER BY sw.softwaretyp_kurzbz, sw.software_kurzbz, sw.version;';
+
+		return $this->execQuery($qry, array($language_index, $softwareimage_id)
+		);
+	}
 
 	/**
 	 * Gets dependencies of a software (needed e.g. for checks if a software can be deleted).

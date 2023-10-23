@@ -2,6 +2,7 @@ import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareimageModal from "../../Modals/SoftwareimageModal.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
+import {Softwarezuordnung} from "./Softwarezuordnung.js";
 import {Alert} from "../Alert.js";
 
 export const Imageverwaltung = {
@@ -9,7 +10,8 @@ export const Imageverwaltung = {
 	components: {
 		CoreFilterCmpt,
 		SoftwareimageModal,
-		Raumzuordnung
+		Raumzuordnung,
+		Softwarezuordnung
 	},
 	mixins: [Alert],
 	emits: [
@@ -84,6 +86,9 @@ export const Imageverwaltung = {
 			// Get Orte
 			this.$refs.raumzuordnung.getOrteByImage(row.getIndex());
 
+			// Get Software
+			this.$refs.softwarezuordnung.getSoftwareByImage(row.getIndex());
+
 			// Get Softwareimage Bezeichnung
 			this.softwareimageId = row.getData().softwareimage_id;
 			this.softwareimage_bezeichnung = row.getData().bezeichnung;
@@ -119,6 +124,9 @@ export const Imageverwaltung = {
 
 					// Empty Raumzuordnungstabelle
 					this.$refs.raumzuordnung.getOrteByImage(null);
+
+					// Empty Softwarezuordnungstabelle
+					this.$refs.softwarezuordnung.getSoftwareByImage(null);
 				}
 			).catch(
 				error => {
@@ -155,6 +163,7 @@ export const Imageverwaltung = {
 		<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span></h2>				
 	<div class="row">						
 		<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
+		<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>								
 	</div>
 	
 	<!-- Softwareimage modal component -->
