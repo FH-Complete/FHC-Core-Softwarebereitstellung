@@ -159,7 +159,7 @@ export const Imageverwaltung = {
 	</core-filter-cmpt>
 	
 	<!-- Softwareimage Details -->
-	<h2 class="h4 fhc-hr mt-5">Details zu Softwareimage 
+	<h2 class="h4 fhc-hr mt-5">Softwareimage-Details
 		<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span></h2>				
 	<div class="row">						
 		<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
