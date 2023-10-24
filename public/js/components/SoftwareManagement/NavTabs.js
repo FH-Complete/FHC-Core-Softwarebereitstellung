@@ -1,12 +1,15 @@
 import {Softwareverwaltung} from "./softwareverwaltung/Softwareverwaltung.js";
 import {Imageverwaltung} from "./imageverwaltung/Imageverwaltung.js";
 import {Lizenzserververwaltung} from "./lizenzserververwaltung/Lizenzserververwaltung.js";
+import {Softwaresuche} from "./softwaresuche/Softwaresuche";
+
 
 export const NavTabs = {
 	components: {
 		Softwareverwaltung,
 		Imageverwaltung,
-		Lizenzserververwaltung
+		Lizenzserververwaltung,
+		Softwaresuche
 	},
 	emits: [
 		'newFilterEntry',
@@ -17,7 +20,8 @@ export const NavTabs = {
 			tabs: [
 				'Softwareverwaltung',
 				'Imageverwaltung',
-				'Lizenzserververwaltung'
+				'Lizenzserververwaltung',
+				'Softwaresuche'
 			]
 		}
 	},
