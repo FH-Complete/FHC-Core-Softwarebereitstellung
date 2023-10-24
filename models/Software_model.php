@@ -201,10 +201,13 @@ class Software_model extends DB_Model
 		$qry = '
 			SELECT
 			    ? AS ort_kurzbz,
-				sw.software_id,
 				sw.software_kurzbz,
+				sw.software_id,
 				swt.bezeichnung[?] AS "softwaretyp_bezeichnung",
-				sw.version,
+				swi.bezeichnung AS "image_bezeichnung",
+			    sw.version,
+			    sw.hersteller,
+			    sw.os,
 				(
 					SELECT DISTINCT ON (swswstat.software_id) swstat.bezeichnung[?]
 					FROM extension.tbl_software_softwarestatus swswstat
@@ -215,7 +218,8 @@ class Software_model extends DB_Model
 			FROM extension.tbl_softwareimage_software swisw
 			JOIN extension.tbl_software sw USING (software_id)
 			JOIN extension.tbl_softwaretyp swt USING (softwaretyp_kurzbz)
-			WHERE softwareimage_id = (
+			JOIN extension.tbl_softwareimage swi USING (softwareimage_id)
+			WHERE softwareimage_id IN (
 				SELECT softwareimage_id
 				FROM extension.tbl_softwareimage_ort
 				WHERE ort_kurzbz = ?

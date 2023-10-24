@@ -19,17 +19,15 @@ export const Softwaresuche = {
 					tooltip:true,
 				},
 				columns: [
-					{title: 'Ort', field: 'ort_kurzbz', headerFilter: true, frozen:true, visible: true},
-					{title: 'Software-ID', field: 'software_id', headerFilter: true, frozen:true, visible: false},
+					{title: 'Ort', field: 'ort_kurzbz', headerFilter: true, frozen: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
+					{title: 'Software-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: 'Softwaretyp', field: 'softwaretyp_bezeichnung', headerFilter: true},
+					{title: 'Image', field: 'image_bezeichnung', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
-					{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
 					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
 					{title: 'Betriebssystem', field: 'os', headerFilter: true},
-					{title: 'Verantwortliche', field: 'verantwortliche', headerFilter: true},
-					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
-					{title: 'Softwarestatus Bezeichnung', field: 'softwarestatus_bezeichnung', headerFilter: true}
+					{title: 'Softwarestatus Bezeichnung', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150}
 				]
 			},
 			selOrt: null,
