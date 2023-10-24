@@ -24,6 +24,9 @@ export const Softwareverwaltung = {
 				maxHeight: "100%",
 				minHeight: 50,
 				layout: 'fitColumns',
+				columnDefaults:{
+					tooltip:true,
+				},
 				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 				columns: [

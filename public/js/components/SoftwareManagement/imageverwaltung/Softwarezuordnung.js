@@ -16,6 +16,9 @@ export const Softwarezuordnung = {
 				minHeight: 30,
 				layout: 'fitColumns',
 				index: 'software_id',
+				columnDefaults:{
+					tooltip:true,
+				},
 				columns: [
 					{title: 'Software-ID', field: 'software_id', visible: false, headerFilter: true, frozen: true},
 					{title: 'Softwaretyp', field: 'softwaretyp_kurzbz', headerFilter: true},

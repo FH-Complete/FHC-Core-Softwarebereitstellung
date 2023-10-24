@@ -22,6 +22,9 @@ export const Raumzuordnung = {
 				minHeight: 30,
 				layout: 'fitColumns',
 				index: 'softwareimageort_id',
+				columnDefaults:{
+					tooltip:true,
+				},
 				columns: [
 					{title: 'Img-Ort-ID', field: 'softwareimageort_id', headerFilter: true, visible: false},
 					{title: 'Image', field: 'image', headerFilter: true},
