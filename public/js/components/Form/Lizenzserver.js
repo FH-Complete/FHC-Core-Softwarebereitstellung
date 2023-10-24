@@ -67,10 +67,12 @@ export const Lizenzserver = {
 					{
 						this.alertSystemMessage(result.data.retval); // TODO Check RESULT from Backend
 					}
-
-					// On success
-					this.alertSuccess('Gespeichert');
-					this.$emit('onSaved');
+					else
+					{
+						// On success
+						this.alertSuccess('Gespeichert');
+						this.$emit('onSaved');
+					}
 				}
 			).catch(
 				error => {
