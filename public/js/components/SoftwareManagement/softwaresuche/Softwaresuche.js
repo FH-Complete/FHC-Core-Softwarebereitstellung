@@ -14,7 +14,7 @@ export const Softwaresuche = {
 				index: 'software_id',
 				maxHeight: "100%",
 				minHeight: 30,
-				layout: 'fitDataFill',
+				layout: 'fitColumns',
 				columnDefaults:{
 					tooltip:true,
 				},

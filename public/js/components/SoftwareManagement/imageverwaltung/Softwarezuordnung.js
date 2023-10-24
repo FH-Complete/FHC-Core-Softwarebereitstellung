@@ -14,7 +14,7 @@ export const Softwarezuordnung = {
 			softwarezuordnungTabulatorOptions: {
 				maxHeight: "100%",
 				minHeight: 30,
-				layout: 'fitDataStretch',
+				layout: 'fitColumns',
 				index: 'software_id',
 				columns: [
 					{title: 'Software-ID', field: 'software_id', visible: false, headerFilter: true, frozen: true},
