@@ -21,6 +21,7 @@ class Software extends Auth_Controller
 				'getSoftware' => 'basis/mitarbeiter:r',
 				'getSoftwareByKurzbz' => 'basis/mitarbeiter:r',
 				'getSoftwareByImage' => 'basis/mitarbeiter:r',
+				'getSoftwareByOrt' => 'basis/mitarbeiter:r',
 				'getOeSuggestions' => 'basis/mitarbeiter:r',
 				'getStatus' => 'basis/mitarbeiter:r',
 				'getLanguageIndex' => 'basis/mitarbeiter:r',
@@ -174,6 +175,24 @@ class Software extends Auth_Controller
 		if (isError($result))
 		{
 			$this->terminateWithJsonError('Fehler beim Holen der zugeordneten Software: '.getError($result));
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/**
+	 * Get Software by Ort.
+	 */
+	public function getSoftwareByOrt()
+	{
+		$ort_kurzbz = $this->input->get('ort_kurzbz');
+		$language_index = $this->_getLanguageIndex();
+
+		$result = $this->SoftwareModel->getSoftwareByOrt($ort_kurzbz, $language_index);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError('Fehler beim Suchen der Software: '.getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);

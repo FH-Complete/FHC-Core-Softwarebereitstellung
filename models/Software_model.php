@@ -190,6 +190,43 @@ class Software_model extends DB_Model
 	}
 
 	/**
+	 * Get Software by Ort.
+	 *
+	 * Software is assinged to Images. Images are assigned to Orte.
+	 * Therefore only Software can be returned, that is assigned to an image, which was assigned to the
+	 * given Ort.
+	 */
+	public function getSoftwareByOrt($ort_kurzbz, $language_index)
+	{
+		$qry = '
+			SELECT
+			    ? AS ort_kurzbz,
+				sw.software_id,
+				sw.software_kurzbz,
+				swt.bezeichnung[?] AS "softwaretyp_bezeichnung",
+				sw.version,
+				(
+					SELECT DISTINCT ON (swswstat.software_id) swstat.bezeichnung[?]
+					FROM extension.tbl_software_softwarestatus swswstat
+					JOIN extension.tbl_softwarestatus swstat USING (softwarestatus_kurzbz)
+					WHERE swswstat.software_id = swisw.software_id
+					ORDER BY swswstat.software_id, swswstat.datum DESC, swswstat.software_status_id DESC
+				) AS softwarestatus_bezeichnung
+			FROM extension.tbl_softwareimage_software swisw
+			JOIN extension.tbl_software sw USING (software_id)
+			JOIN extension.tbl_softwaretyp swt USING (softwaretyp_kurzbz)
+			WHERE softwareimage_id = (
+				SELECT softwareimage_id
+				FROM extension.tbl_softwareimage_ort
+				WHERE ort_kurzbz = ?
+			)
+			ORDER BY software_kurzbz';
+
+		return $this->execQuery($qry, array($ort_kurzbz, $language_index, $language_index, $ort_kurzbz)
+		);
+	}
+
+	/**
 	 * Gets dependencies of a software (needed e.g. for checks if a software can be deleted).
 	 * @param software_id
 	 * @return object success or error
