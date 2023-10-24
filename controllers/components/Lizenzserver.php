@@ -98,6 +98,16 @@ class Lizenzserver extends Auth_Controller
 			$this->terminateWithJsonError(getError($result));
 		}
 
+		// Return if Softwarelizenzserver already exixts
+		$result = $this->SoftwarelizenzserverModel->load(array(
+			'lizenzserver_kurzbz' => $data['lizenzserver']['lizenzserver_kurzbz']
+		));
+
+		if (hasData($result))
+		{
+			$this->terminateWithJsonError('Kurzbezeichnung kann nicht mehr überschrieben werden.');
+		}
+
 		// Update Softwarelizenzserver
 		$result = $this->SoftwarelizenzserverModel->update(
 			array('lizenzserver_kurzbz' => $data['lizenzserver']['lizenzserver_kurzbz']),
