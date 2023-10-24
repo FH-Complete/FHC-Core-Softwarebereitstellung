@@ -169,6 +169,9 @@ export const Softwareverwaltung = {
 
 			// get row data
 			this.getSoftwareRowDetails();
+
+			// Scroll to Detail
+			window.scrollTo(0, this.$refs.softwareDetail.offsetTop);
 		});
 
 		this.$refs.softwareTable.tabulator.on("dataLoaded", data => {
@@ -374,7 +377,7 @@ export const Softwareverwaltung = {
 		 </template>
 	</core-filter-cmpt>
 	<!-- Software Details -->
-	<h2 class="h4 fhc-hr mt-5">Software-Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
+	<h2 ref="softwareDetail" class="h4 fhc-hr mt-5">Software-Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
 	<div class="row">
 		<raumzuordnung ref="raumzuordnung"></raumzuordnung>
 	</div>

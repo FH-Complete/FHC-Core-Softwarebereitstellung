@@ -92,6 +92,10 @@ export const Imageverwaltung = {
 			// Get Softwareimage Bezeichnung
 			this.softwareimageId = row.getData().softwareimage_id;
 			this.softwareimage_bezeichnung = row.getData().bezeichnung;
+
+
+			// Scroll to Detail
+			window.scrollTo(0, this.$refs.softwareimageDetail.offsetTop);
 		});
 	},
 	methods: {
@@ -159,7 +163,7 @@ export const Imageverwaltung = {
 	</core-filter-cmpt>
 	
 	<!-- Softwareimage Details -->
-	<h2 class="h4 fhc-hr mt-5">Softwareimage-Details
+	<h2 ref="softwareimageDetail" class="h4 fhc-hr mt-5">Softwareimage-Details
 		<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span></h2>				
 	<div class="row">						
 		<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
