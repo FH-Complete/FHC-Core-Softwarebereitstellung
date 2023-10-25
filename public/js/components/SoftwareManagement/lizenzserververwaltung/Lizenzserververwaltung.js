@@ -1,14 +1,12 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import LizenzserverModal from "../../Modals/LizenzserverModal.js";
-import {Alert} from "../Alert.js";
 
 export const Lizenzserververwaltung = {
 	components: {
 		CoreFilterCmpt,
 		LizenzserverModal
 	},
-	mixins: [Alert],
 	emits: [
 		'newFilterEntry',
 	],
@@ -70,7 +68,7 @@ export const Lizenzserververwaltung = {
 		},
 		async deleteLizenzserver(lizenzserver_kurzbz) {
 
-			if (await this.confirmDelete() === false) return;
+			if (await this.$fhcAlert.confirmDelete() === false) return;
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/deleteLizenzserver',
@@ -79,13 +77,11 @@ export const Lizenzserververwaltung = {
 				}
 			).then(
 				result => {
-					this.alertSuccess('Gelöscht!');
+					this.$fhcAlert.alertSuccess('Gelöscht!');
 					this.$refs.lizenzserverTable.reloadTable();
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		emitNewFilterEntry: function(payload) {

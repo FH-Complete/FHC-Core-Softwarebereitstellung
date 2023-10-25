@@ -3,7 +3,6 @@ import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareModal from "../../Modals/SoftwareModal.js";
 import {Actions} from "./Actions.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
-import {Alert} from "../Alert.js";
 
 export const Softwareverwaltung = {
 	componentName: 'Softwareverwaltung',
@@ -13,7 +12,6 @@ export const Softwareverwaltung = {
 		Actions,
 		Raumzuordnung
 	},
-	mixins: [Alert],
 	emits: [
 		'filterMenuUpdated'
 	],
@@ -130,9 +128,7 @@ export const Softwareverwaltung = {
 				this.reloadTabulator();
 			}
 		).catch(
-			error => {
-				this.alertSystemError(error);
-			}
+			error => { this.$fhcAlert.handleSystemError(error); }
 		);
 		CoreRESTClient.get(
 			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex',
@@ -145,9 +141,7 @@ export const Softwareverwaltung = {
 				this.languageIndex = CoreRESTClient.getData(result.data);
 			}
 		).catch(
-			error => {
-				this.alertSystemError(error);
-			}
+			error => { this.$fhcAlert.handleSystemError(error); }
 		);
 	},
 	mounted(){
@@ -259,7 +253,7 @@ export const Softwareverwaltung = {
 
 				if (selectedData.length == 0)
 				{
-					this.alertSystemMessage( 'Bitte erst Zeilen auswählen');
+					this.$fhcAlert.handleSystemMessage( 'Bitte erst Zeilen auswählen');
 					return;
 				}
 
@@ -280,9 +274,7 @@ export const Softwareverwaltung = {
 					this.$refs.softwareTable.reloadTable(); // TODO use row update instead of reloadTable after solving datatree issues
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		editSoftware(event, software_id){
@@ -290,9 +282,7 @@ export const Softwareverwaltung = {
 		},
 		async deleteSoftware(software_id) {
 
-			// TODO check
-			if (!await this.confirmDelete()) return;
-			console.log('* jetzt wird gelöscht...');
+			if (!await this.$fhcAlert.confirmDelete()) return;
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
@@ -304,26 +294,18 @@ export const Softwareverwaltung = {
 				}
 			).then(
 				result => {
-
-					// TODO CHECK CoreRestClient.getError...
-					// console.log(result.data.retval); // TODO gibt message aus
-					//console.log(CoreRESTClient.getError(result.data)); // TODO methode .getError gibt 'Generic error' aus. Ggf ÄNDERN, dass message zurückgibt?
-					// console.log(CoreRESTClient.getError(result.data.retval)); // TODO methode .getError gibt 'Generic error' aus. Ggf ÄNDERN, dass message zurückgibt?
-
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval);
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
-						this.alertSuccess('Gelöscht!');
+						this.$fhcAlert.alertSuccess('Gelöscht!');
 						this.$refs.softwareTable.reloadTable();
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 

@@ -3,7 +3,6 @@ import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareimageModal from "../../Modals/SoftwareimageModal.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
 import {Softwarezuordnung} from "./Softwarezuordnung.js";
-import {Alert} from "../Alert.js";
 
 export const Imageverwaltung = {
 	componentName: 'Imageverwaltung',
@@ -13,7 +12,6 @@ export const Imageverwaltung = {
 		Raumzuordnung,
 		Softwarezuordnung
 	},
-	mixins: [Alert],
 	emits: [
 		'newFilterEntry',
 	],
@@ -114,7 +112,7 @@ export const Imageverwaltung = {
 		},
 		async deleteSoftwareimage(softwareimage_id) {
 
-			if (await this.confirmDelete() === false) return;
+			if (await this.$fhcAlert.confirmDelete() === false) return;
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/deleteImage',
@@ -123,7 +121,7 @@ export const Imageverwaltung = {
 				}
 			).then(
 				result => {
-					this.alertSuccess('Gelöscht!');
+					this.$fhcAlert.alertSuccess('Gelöscht!');
 					this.$refs.softwareimageTable.reloadTable();
 
 					// Empty Raumzuordnungstabelle
@@ -133,9 +131,7 @@ export const Imageverwaltung = {
 					this.$refs.softwarezuordnung.getSoftwareByImage(null);
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		onRaumzuordnungSaved(raumanzahlDifferenz) {

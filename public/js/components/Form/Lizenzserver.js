@@ -1,11 +1,9 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import {Alert} from "../SoftwareManagement/Alert.js"
 
 export const Lizenzserver = {
 	emits: [
 		'onSaved'
 	],
-	mixins: [Alert],
 	data() {
 		return {
 			lizenzserver_kurzbz: null,
@@ -26,7 +24,7 @@ export const Lizenzserver = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.alertSystemMessage(result.data.retval);  // TODO Check Result from Backend
+							this.$fhcAlert.handleSystemMessage(result.data.retval);
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -37,7 +35,7 @@ export const Lizenzserver = {
 					}
 				).catch(
 					error => {
-						this.alertSystemError(error);
+						this.$fhcAlert.handleSystemError(error);
 					}
 				);
 
@@ -65,18 +63,18 @@ export const Lizenzserver = {
 					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO Check RESULT from Backend
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
 						// On success
-						this.alertSuccess('Gespeichert');
+						this.$fhcAlert.alertSuccess('Gespeichert');
 						this.$emit('onSaved');
 					}
 				}
 			).catch(
 				error => {
-					this.alertSystemError(error);
+					this.$fhcAlert.handleSystemError(error);
 				}
 			);
 		},

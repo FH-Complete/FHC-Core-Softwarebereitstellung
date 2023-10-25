@@ -1,5 +1,4 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import {Alert} from "../SoftwareManagement/Alert.js";
 
 export const Raum = {
 	components: {
@@ -8,7 +7,6 @@ export const Raum = {
 	emits: [
 		 'onSaved'
 	],
-	mixins: [Alert],
 	data() {
 		return {
 			softwareimageorte_id: null,
@@ -38,7 +36,7 @@ export const Raum = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.alertSystemMessage(result.data.retval); // TODO Check Backend Fehlermeldung
+							this.$fhcAlert.handleSystemMessage(result.data.retval);
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -54,7 +52,7 @@ export const Raum = {
 						}
 					}
 				).catch(
-					error => {this.alertSystemError(error);}
+					error => {this.$fhcAlert.handleSystemError(error);}
 				);
 			}
 		},
@@ -94,7 +92,7 @@ export const Raum = {
 					{
 						Object.entries(CoreRESTClient.getError(result.data))
 							.forEach(([key, value]) => {
-								this.alertSystemMessage(value);
+								this.$fhcAlert.handleSystemMessage(value);
 							}); // TODO Check Backend Result
 
 						return;
@@ -104,13 +102,11 @@ export const Raum = {
 					let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
 
 					// On success
-					this.alertSuccess('Gespeichert!');
+					this.$fhcAlert.alertSuccess('Gespeichert!');
 					this.$emit('onSaved', raumanzahlDifferenz);
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		reset(){
@@ -130,7 +126,7 @@ export const Raum = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO Check backend result
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
@@ -138,9 +134,7 @@ export const Raum = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		selectAllOrte(){
@@ -150,7 +144,7 @@ export const Raum = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO check backend result
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
@@ -158,9 +152,7 @@ export const Raum = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		}
 	},

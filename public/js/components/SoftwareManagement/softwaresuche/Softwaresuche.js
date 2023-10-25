@@ -1,13 +1,11 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
-import {Alert} from "../Alert";
 
 export const Softwaresuche = {
 	components: {
 		CoreFilterCmpt,
 		AutoComplete: primevue.autocomplete
 	},
-	mixins:[Alert],
 	data: function() {
 		return {
 			softwaresucheTabulatorOptions: {
@@ -49,9 +47,7 @@ export const Softwaresuche = {
 					this.$refs.softwaresucheTable.tabulator.setData(CoreRESTClient.getData(result.data));
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		onComplete(event) {
@@ -63,7 +59,7 @@ export const Softwaresuche = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO Check backend result
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
@@ -71,9 +67,7 @@ export const Softwaresuche = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		selectAllOrte(){
@@ -83,7 +77,7 @@ export const Softwaresuche = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO check backend result
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
@@ -91,9 +85,7 @@ export const Softwaresuche = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		}
 	},

@@ -1,5 +1,4 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import {Alert} from "../SoftwareManagement/Alert.js";
 //import Phrasen from '../../../mixins/Phrasen.js';
 
 export const SoftwareForm = {
@@ -9,7 +8,6 @@ export const SoftwareForm = {
 	emits: [
 		'softwareFormSaved'
 	],
-	mixins: [Alert],
 	data() {
 		return {
 			softwareMetadata: {},
@@ -91,7 +89,7 @@ export const SoftwareForm = {
 					result => {
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.alertSystemMessage(result.data.retval); // TODO CHECK result
+							this.$fhcAlert.handleSystemMessage(result.data.retval);
 						}
 						else
 						{
@@ -114,9 +112,7 @@ export const SoftwareForm = {
 						}
 					}
 				).catch(
-					error => {
-						this.alertSystemError(error);
-					}
+					error => { this.$fhcAlert.handleSystemError(error); }
 				);
 
 				// Get last softwarestatus data
@@ -131,9 +127,7 @@ export const SoftwareForm = {
 				).then(
 					result => {this.softwarestatus = CoreRESTClient.getData(result.data);}
 				).catch(
-					error => {
-						this.alertSystemError(error);
-					}
+					error => { this.$fhcAlert.handleSystemError(error); }
 				);
 
 				// Get images of software
@@ -149,7 +143,7 @@ export const SoftwareForm = {
 					result => {
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.alertSystemMessage(result.data.retval); // TODO CHECK result from backend
+							this.$fhcAlert.handleSystemMessage(result.data.retval); // TODO CHECK result from backend
 						}
 						else if(CoreRESTClient.hasData(result.data))
 						{
@@ -157,9 +151,7 @@ export const SoftwareForm = {
 						}
 					}
 				).catch(
-					error => {
-						this.alertSystemError(error);
-					}
+					error => { this.$fhcAlert.handleSystemError(error); }
 				);
 			}
 		},
@@ -219,16 +211,12 @@ export const SoftwareForm = {
 						}
 						else
 						{
-							// everything ok
-							// emit event
-							this.alertSuccess('Gespeichert');
+							this.$fhcAlert.alertSuccess('Gespeichert');
 							this.$emit("softwareFormSaved");
 						}
 					}
 				).catch(
-					error => {
-						this.alertSystemError(error);
-					}
+					error => { this.$fhcAlert.handleSystemError(error); }
 				);
 			}
 		},
@@ -256,7 +244,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO check RESULT from backend
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
@@ -270,9 +258,7 @@ export const SoftwareForm = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		getOeSuggestions(event) {
@@ -289,7 +275,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO Check Result from Backend
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
@@ -322,9 +308,7 @@ export const SoftwareForm = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		getImagesByBezeichnung(event) {
@@ -338,7 +322,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO Check RESULT from Backend
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
@@ -346,9 +330,7 @@ export const SoftwareForm = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		getLizenzserverByKurzbz(event) {
@@ -362,7 +344,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval); // TODO Check RESULT from Backend
+						this.$fhcAlert.handleSystemMessage(result.data.retval);
 					}
 					else
 					{
@@ -370,9 +352,7 @@ export const SoftwareForm = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 	},

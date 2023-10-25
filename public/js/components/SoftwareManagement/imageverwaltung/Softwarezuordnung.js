@@ -48,9 +48,7 @@ export const Softwarezuordnung = {
 					this.$refs.zuordnungTable.tabulator.setData(CoreRESTClient.getData(result.data));
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		}
 	},

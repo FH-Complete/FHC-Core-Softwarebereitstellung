@@ -1,12 +1,10 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import {Alert} from "../SoftwareManagement/Alert.js";
 
 export const Softwareimage = {
 	components: {
 		AutoComplete: primevue.autocomplete,
 		"datepicker": VueDatePicker
 	},
-	mixins: [Alert],
 	emits: [
 		'onSaved'
 	],
@@ -32,7 +30,7 @@ export const Softwareimage = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.alertSystemMessage(result.data.retval);
+							this.$fhcAlert.handleSystemMessage(result.data.retval);
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -42,9 +40,7 @@ export const Softwareimage = {
 						}
 					}
 				).catch(
-					error => {
-						this.alertSystemError(error);
-					}
+					error => { this.$fhcAlert.handleSystemError(error); }
 				);
 
 			}
@@ -76,18 +72,16 @@ export const Softwareimage = {
 					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(result.data.retval);
-						return;
+						this.$fhcAlert.handleSystemMessage(result.data.retval.verfuegbarkeit_start);  // TODO change
 					}
-
-					// On success
-					this.alertSuccess('Gespeichert!');
-					this.$emit('onSaved');
+					else
+					{
+						this.$fhcAlert.alertSuccess('Gespeichert!');
+						this.$emit('onSaved');
+					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		reset(){
@@ -117,6 +111,7 @@ export const Softwareimage = {
 					v-bind:auto-apply="true"
 					locale="de"
 					format="dd.MM.yyyy"
+					name="verfuegbarkeit_start1"
 					model-type="yyyy-MM-dd">
 				</datepicker>
 			</div>
@@ -128,6 +123,7 @@ export const Softwareimage = {
 					v-bind:placeholder="'TT.MM.YY'"
 					v-bind:text-input="true"
 					v-bind:auto-apply="true"
+					name="verfuegbarkeit_ende"
 					locale="de"
 					format="dd.MM.yyyy"
 					model-type="yyyy-MM-dd">

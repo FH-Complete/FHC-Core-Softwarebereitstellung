@@ -2,7 +2,6 @@ import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import RaumModal from "../Modals/RaumModal.js";
 import {Actions} from "./imageverwaltung/Actions.js";
-import {Alert} from "./Alert.js";
 
 export const Raumzuordnung = {
 	components: {
@@ -11,7 +10,6 @@ export const Raumzuordnung = {
 		RaumModal,
 		Actions
 	},
-	mixins: [Alert],
 	data() {
 		return {
 			softwareimageId: Vue.inject('softwareimageId'),
@@ -106,7 +104,7 @@ export const Raumzuordnung = {
 		},
 		async deleteOrt(softwareimageort_id){
 
-			if (await this.confirmDelete() === false) return;
+			if (await this.$fhcAlert.confirmDelete() === false) return;
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/deleteImageort',
@@ -120,11 +118,12 @@ export const Raumzuordnung = {
 				result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.alertSystemMessage(Object.values(result.data.retval).join('; '));  // TODO backend result anpassen
+						this.$fhcAlert.alertSystemMessage(Object.values(result.data.retval).join('; '));  // TODO backend result anpassen
 					}
 					else
 					{
-						this.alertSuccess('Gelöscht!');
+						this.$fhcAlert.alertSuccess('Gelöscht!');
+
 						// Refresh data in Raumzuordnungstabelle
 						this.getOrteByImage(this.softwareimageId);
 
@@ -133,9 +132,7 @@ export const Raumzuordnung = {
 					}
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		getOrteBySoftware(software_id, software_titel) {
@@ -157,9 +154,7 @@ export const Raumzuordnung = {
 					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result.data));
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		getOrteByImage(softwareimage_id) {
@@ -180,9 +175,7 @@ export const Raumzuordnung = {
 					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result.data));
 				}
 			).catch(
-				error => {
-					this.alertSystemError(error);
-				}
+				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		onRaumzuordnungSaved(raumanzahlDifferenz) {
@@ -199,7 +192,7 @@ export const Raumzuordnung = {
 
 			if (selectedData.length == 0)
 			{
-				this.alertSystemMessage('Bitte erst Zeilen auswählen');
+				this.$fhcAlert.handleSystemMessage('Bitte erst Zeilen auswählen');
 				return;
 			}
 
