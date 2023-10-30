@@ -36,7 +36,9 @@ export const Raum = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.handleSystemMessage(result.data.retval);
+							this.$fhcAlert.handleFormErrors(
+								CoreRESTClient.getError(result.data), this.$refs.raumForm
+							);
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -87,23 +89,20 @@ export const Raum = {
 				}
 			).then(
 				result => {
-					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						Object.entries(CoreRESTClient.getError(result.data))
-							.forEach(([key, value]) => {
-								this.$fhcAlert.handleSystemMessage(value);
-							}); // TODO Check Backend Result
-
-						return;
+						this.$fhcAlert.handleFormErrors(
+							CoreRESTClient.getError(result.data), this.$refs.raumForm
+						);
 					}
+					else
+					{
+						// Store added Räume to update Raumanzahl in Imagetabelle
+						let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
 
-					// Store added Räume to update Raumanzahl in Imagetabelle
-					let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
-
-					// On success
-					this.$fhcAlert.alertSuccess('Gespeichert!');
-					this.$emit('onSaved', raumanzahlDifferenz);
+						this.$fhcAlert.alertSuccess('Gespeichert!');
+						this.$emit('onSaved', raumanzahlDifferenz);
+					}
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
@@ -115,6 +114,7 @@ export const Raum = {
 			this.verfuegbarkeit_start = null;
 			this.verfuegbarkeit_ende = null;
 			this.errors = [];
+			this.$fhcAlert.resetFormErrors(this.$refs.raumForm);
 		},
 		onComplete(event)
 		{
@@ -126,7 +126,9 @@ export const Raum = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleFormErrors(
+							CoreRESTClient.getError(result.data), this.$refs.raumForm
+						);
 					}
 					else
 					{
@@ -144,7 +146,9 @@ export const Raum = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleFormErrors(
+							CoreRESTClient.getError(result.data), this.$refs.raumForm
+						);
 					}
 					else
 					{
@@ -158,15 +162,16 @@ export const Raum = {
 	},
 	template: `
 	<div>
-		<form ref="raumForm" class="row">
+		<form ref="raumForm" class="row gy-3">
 			<div class="col-sm-6">
 				<label class="form-label">Softwareimage</label>
-				<input type="text" class="form-control mb-3" v-model="softwareimage_bezeichnung" readonly>
+				<input type="text" class="form-control" name="softwareimage_bezeichnung" v-model="softwareimage_bezeichnung" readonly>
 			</div>
 			<div class="col-sm-12">	
 				<label class="form-label">Raum *</label>
 				<auto-complete
-					class="w-100 mb-3"
+					class="w-100"
+					name="ort_kurzbz"
 					v-model="orte"
 					optionLabel="ort_kurzbz"
 					dropdown
@@ -183,11 +188,11 @@ export const Raum = {
 			</div>
 			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Start</label>
-				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_start">
+				<input type="date" class="form-control" name="verfuegbarkeit_start" v-model="verfuegbarkeit_start">
 			</div>
 			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Ende</label>
-				<input type="date" class="form-control mb-3" v-model="verfuegbarkeit_ende">
+				<input type="date" class="form-control" name="verfuegbarkeit_ende" v-model="verfuegbarkeit_ende">
 			</div>
 		</form>
 	</div>
