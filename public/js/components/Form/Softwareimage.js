@@ -30,7 +30,9 @@ export const Softwareimage = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.handleSystemMessage(result.data.retval);
+							this.$fhcAlert.handleFormErrors(
+								CoreRESTClient.getError(result.data), this.$refs.softwareimageForm
+							);
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -46,13 +48,6 @@ export const Softwareimage = {
 			}
 		},
 		save(){
-			// Check form fields
-			if (!this.$refs.softwareimageForm.checkValidity())
-			{
-				// Display form errors if not ok
-				this.$refs.softwareimageForm.reportValidity();
-				return;
-			}
 
 			// Decide if copy, create or update image
 			if (this.copy === true) {
@@ -69,10 +64,11 @@ export const Softwareimage = {
 				}
 			).then(
 				result => {
-					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval.verfuegbarkeit_start);  // TODO change
+						this.$fhcAlert.handleFormErrors(
+							CoreRESTClient.getError(result.data), this.$refs.softwareimageForm
+						);
 					}
 					else
 					{
@@ -92,14 +88,14 @@ export const Softwareimage = {
 	},
 	template: `
 	<div>
-		<form ref="softwareimageForm" class="row">
+		<form ref="softwareimageForm" class="row gy-3">
 			<div class="col-sm-6">
 				<label class="form-label">Bezeichnung *</label>
-				<input type="text" class="form-control mb-3" v-model="softwareimage.bezeichnung" required >
+				<input type="text" class="form-control" name="bezeichnung" v-model="softwareimage.bezeichnung" required >
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Betriebssystem</label>
-				<input type="text" class="form-control mb-3" v-model="softwareimage.betriebssystem">
+				<input type="text" class="form-control" v-model="softwareimage.betriebssystem">
 			</div>
 			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Start</label>
@@ -111,7 +107,7 @@ export const Softwareimage = {
 					v-bind:auto-apply="true"
 					locale="de"
 					format="dd.MM.yyyy"
-					name="verfuegbarkeit_start1"
+					name="verfuegbarkeit_start"
 					model-type="yyyy-MM-dd">
 				</datepicker>
 			</div>
@@ -132,7 +128,7 @@ export const Softwareimage = {
 			<div class="col-sm-6">
 				<label class="form-label">Anmerkung</label>
 				<textarea
-					class="form-control mb-3"
+					class="form-control"
 					v-model="softwareimage.anmerkung"
 					rows="5">
 				</textarea>

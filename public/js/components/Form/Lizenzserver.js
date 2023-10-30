@@ -24,7 +24,9 @@ export const Lizenzserver = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.handleSystemMessage(result.data.retval);
+							this.$fhcAlert.handleFormErrors(
+								CoreRESTClient.getError(result.data), this.$refs.lizenzserverForm
+							);
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -42,14 +44,6 @@ export const Lizenzserver = {
 			}
 		},
 		save(){
-			// Check form fields
-			if (!this.$refs.lizenzserverForm.checkValidity())
-			{
-				// Display form errors if not ok
-				this.$refs.lizenzserverForm.reportValidity();
-				return;
-			}
-
 			// Decide if create or update lizenzserver
 			let method = this.lizenzserver_kurzbz === null ? 'createLizenzserver' : 'updateLizenzserver';
 
@@ -63,7 +57,9 @@ export const Lizenzserver = {
 					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleFormErrors(
+							CoreRESTClient.getError(result.data), this.$refs.lizenzserverForm
+						);
 					}
 					else
 					{
@@ -87,35 +83,36 @@ export const Lizenzserver = {
 	},
 	template: `
 	<div>
-		<form ref="lizenzserverForm" class="row">
+		<form ref="lizenzserverForm" class="row gy-3">
 			<div class="col-sm-4">
 				<label class="form-label">Kurzbezeichnung *</label>
-				<input type="text" class="form-control mb-3" v-model="lizenzserver.lizenzserver_kurzbz" required >
+				<input type="text" class="form-control" name="lizenzserver_kurzbz" v-model="lizenzserver.lizenzserver_kurzbz" required >
 			</div>
 			<div class="col-sm-8">
 				<label class="form-label">Bezeichnung</label>
-				<input type="text" class="form-control mb-3" v-model="lizenzserver.bezeichnung">	
+				<input type="text" class="form-control" name="bezeichnung" v-model="lizenzserver.bezeichnung">	
 			</div>
 			<div class="col-sm-4">
 				<label class="form-label">Mac-Adresse</label>
-				<input type="text" class="form-control mb-3" v-model="lizenzserver.macadresse">
+				<input type="text" class="form-control" name="macadresse" v-model="lizenzserver.macadresse">
 			</div>
 			<div class="col-sm-4">
 				<label class="form-label">IP-Adresse</label>
-				<input type="text" class="form-control mb-3" v-model="lizenzserver.ipadresse">
+				<input type="text" class="form-control" name="ipadresse" v-model="lizenzserver.ipadresse">
 			</div>
 			<div class="col-sm-4">
 				<label class="form-label">Location</label>
-				<input type="text" class="form-control mb-3" v-model="lizenzserver.location">
+				<input type="text" class="form-control" name="location" v-model="lizenzserver.location">
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Ansprechpartner</label>
-				<input type="text" class="form-control mb-3" v-model="lizenzserver.ansprechpartner">
+				<input type="text" class="form-control" name="ansprechpartner" v-model="lizenzserver.ansprechpartner">
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Anmerkung</label>
 				<textarea
-					class="form-control mb-3"
+					class="form-control"
+					name="anmerkung"
 					v-model="lizenzserver.anmerkung"
 					rows="5">
 				</textarea>

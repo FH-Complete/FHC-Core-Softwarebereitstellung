@@ -89,7 +89,9 @@ export const SoftwareForm = {
 					result => {
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.$fhcAlert.handleSystemMessage(result.data.retval);
+							this.$fhcAlert.handleFormErrors(
+								CoreRESTClient.getError(result.data), this.$refs.softwareForm
+							);
 						}
 						else
 						{
@@ -143,7 +145,9 @@ export const SoftwareForm = {
 					result => {
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.$fhcAlert.handleSystemMessage(result.data.retval); // TODO CHECK result from backend
+							this.$fhcAlert.handleFormErrors(
+								CoreRESTClient.getError(result.data), this.$refs.softwareForm
+							);
 						}
 						else if(CoreRESTClient.hasData(result.data))
 						{
@@ -156,15 +160,6 @@ export const SoftwareForm = {
 			}
 		},
 		saveSoftware() {
-
-			// Check form fields
-			if (!this.$refs.softwareForm.checkValidity())
-			{
-				// Display form errors if not ok
-				this.$refs.softwareForm.reportValidity();
-				return;
-			}
-
 			let method = null;
 
 			// if numeric software Id is present
@@ -203,11 +198,9 @@ export const SoftwareForm = {
 						// display errors
 						if (CoreRESTClient.isError(result.data))
 						{
-							let errs = result.data.retval; // TODO fix get Error in rest client
-
-							for (const [key, value] of Object.entries(errs)) {
-								this.errors.push (value);
-							}
+							this.$fhcAlert.handleFormErrors(
+								CoreRESTClient.getError(result.data), this.$refs.softwareForm
+							);
 						}
 						else
 						{
@@ -244,7 +237,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleFormErrors(CoreRESTClient.getError(result.data), this.$refs.softwareForm);
 					}
 					else
 					{
@@ -275,7 +268,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleFormErrors(CoreRESTClient.getError(result.data), this.$refs.softwareForm);
 					}
 					else
 					{
@@ -322,7 +315,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleFormErrors(CoreRESTClient.getError(result.data), this.$refs.softwareForm);
 					}
 					else
 					{
@@ -344,7 +337,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleFormErrors(CoreRESTClient.getError(result.data), this.$refs.softwareForm);
 					}
 					else
 					{
@@ -358,11 +351,12 @@ export const SoftwareForm = {
 	},
 	template: `
 	<div>
-		<form ref="softwareForm" class="row">
+		<form ref="softwareForm" class="row gy-3">
 			<div class="col-sm-3">
 				<label class="form-label">Softwaretyp *</label>
 				<select
-					class="form-select mb-3"
+					class="form-select"
+					name="softwaretyp_kurzbz"
 					required
 					v-model="software.softwaretyp_kurzbz">
 					<option v-for="(bezeichnung, softwaretyp_kurzbz) in softwareMetadata.softwaretyp" :key="index" :value="softwaretyp_kurzbz">
@@ -372,12 +366,13 @@ export const SoftwareForm = {
 			</div>
 			<div class="col-sm-5">
 				<label class="form-label">Software Kurzbz *</label>
-				<input type="text" class="form-control mb-3" v-model="software.software_kurzbz" required>
+				<input type="text" class="form-control" name="software_kurzbz" v-model="software.software_kurzbz">
 			</div>
 			<div class="col-sm-4">
 				<label class="form-label">Softwarestatus *</label>
 				<select
-					class="form-select mb-3"
+					class="form-select"
+					name="softwarestatus_kurzbz"
 					required
 					v-model="softwarestatus.softwarestatus_kurzbz">
 					<option v-for="(bezeichnung, softwarestatus_kurzbz) in softwareMetadata.softwarestatus" :key="index" :value="softwarestatus_kurzbz">
@@ -387,24 +382,24 @@ export const SoftwareForm = {
 			</div>
 			<div class="col-sm-1">
 				<label class="form-label">Version</label>
-				<input type="text" class="form-control mb-3" v-model="software.version">
+				<input type="text" class="form-control" name="version" v-model="software.version">
 			</div>
 			<div class="col-sm-5">
 				<label class="form-label">Betriebssystem</label>
-				<input type="text" class="form-control mb-3" v-model="software.os">
+				<input type="text" class="form-control" name="os" v-model="software.os">
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Hersteller</label>
-				<input type="text" class="form-control mb-3" v-model="software.hersteller">
+				<input type="text" class="form-control" name="hersteller" v-model="software.hersteller">
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Verantwortliche</label>
-				<input type="text" class="form-control mb-3" v-model="software.verantwortliche">
+				<input type="text" class="form-control" name="verantwortliche" v-model="software.verantwortliche">
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Übergeordnete Software</label>
 				<auto-complete
-					class="w-100 mb-3"
+					class="w-100"
 					v-model="parentSoftware"
 					optionLabel="software_kurzbz_version"
 					dropdown
@@ -416,16 +411,17 @@ export const SoftwareForm = {
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Ansprechpartner (intern)</label>
-				<input type="text" class="form-control mb-3" v-model="software.ansprechpartner_intern">
+				<input type="text" class="form-control" name="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Ansprechpartner (extern)</label>
-				<input type="text" class="form-control mb-3" v-model="software.ansprechpartner_extern">
+				<input type="text" class="form-control" name="ansprechpartner_extern" v-model="software.ansprechpartner_extern">
 			</div>
 			<div class="col-sm-6">
 				<label class="form-label">Beschreibung</label>
 				<textarea
 					class="form-control"
+					name="beschreibung"
 					v-model="software.beschreibung"
 					rows="3">
 				</textarea>
@@ -433,7 +429,8 @@ export const SoftwareForm = {
 			<div class="col-sm-6">
 				<label class="form-label">Anmerkung (intern)</label>
 				<textarea
-					class="form-control mb-3"
+					class="form-control"
+					name="anmerkung_intern"
 					v-model="software.anmerkung_intern"
 					rows="3">
 				</textarea>
@@ -456,12 +453,13 @@ export const SoftwareForm = {
 			<div class="fhc-hr"></div>
 		 	<div class="col-sm-4">
 				<label class="form-label">Lizenz-Art</label>
-				<input type="text" class="form-control mb-3" v-model="software.lizenzart">
+				<input type="text" class="form-control" name="lizenzart" v-model="software.lizenzart">
 			</div>
 			<div class="col-sm-8">
 				<label class="form-label">Lizenz-Server Kurzbezeichnung</label>
 				<auto-complete
-					class="w-100 mb-3"
+					class="w-100"
+					name="lizenzserver_kurzbz"
 					v-model="selLizenzserver"
 					optionLabel="lizenzserver_kurzbz"
 					dropdown
@@ -473,16 +471,16 @@ export const SoftwareForm = {
 			</div>
 			<div class="col-sm-2">
 				<label class="form-label">Lizenz-Anzahl</label>
-				<input type="text" class="form-control mb-3" v-model="software.anzahl_lizenzen">
+				<input type="text" class="form-control" name="anzahl_lizenzen" v-model="software.anzahl_lizenzen">
 			</div>
 			<div class="col-sm-2">
 				<label class="form-label">Lizenz-Laufzeit</label>
-				<input type="date" class="form-control mb-3" v-model="software.lizenzlaufzeit">
+				<input type="date" class="form-control" name="lizenzlaufzeit" v-model="software.lizenzlaufzeit">
 			</div>
 			<div class="col-sm-5">
 				<label class="form-label">Kostenträger-OE</label>
 				<auto-complete
-					class="w-100 mb-3"
+					class="w-100"
 					v-model="selKostentraegerOE"
 					optionLabel="bezeichnung"
 					optionGroupLabel="organisationseinheittyp_kurzbz"
@@ -497,8 +495,8 @@ export const SoftwareForm = {
 			</div>
 			<div class="col-sm-3">
 				<label class="form-label">Lizenz-Kosten</label>
-				<div class="input-group mb-3">
-					<input type="text" class="form-control" v-model="software.lizenzkosten">
+				<div class="input-group">
+					<input type="text" class="form-control" name="lizenzkosten" v-model="software.lizenzkosten">
 					<span class="input-group-text">€/Jahr</span>
 				</div>
 			</div>
