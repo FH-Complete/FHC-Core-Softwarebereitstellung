@@ -104,7 +104,7 @@ export const Softwareverwaltung = {
 				]
 			},
 			languageIndex: null, // language of current user
-			showHierarchy: true, // display data as hierarchy tree or not
+			showHierarchy: false, // display data as hierarchy tree or not
 			tabulatorAdditionalColumns: ['actions'],
 			selectedTabulatorRow: null, // currently selected tabulator row
 			softwarestatus: Array,

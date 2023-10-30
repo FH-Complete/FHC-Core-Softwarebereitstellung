@@ -11,7 +11,7 @@ export const Actions = {
 	data: function() {
 		return {
 			selected: '',
-			hierarchyView: true
+			hierarchyView: false,
 		}
 	},
 	methods: {
