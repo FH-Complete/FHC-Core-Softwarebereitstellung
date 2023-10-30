@@ -282,7 +282,7 @@ export const Softwareverwaltung = {
 		},
 		async deleteSoftware(software_id) {
 
-			if (!await this.$fhcAlert.confirmDelete()) return;
+			if (await this.$fhcAlert.confirmDelete() === false) return;
 
 			CoreRESTClient.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
