@@ -178,20 +178,16 @@ class Lizenzserver extends Auth_Controller
 	private function _validate($data)
 	{
 		// Validate form data
-		if (isset($data['lizenzserver']) && is_object($data['lizenzserver']))
+		$this->load->library('form_validation');
+
+		$this->form_validation->set_data($data['lizenzserver']);
+		$this->form_validation->set_rules('lizenzserver_kurzbz', 'Lizenzserver Kurzbezeichnung', 'required', array('required' => 'Pflichtfeld'));
+
+		// On error
+		if ($this->form_validation->run() == false)
 		{
-			$this->load->library('form_validation');
-
-			$this->form_validation->set_data($data['lizenzserver']);
-			$this->form_validation->set_rules('lizenzserver_kurzbz', 'Lizenzserver Kurzbezeichnung', 'required', array('required' => '%s fehlt'));
-
-			// On error
-			if ($this->form_validation->run() == false)
-			{
-				return error($this->form_validation->error_array());
-			}
+			return error($this->form_validation->error_array());
 		}
-
 		// On success
 		return success();
 	}
