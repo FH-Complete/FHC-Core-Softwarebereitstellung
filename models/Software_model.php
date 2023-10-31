@@ -185,8 +185,7 @@ class Software_model extends DB_Model
 			WHERE swisw.softwareimage_id = ?
 			ORDER BY sw.softwaretyp_kurzbz, sw.software_kurzbz, sw.version;';
 
-		return $this->execQuery($qry, array($language_index, $softwareimage_id)
-		);
+		return $this->execQuery($qry, array($language_index, $softwareimage_id));
 	}
 
 	/**
@@ -239,7 +238,7 @@ class Software_model extends DB_Model
 	{
 		return $this->execQuery('
 			SELECT
-				sw_image.softwareimage_id, sw_child.software_id_parent
+				sw_image.softwareimage_id AS "Softwareimage", sw_child.software_id_parent AS "Übergeordnete Software"
 			FROM
 				extension.tbl_software sw
 				LEFT JOIN extension.tbl_softwareimage_software sw_image USING (software_id)

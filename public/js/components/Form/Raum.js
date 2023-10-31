@@ -2,7 +2,8 @@ import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 
 export const Raum = {
 	components: {
-		AutoComplete: primevue.autocomplete
+		AutoComplete: primevue.autocomplete,
+		"datepicker": VueDatePicker
 	},
 	emits: [
 		 'onSaved'
@@ -24,7 +25,7 @@ export const Raum = {
 	},
 	methods: {
 		prefill(softwareimageort_id){
-			
+
 			if (Number.isInteger(softwareimageort_id)) {
 				this.softwareimageorte_id = [softwareimageort_id];
 
@@ -167,7 +168,7 @@ export const Raum = {
 				<label class="form-label">Softwareimage</label>
 				<input type="text" class="form-control" name="softwareimage_bezeichnung" v-model="softwareimage_bezeichnung" readonly>
 			</div>
-			<div class="col-sm-12">	
+			<div class="col-sm-12">
 				<label class="form-label">Raum *</label>
 				<auto-complete
 					class="w-100"
@@ -188,11 +189,31 @@ export const Raum = {
 			</div>
 			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Start</label>
-				<input type="date" class="form-control" name="verfuegbarkeit_start" v-model="verfuegbarkeit_start">
+				<datepicker
+					v-model="verfuegbarkeit_start"
+					v-bind:enable-time-picker="false"
+					v-bind:placeholder="'TT.MM.YY'"
+					v-bind:text-input="true"
+					v-bind:auto-apply="true"
+					name="verfuegbarkeit_start"
+					locale="de"
+					format="dd.MM.yyyy"
+					model-type="yyyy-MM-dd">
+				</datepicker>
 			</div>
 			<div class="col-sm-3">
 				<label class="form-label">Verfügbarkeit Ende</label>
-				<input type="date" class="form-control" name="verfuegbarkeit_ende" v-model="verfuegbarkeit_ende">
+				<datepicker
+					v-model="verfuegbarkeit_ende"
+					v-bind:enable-time-picker="false"
+					v-bind:placeholder="'TT.MM.YY'"
+					v-bind:text-input="true"
+					v-bind:auto-apply="true"
+					name="verfuegbarkeit_ende"
+					locale="de"
+					format="dd.MM.yyyy"
+					model-type="yyyy-MM-dd">
+				</datepicker>
 			</div>
 		</form>
 	</div>

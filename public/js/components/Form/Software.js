@@ -3,7 +3,8 @@ import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 
 export const SoftwareForm = {
 	components: {
-		AutoComplete: primevue.autocomplete
+		AutoComplete: primevue.autocomplete,
+		"datepicker": VueDatePicker
 	},
 	emits: [
 		'softwareFormSaved'
@@ -476,7 +477,17 @@ export const SoftwareForm = {
 			</div>
 			<div class="col-sm-2">
 				<label class="form-label">Lizenz-Laufzeit</label>
-				<input type="date" class="form-control" name="lizenzlaufzeit" v-model="software.lizenzlaufzeit">
+				<datepicker
+					v-model="software.lizenzlaufzeit"
+					v-bind:enable-time-picker="false"
+					v-bind:placeholder="'TT.MM.YY'"
+					v-bind:text-input="true"
+					v-bind:auto-apply="true"
+					name="verfuegbarkeit_ende"
+					locale="de"
+					format="dd.MM.yyyy"
+					model-type="yyyy-MM-dd">
+				</datepicker>
 			</div>
 			<div class="col-sm-5">
 				<label class="form-label">Kostenträger-OE</label>

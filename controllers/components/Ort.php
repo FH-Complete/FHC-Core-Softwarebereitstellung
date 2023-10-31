@@ -69,7 +69,8 @@ class Ort extends Auth_Controller
 	/**
 	 * Get Softwareimageort.
 	 */
-	public function getImageort(){
+	public function getImageort()
+	{
 		$softwareimageort_id = $this->input->get('softwareimageort_id');
 
 		$result = $this->SoftwareimageOrtModel->load(array('softwareimageort_id' => $softwareimageort_id));

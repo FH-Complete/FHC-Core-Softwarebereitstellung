@@ -351,8 +351,18 @@ class Software extends Auth_Controller
 		$this->form_validation->set_rules(
 			'software_id',
 			'Software ID',
-			'required|numeric|callback_checkSoftwareDependencies',
-			array('required' => '%s fehlt', 'numeric' => '%s ungültig')
+			array(
+				'required',
+				'numeric',
+				array(
+					'dependencies',
+					function($software_id)
+					{
+						return $this->_checkSoftwareDependencies($software_id);
+					}
+				)
+			),
+			array('required' => 'Pflichtfeld', 'numeric' => 'Nur Zahlen')
 		);
 
 		if ($this->form_validation->run() == false)
@@ -360,37 +370,6 @@ class Software extends Auth_Controller
 
 		// delete software
 		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
-	}
-
-	/**
-	 * Check dependencies of a software.
-	 * @param software_id
-	 * @return bool true if there are no dependencies, false if there is at least one dependency
-	 */
-	public function checkSoftwareDependencies($software_id)
-	{
-		$dependenciesRes = $this->SoftwareModel->getSoftwareDependencies($software_id);
-		$dependantFields = array();
-
-		if (!hasData($dependenciesRes)) return false;
-
-		$dependencies = getData($dependenciesRes);
-
-		foreach ($dependencies as $dependency)
-		{
-			foreach ($dependency as $field => $value)
-			{
-				if (!is_null($value) && !in_array($field, $dependantFields)) $dependantFields[] = $field;
-			}
-		}
-
-		if (!isEmptyArray($dependantFields))
-		{
-			$this->form_validation->set_message('checkSoftwareDependencies', 'Software hat Abhängigkeiten: '.implode(', ', $dependantFields));
-			return false;
-		}
-
-		return true;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -405,55 +384,45 @@ class Software extends Auth_Controller
 		// load ci validation lib
 		$this->load->library('form_validation');
 
-		// any errors will be stored here
-		$errorMessages = array();
-
 		// validate data with ci lib
 		$this->form_validation->set_data($software);
 
-		$this->form_validation->set_rules('software_kurzbz', 'Software Kurzbezeichnung', 'required', array('required' => '%s fehlt'));
-		$this->form_validation->set_rules('softwaretyp_kurzbz', 'Softwaretyp', 'required', array('required' => '%s fehlt'));
-
-		if ($this->form_validation->run() == false) $errorMessages = array_merge($errorMessages, $this->form_validation->error_array());
-
-		if (isset($software['version']))
-		{
-			$params = array(
-				'software_kurzbz' => $software['software_kurzbz'],
-				'version' => $software['version']
-			);
-
-			// if update, software id is present - check only entries other than the one updating
-			if (isset($software['software_id'])) $params['software_id !='] = $software['software_id'];
-
-			// check if there is already a software with the kurzbz and version
-			$this->SoftwareModel->addSelect('1');
-			$softwareRes = $this->SoftwareModel->loadWhere(
-				$params
-			);
-
-			if (isError($softwareRes) || hasData($softwareRes)) $errorMessages[] = 'Software Kurzbezeichnung mit dieser Version existiert bereits';
-		}
-
-		if (isset($software['software_id_parent']) && isset($software['software_id']))
-		{
-			// check if there is already a software with the kurzbz and version
-			$softwareRes = $this->SoftwareModel->getParents($software['software_id_parent']);
-
-			$swParents = getData($softwareRes);
-
-			foreach ($swParents as $swParent)
-			{
-				if ($swParent->software_id == $software['software_id'])
-					$errorMessages[] = 'Zuweisung der übergeordneten Software führt zu zyklischer Abhängigkeit';
-			}
-		}
+		$this->form_validation->set_rules('softwaretyp_kurzbz', 'Softwaretyp', 'required', array('required' => 'Pflichtfeld'));
+		$this->form_validation->set_rules(
+			'software_kurzbz',
+			'Software Kurzbezeichnung',
+			array(
+				'required',
+				array(
+					'software_exists',
+					function($software_kurzbz) use ($software)
+					{
+						return $this->_checkSoftwareExists($software_kurzbz, $software);
+					}
+				)
+			),
+			array('required' => 'Pflichtfeld', 'software_exists' => 'Software mit dieser Version existiert bereits')
+		);
+		$this->form_validation->set_rules(
+			'software_id_parent',
+			'Parent Software Id',
+			array(
+				array(
+					'cyclic_dependency',
+					function($software_id_parent) use ($software)
+					{
+						return $this->_checkCyclicDependency($software_id_parent, $software);
+					}
+				)
+			),
+			array('cyclic_dependency' => 'Eine Software kann einer Software nicht gleichzeitig untergeordnet und übergeordnet sein')
+		);
 
 		// return error array if there were errors
-		if (!isEmptyArray($errorMessages)) return error($errorMessages);
+		if ($this->form_validation->run() == false) return error($this->form_validation->error_array());
 
 		// return success if valid
-		return success($errorMessages);
+		return success();
 	}
 
 	/**
@@ -479,5 +448,88 @@ class Software extends Auth_Controller
 		$langRes = $this->SpracheModel->loadWhere(array('sprache' => $userLang));
 
 		return hasData($langRes) ? getData($langRes)[0]->index : $defaultIdx;
+	}
+
+	/**
+	 * Check if there is a software with a certain kurzbz and a version.
+	 * @param software_kurzbz
+	 * @param software
+	 * @return object success or error
+	 */
+	private function _checkSoftwareExists($software_kurzbz, $software)
+	{
+		if (!isset($software['version'])) return true;
+
+		$params = array(
+			'software_kurzbz' => $software_kurzbz,
+			'version' => $software['version']
+		);
+
+		// if update (software id is present) - check only entries other than the one updating
+		if (isset($software['software_id'])) $params['software_id !='] = $software['software_id'];
+
+		// check if there is already a software with the kurzbz and version
+		$this->SoftwareModel->addSelect('1');
+		$softwareRes = $this->SoftwareModel->loadWhere(
+			$params
+		);
+
+		return isSuccess($softwareRes) && !hasData($softwareRes);
+	}
+
+	/**
+	 * Check if there is a cyclic dependency, so a parent software is a child software at the same time.
+	 * @param software_id_parent
+	 * @param software
+	 */
+	private function _checkCyclicDependency($software_id_parent, $software)
+	{
+		if (isset($software_id_parent) && isset($software['software_id']))
+		{
+			// get parents of software parents
+			$softwareRes = $this->SoftwareModel->getParents($software_id_parent);
+
+			$swParents = getData($softwareRes);
+
+			foreach ($swParents as $swParent)
+			{
+				// if one of the software parents has the software as a parent -> error
+				if ($swParent->software_id == $software['software_id']) return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Check dependencies of a software.
+	 * @param software_id
+	 * @return bool true if there are no dependencies, false if there is at least one dependency
+	 */
+	private function _checkSoftwareDependencies($software_id)
+	{
+		$dependenciesRes = $this->SoftwareModel->getSoftwareDependencies($software_id);
+		$dependantFields = array();
+
+		// software should exist
+		if (!hasData($dependenciesRes)) return false;
+
+		$dependencies = getData($dependenciesRes);
+
+		foreach ($dependencies as $dependency)
+		{
+			foreach ($dependency as $field => $value)
+			{
+				if (!is_null($value) && !in_array($field, $dependantFields)) $dependantFields[] = $field;
+			}
+		}
+
+		// check fails if there are dependencies
+		if (!isEmptyArray($dependantFields))
+		{
+			$this->form_validation->set_message('dependencies', 'Software hat Abhängigkeiten: '.implode(', ', $dependantFields));
+			return false;
+		}
+
+		return true;
 	}
 }

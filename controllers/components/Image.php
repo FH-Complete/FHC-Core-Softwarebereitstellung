@@ -84,7 +84,7 @@ class Image extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		if (!isset($data['softwareimage']['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage Id fehlt');
+		if (!isset($data['softwareimage']['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage fehlt');
 
 		// Validate data
 		$result = $this->_validate($data, $data['softwareimage']['softwareimage_id']);
@@ -118,7 +118,7 @@ class Image extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		if (!isset($data['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage Id fehlt');
+		if (!isset($data['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage fehlt');
 
 		// Delete Softwareimage
 		$result = $this->SoftwareimageModel->delete($data['softwareimage_id']);
@@ -137,7 +137,7 @@ class Image extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		if (!isset($data['softwareimage']['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage Id fehlt');
+		if (!isset($data['softwareimage']['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage fehlt');
 
 		// Validate data
 		$result = $this->_validate($data);
@@ -230,24 +230,41 @@ class Image extends Auth_Controller
 		if (isset($data['softwareimage']) && !isEmptyArray($data['softwareimage']))
 		{
 			$softwareimage = $data['softwareimage'];
-			$verfuegbarkeit_ende = isset($softwareimage['verfuegbarkeit_ende']) ? $softwareimage['verfuegbarkeit_ende'] : null;
+			$verfuegbarkeit_start = isset($softwareimage['verfuegbarkeit_start']) ? $softwareimage['verfuegbarkeit_start'] : null;
 			$this->load->library('form_validation');
 
 			$this->form_validation->set_data($softwareimage);
 			$this->form_validation->set_rules(
 				'bezeichnung',
 				'Softwareimage Bezeichnung',
-				'required|callback_checkImageBezeichnungVerwendet['.$current_softwareimage_id.']',
 				array(
-					'required' => '%s fehlt',
-					'checkImageBezeichnungVerwendet' => '%s wird bereits verwendet. Wählen Sie eine neue Bezeichnung.'
+					'required',
+					array(
+						'imageVerwendet',
+						function($bezeichnung) use ($current_softwareimage_id)
+						{
+							return $this->_checkImageBezeichnungVerwendet($bezeichnung, $current_softwareimage_id);
+						}
+					)
+				),
+				array(
+					'required' => 'Pflichtfeld',
+					'imageVerwendet' => 'Schon vorhanden'
 				)
 			);
 			$this->form_validation->set_rules(
-				'verfuegbarkeit_start',
-				'Verfügbarkeit Start',
-				'callback_checkImageVerfuegbarkeit['.$verfuegbarkeit_ende.']',
-				array('checkImageVerfuegbarkeit' => 'Verfügbarkeit ungültig, oder %s größer als Verfügbarkeit Ende')
+				'verfuegbarkeit_ende',
+				'Verfügbarkeit Ende',
+				array(
+					array(
+						'imageVerfuegbarkeit',
+						function($verfuegbarkeit_ende) use ($verfuegbarkeit_start)
+						{
+							return $this->_checkImageVerfuegbarkeit($verfuegbarkeit_start, $verfuegbarkeit_ende);
+						}
+					)
+				),
+				array('imageVerfuegbarkeit' => 'Ende vor Start')
 			);
 
 			// On error
@@ -257,7 +274,7 @@ class Image extends Auth_Controller
 			}
 		}
 		else
-			return error(array('Softwareimage nicht übergeben'));
+			return error('Softwareimage nicht übergeben');
 
 		// On success
 		return success();
@@ -272,7 +289,7 @@ class Image extends Auth_Controller
 	 * @param verfuegbarkeit_ende
 	 * @return bool valid or not
 	 */
-	public function checkImageVerfuegbarkeit($verfuegbarkeit_start, $verfuegbarkeit_ende)
+	private function _checkImageVerfuegbarkeit($verfuegbarkeit_start, $verfuegbarkeit_ende)
 	{
 		if (isEmptyString($verfuegbarkeit_start) || isEmptyString($verfuegbarkeit_ende)) return true;
 
@@ -288,7 +305,7 @@ class Image extends Auth_Controller
 	 * @param current_softwareimage_id id of currently edited software (will be excluded)
 	 * @return bool valid or not
 	 */
-	public function checkImageBezeichnungVerwendet($bezeichnung, $current_softwareimage_id = null)
+	private function _checkImageBezeichnungVerwendet($bezeichnung, $current_softwareimage_id = null)
 	{
 		$params = array('bezeichnung' => $bezeichnung);
 		if (!isEmptyString($current_softwareimage_id)) $params['softwareimage_id !='] = $current_softwareimage_id;
