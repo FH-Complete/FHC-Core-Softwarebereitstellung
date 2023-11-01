@@ -12,8 +12,7 @@ export const Softwareimage = {
 		return {
 			softwareimageId: null,
 			softwareimage: {},
-			copy: false,
-			errors: []
+			copy: false
 		}
 	},
 	methods: {

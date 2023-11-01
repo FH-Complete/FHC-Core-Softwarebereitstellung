@@ -93,7 +93,15 @@ class Ort extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		foreach ($data['orte_kurzbz'] as $ort_kurzbz)
+		// Validate data
+		$result = $this->_validate($data, $new = true);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
+		foreach ($data['ort_kurzbz'] as $ort_kurzbz)
 		{
 			// Update image
 			$result = $this->SoftwareimageOrtModel->insert(
@@ -124,6 +132,14 @@ class Ort extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
+		// Validate data
+		$result = $this->_validate($data);
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
 		foreach ($data['softwareimageorte_id'] as $softwareimageort_id)
 		{
 			// Update image
@@ -153,6 +169,8 @@ class Ort extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
+		if (!isset($data['softwareimageort_id'])) return $this->outputJsonError('Imageort fehlt');
+
 		// Delete softwareimageort
 		return $this->outputJson($this->SoftwareimageOrtModel->delete(array(
 			'softwareimageort_id' => $data['softwareimageort_id']
@@ -178,7 +196,8 @@ class Ort extends Auth_Controller
 	/**
 	 *	Get Räume that are assigned to given Softwareimage.
 	 */
-	public function getOrteByImage(){
+	public function getOrteByImage()
+	{
 		$softwareimage_id = $this->input->get('softwareimage_id');
 
 		$result = $this->SoftwareimageOrtModel->getOrteByImage($softwareimage_id);
@@ -202,5 +221,68 @@ class Ort extends Auth_Controller
 		$this->_uid = getAuthUID();
 
 		if (!$this->_uid) show_error('User authentification failed');
+	}
+
+	/**
+	 * Performs validation checks.
+	 * @return object error if invalid, success otherwise
+	 */
+	private function _validate($data, $new = false)
+	{
+		$this->load->library('form_validation');
+
+		$verfuegbarkeit_start = isset($data['verfuegbarkeit_start']) ? $data['verfuegbarkeit_start'] : null;
+
+		// reform data because ci validator can't handle arrays'
+		$ortFieldname = $new ? 'ort_kurzbz' : 'softwareimageorte_id';
+		$data[$ortFieldname] = isset($data[$ortFieldname]) && !isEmptyArray($data[$ortFieldname]) ? true : null;
+		//var_dump($data['ort_kurzbz']);
+		// Validate form data
+		$this->form_validation->set_data($data);
+		$this->form_validation->set_rules(
+			$ortFieldname,
+			'Orte',
+			'required',
+			array('required' => 'Pflichtfeld')
+		);
+		$this->form_validation->set_rules(
+			'verfuegbarkeit_ende',
+			'Verfügbarkeit Ende',
+			array(
+				array(
+					'orteVerfuegbarkeit',
+					function($verfuegbarkeit_ende) use ($verfuegbarkeit_start)
+					{
+						return $this->_checkOrteVerfuegbarkeit($verfuegbarkeit_start, $verfuegbarkeit_ende);
+					}
+				)
+			),
+			array('orteVerfuegbarkeit' => 'Datumsende vor Datumsstart')
+		);
+
+		// On error
+		if ($this->form_validation->run() == false)
+		{
+			return error($this->form_validation->error_array());
+		}
+
+		// On success
+		return success();
+	}
+
+	/**
+	 * Check if Verfügbarkeit is valid.
+	 * @param verfuegbarkeit_start
+	 * @param verfuegbarkeit_ende
+	 * @return bool valid or not
+	 */
+	private function _checkOrteVerfuegbarkeit($verfuegbarkeit_start, $verfuegbarkeit_ende)
+	{
+		if (isEmptyString($verfuegbarkeit_start) || isEmptyString($verfuegbarkeit_ende)) return true;
+
+		$start = strtotime($verfuegbarkeit_start);
+		$ende = strtotime($verfuegbarkeit_ende);
+
+		return $start && $ende && $start <= $ende;
 	}
 }

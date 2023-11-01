@@ -239,6 +239,7 @@ class Image extends Auth_Controller
 				'Softwareimage Bezeichnung',
 				array(
 					'required',
+					'alpha_numeric',
 					array(
 						'imageVerwendet',
 						function($bezeichnung) use ($current_softwareimage_id)
@@ -249,6 +250,7 @@ class Image extends Auth_Controller
 				),
 				array(
 					'required' => 'Pflichtfeld',
+					'alpha_numeric' => 'Sonderzeichen vorhanden',
 					'imageVerwendet' => 'Schon vorhanden'
 				)
 			);
@@ -264,7 +266,7 @@ class Image extends Auth_Controller
 						}
 					)
 				),
-				array('imageVerfuegbarkeit' => 'Ende vor Start')
+				array('imageVerfuegbarkeit' => 'Datumsende vor Datumsstart')
 			);
 
 			// On error
@@ -296,7 +298,7 @@ class Image extends Auth_Controller
 		$start = strtotime($verfuegbarkeit_start);
 		$ende = strtotime($verfuegbarkeit_ende);
 
-		return $start && $ende && $start < $ende;
+		return $start && $ende && $start <= $ende;
 	}
 
 	/**

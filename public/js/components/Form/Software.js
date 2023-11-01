@@ -22,8 +22,7 @@ export const SoftwareForm = {
 			lizenzserverSuggestions: [], // autocomplete suggestions
 			selLizenzserver: null,	// selected autocomplete values
 			oeSuggestions: [], // autocomplete suggestions
-			selKostentraegerOE: null,	// selected autocomplete values
-			errors: []
+			selKostentraegerOE: null	// selected autocomplete values
 		}
 	},
 	computed: {
@@ -222,7 +221,6 @@ export const SoftwareForm = {
 			this.softwareImages = [];
 			this.selLizenzserver = null;
 			this.selKostentraegerOE = null;
-			this.errors = [];
 			this.$fhcAlert.resetFormErrors(this.$refs.softwareForm);
 		},
 		getSoftwareByKurzbz(event) {
@@ -514,6 +512,5 @@ export const SoftwareForm = {
 			</div>
 		</form>
 	</div>
-	<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
 	`
 }

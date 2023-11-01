@@ -16,8 +16,7 @@ export const Raum = {
 			orte: [],
 			ortSuggestions: [],
 			verfuegbarkeit_start: null,
-			verfuegbarkeit_ende: null,
-			errors: []
+			verfuegbarkeit_ende: null
 		}
 	},
 	computed: {
@@ -76,7 +75,7 @@ export const Raum = {
 				method === 'insertImageort' ?
 				{
 					softwareimage_id: this.softwareimage_id,
-					orte_kurzbz: this.orte.map(ort => ort.ort_kurzbz),
+					ort_kurzbz: this.orte.map(ort => ort.ort_kurzbz),
 					verfuegbarkeit_start: this.verfuegbarkeit_start,
 					verfuegbarkeit_ende: this.verfuegbarkeit_ende
 				} :
@@ -114,7 +113,6 @@ export const Raum = {
 			this.orte = [];
 			this.verfuegbarkeit_start = null;
 			this.verfuegbarkeit_ende = null;
-			this.errors = [];
 			this.$fhcAlert.resetFormErrors(this.$refs.raumForm);
 		},
 		onComplete(event)
@@ -217,6 +215,5 @@ export const Raum = {
 			</div>
 		</form>
 	</div>
-	<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
 	`
 }

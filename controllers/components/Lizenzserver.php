@@ -35,7 +35,8 @@ class Lizenzserver extends Auth_Controller
 	/**
 	 * Get Softwarelizenzserver.
 	 */
-	public function getLizenzserver(){
+	public function getLizenzserver()
+	{
 		$lizenzserver_kurzbz = $this->input->get('lizenzserver_kurzbz');
 
 		$result = $this->SoftwarelizenzserverModel->load(array('lizenzserver_kurzbz' => $lizenzserver_kurzbz));
@@ -53,11 +54,12 @@ class Lizenzserver extends Auth_Controller
 	 *
 	 * @return mixed
 	 */
-	public function createLizenzserver(){
+	public function createLizenzserver()
+	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
 		// Validate data
-		$result = $this->_validate($data);
+		$result = $this->_validate($data, $new = true);
 
 		if (isError($result)) $this->terminateWithJsonError(getError($result));
 
@@ -65,11 +67,6 @@ class Lizenzserver extends Auth_Controller
 		$result = $this->SoftwarelizenzserverModel->load(array(
 			'lizenzserver_kurzbz' => $data['lizenzserver']['lizenzserver_kurzbz']
 		));
-
-		if (hasData($result))
-		{
-			$this->terminateWithJsonError('Kurzbezeichnung wird bereits verwendet. Wählen Sie eine neue Kurzbezeichnung.');
-		}
 
 		// Insert Softwarelizenzserver
 		if (!$result = $this->SoftwarelizenzserverModel->insert($data['lizenzserver']))
@@ -98,16 +95,6 @@ class Lizenzserver extends Auth_Controller
 			$this->terminateWithJsonError(getError($result));
 		}
 
-		// Return if Softwarelizenzserver already exixts
-		$result = $this->SoftwarelizenzserverModel->load(array(
-			'lizenzserver_kurzbz' => $data['lizenzserver']['lizenzserver_kurzbz']
-		));
-
-		if (hasData($result))
-		{
-			$this->terminateWithJsonError('Kurzbezeichnung kann nicht mehr überschrieben werden.');
-		}
-
 		// Update Softwarelizenzserver
 		$result = $this->SoftwarelizenzserverModel->update(
 			array('lizenzserver_kurzbz' => $data['lizenzserver']['lizenzserver_kurzbz']),
@@ -124,17 +111,11 @@ class Lizenzserver extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		// Validate data
-		$result = $this->_validate($data);
-
-		if (isError($result))
-		{
-			$this->terminateWithJsonError(getError($result));
-		}
+		if (!isset($data['lizenzserver_kurzbz'])) $this->terminateWithJsonError('Lizenzserver fehlt');
 
 		// Delete Softwarelizenzserver
 		$result = $this->SoftwarelizenzserverModel->delete(
-			array('lizenzserver_kurzbz' =>$data['lizenzserver_kurzbz']));
+			array('lizenzserver_kurzbz' => $data['lizenzserver_kurzbz']));
 
 		return $this->outputJson($result);
 	}
@@ -160,8 +141,6 @@ class Lizenzserver extends Auth_Controller
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
 	}
 
-
-
 	// -----------------------------------------------------------------------------------------------------------------
 	// Private methods
 
@@ -175,15 +154,46 @@ class Lizenzserver extends Auth_Controller
 		if (!$this->_uid) show_error('User authentification failed');
 	}
 
-	private function _validate($data)
+	/**
+	 * Performs Lizenzserver validation checks.
+	 * @return object success if Lizenzserver data valid, error otherwise
+	 */
+	private function _validate($data, $new = false)
 	{
 		// Validate form data
-		if (isset($data['lizenzserver']) && is_object($data['lizenzserver']))
+		if (isset($data['lizenzserver']) && !isEmptyArray($data['lizenzserver']))
 		{
 			$this->load->library('form_validation');
 
 			$this->form_validation->set_data($data['lizenzserver']);
-			$this->form_validation->set_rules('lizenzserver_kurzbz', 'Lizenzserver Kurzbezeichnung', 'required', array('required' => 'Pflichtfeld'));
+
+			$this->form_validation->set_rules(
+				'lizenzserver_kurzbz',
+				'Lizenzserver Kurzbezeichnung',
+				array(
+					'required',
+					'alpha_numeric',
+					array(
+					'kurzbzVerwendet',
+						function($lizenzserver_kurzbz) use ($new)
+						{
+							return $this->_checkLizenzserverKurzbzExists($lizenzserver_kurzbz, $new);
+						}
+					)
+				),
+				array(
+					'required' => 'Pflichtfeld',
+					'alpha_numeric' => 'Sonderzeichen vorhanden',
+					'kurzbzVerwendet' => 'Kann nicht geändert werden'
+				)
+			);
+
+			$this->form_validation->set_rules(
+				'ipadresse',
+				'IP Adresse',
+				'valid_ip',
+				array('valid_ip' => 'Ungültig')
+			);
 
 			// On error
 			if ($this->form_validation->run() == false)
@@ -191,8 +201,27 @@ class Lizenzserver extends Auth_Controller
 				return error($this->form_validation->error_array());
 			}
 		}
+		else
+			return error('Lizenzserver nicht übergeben');
 
 		// On success
 		return success();
+	}
+
+	/**
+	 * Check if Lizenzserver Kurzbz already exists
+	 * @param lizenzserver_kurzbz
+	 * @param new if true, new Lizenzserver is inserted
+	 * @return bool valid or not
+	 */
+	private function _checkLizenzserverKurzbzExists($lizenzserver_kurzbz, $new)
+	{
+		$this->SoftwarelizenzserverModel->addSelect('1');
+		$result = $this->SoftwarelizenzserverModel->load(array('lizenzserver_kurzbz' => $lizenzserver_kurzbz));
+
+		if (isError($result)) return false;
+
+		// If new Lizenzserver, there cannot be entry with same entry. If old one is updated/deleted, a entry with same kurzbz has to exist.
+		return ($new && !hasData($result)) || (!$new && hasData($result));
 	}
 }

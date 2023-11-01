@@ -345,28 +345,7 @@ class Software extends Auth_Controller
 
 		$softwareData = json_decode($this->input->raw_input_stream, true);
 
-		// validate data
-		$this->form_validation->set_data($softwareData);
-
-		$this->form_validation->set_rules(
-			'software_id',
-			'Software ID',
-			array(
-				'required',
-				'numeric',
-				array(
-					'dependencies',
-					function($software_id)
-					{
-						return $this->_checkSoftwareDependencies($software_id);
-					}
-				)
-			),
-			array('required' => 'Pflichtfeld', 'numeric' => 'Nur Zahlen')
-		);
-
-		if ($this->form_validation->run() == false)
-			return $this->outputJsonError($this->form_validation->error_array());
+		if (!isset($softwareData['software_id'])) return $this->outputJsonError('Software fehlt');
 
 		// delete software
 		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
@@ -393,6 +372,7 @@ class Software extends Auth_Controller
 			'Software Kurzbezeichnung',
 			array(
 				'required',
+				'alpha_numeric',
 				array(
 					'software_exists',
 					function($software_kurzbz) use ($software)
@@ -401,7 +381,11 @@ class Software extends Auth_Controller
 					}
 				)
 			),
-			array('required' => 'Pflichtfeld', 'software_exists' => 'Software mit dieser Version existiert bereits')
+			array(
+				'required' => 'Pflichtfeld',
+				'alpha_numeric' => 'Sonderzeichen vorhanden',
+				'software_exists' => 'Software mit dieser Version existiert bereits'
+			)
 		);
 		$this->form_validation->set_rules(
 			'software_id_parent',
