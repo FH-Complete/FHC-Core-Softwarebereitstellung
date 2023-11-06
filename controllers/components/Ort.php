@@ -257,7 +257,7 @@ class Ort extends Auth_Controller
 					}
 				)
 			),
-			array('orteVerfuegbarkeit' => 'Datumsende vor Datumsstart')
+			array('orteVerfuegbarkeit' => 'Datumende vor Datumstart')
 		);
 
 		// On error
