@@ -161,7 +161,7 @@ class Lizenzserver extends Auth_Controller
 	private function _validate($data, $new = false)
 	{
 		// Validate form data
-		if (isset($data['lizenzserver']) && !isEmptyArray($data['lizenzserver']))
+		if (isset($data['lizenzserver']))
 		{
 			$this->load->library('form_validation');
 
@@ -174,7 +174,14 @@ class Lizenzserver extends Auth_Controller
 					'required',
 					'alpha_numeric',
 					array(
-					'kurzbzVerwendet',
+						'aenderungUnzulaessig',
+						function($lizenzserver_kurzbz) use ($new)
+						{
+							return $this->_checkLizenzserverKurzbzUnveraendert($lizenzserver_kurzbz, $new);
+						}
+					),
+					array(
+						'kurzbzVerwendet',
 						function($lizenzserver_kurzbz) use ($new)
 						{
 							return $this->_checkLizenzserverKurzbzExists($lizenzserver_kurzbz, $new);
@@ -183,8 +190,10 @@ class Lizenzserver extends Auth_Controller
 				),
 				array(
 					'required' => 'Pflichtfeld',
-					'alpha_numeric' => 'Sonderzeichen vorhanden',
-					'kurzbzVerwendet' => 'Kann nicht geändert werden'
+					'alpha_numeric' => 'Nur alphanumerische Zeichen',
+					'aenderungUnzulaessig' => 'Feld nicht mehr änderbar',
+					'kurzbzVerwendet' => 'Existiert bereits',
+
 				)
 			);
 
@@ -208,6 +217,26 @@ class Lizenzserver extends Auth_Controller
 		return success();
 	}
 
+
+	/**
+	 * Check to avoid changing Lizenzserver Kurzbz.
+	 * @param lizenzserver_kurzbz
+	 * @param new
+	 * @return bool
+	 */
+	private function _checkLizenzserverKurzbzUnveraendert($lizenzserver_kurzbz, $new)
+	{
+		if ($new) return true;
+
+		$this->SoftwarelizenzserverModel->addSelect('1');
+		$result = $this->SoftwarelizenzserverModel->load(array('lizenzserver_kurzbz' => $lizenzserver_kurzbz));
+
+		if (isError($result)) return false;
+
+		// If old one is updated/deleted, a entry with same kurzbz has to exist.
+		return hasData($result);
+	}
+
 	/**
 	 * Check if Lizenzserver Kurzbz already exists
 	 * @param lizenzserver_kurzbz
@@ -216,12 +245,14 @@ class Lizenzserver extends Auth_Controller
 	 */
 	private function _checkLizenzserverKurzbzExists($lizenzserver_kurzbz, $new)
 	{
+		if (!$new) return true;
+
 		$this->SoftwarelizenzserverModel->addSelect('1');
 		$result = $this->SoftwarelizenzserverModel->load(array('lizenzserver_kurzbz' => $lizenzserver_kurzbz));
 
 		if (isError($result)) return false;
 
 		// If new Lizenzserver, there cannot be entry with same entry. If old one is updated/deleted, a entry with same kurzbz has to exist.
-		return ($new && !hasData($result)) || (!$new && hasData($result));
+		return !hasData($result);
 	}
 }
