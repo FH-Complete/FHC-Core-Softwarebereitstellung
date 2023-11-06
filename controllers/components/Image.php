@@ -227,7 +227,7 @@ class Image extends Auth_Controller
 	private function _validate($data, $current_softwareimage_id = null)
 	{
 		// Validate form data
-		if (isset($data['softwareimage']) && !isEmptyArray($data['softwareimage']))
+		if (isset($data['softwareimage']))
 		{
 			$softwareimage = $data['softwareimage'];
 			$verfuegbarkeit_start = isset($softwareimage['verfuegbarkeit_start']) ? $softwareimage['verfuegbarkeit_start'] : null;
@@ -239,7 +239,6 @@ class Image extends Auth_Controller
 				'Softwareimage Bezeichnung',
 				array(
 					'required',
-					'alpha_numeric',
 					array(
 						'imageVerwendet',
 						function($bezeichnung) use ($current_softwareimage_id)
@@ -250,8 +249,7 @@ class Image extends Auth_Controller
 				),
 				array(
 					'required' => 'Pflichtfeld',
-					'alpha_numeric' => 'Sonderzeichen vorhanden',
-					'imageVerwendet' => 'Schon vorhanden'
+					'imageVerwendet' => 'Existiert bereits'
 				)
 			);
 			$this->form_validation->set_rules(
@@ -266,7 +264,7 @@ class Image extends Auth_Controller
 						}
 					)
 				),
-				array('imageVerfuegbarkeit' => 'Datumsende vor Datumsstart')
+				array('imageVerfuegbarkeit' => 'Datumende vor Datumstart')
 			);
 
 			// On error
