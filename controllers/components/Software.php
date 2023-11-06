@@ -372,7 +372,6 @@ class Software extends Auth_Controller
 			'Software Kurzbezeichnung',
 			array(
 				'required',
-				'alpha_numeric',
 				array(
 					'software_exists',
 					function($software_kurzbz) use ($software)
@@ -383,7 +382,6 @@ class Software extends Auth_Controller
 			),
 			array(
 				'required' => 'Pflichtfeld',
-				'alpha_numeric' => 'Sonderzeichen vorhanden',
 				'software_exists' => 'Software mit dieser Version existiert bereits'
 			)
 		);
@@ -399,7 +397,7 @@ class Software extends Auth_Controller
 					}
 				)
 			),
-			array('cyclic_dependency' => 'Eine Software kann einer Software nicht gleichzeitig untergeordnet und übergeordnet sein')
+			array('cyclic_dependency' => 'Software kann einer anderen Software nicht gleichzeitig untergeordnet und übergeordnet sein')
 		);
 
 		// return error array if there were errors
