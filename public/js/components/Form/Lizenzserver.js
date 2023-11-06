@@ -57,9 +57,7 @@ export const Lizenzserver = {
 					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(
-							CoreRESTClient.getError(result.data), this.$refs.lizenzserverForm
-						);
+						this.$fhcAlert.handleFormErrors(result.data.retval, this.$refs.lizenzserverForm);
 					}
 					else
 					{
