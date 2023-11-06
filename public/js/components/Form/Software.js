@@ -44,7 +44,7 @@ export const SoftwareForm = {
 				// display errors
 				if (CoreRESTClient.isError(result.data))
 				{
-					alert('Error when getting software metadata: ' + result.data.retval); //TODO beautiful alert
+					this.$fhcAlert.handleSystemMessage(result.data.retval);
 				}
 				else
 				{
@@ -52,10 +52,7 @@ export const SoftwareForm = {
 				}
 			}
 		).catch(
-			error => {
-				let errorMessage = error.message ? error.message : 'Unknown error';
-				alert('Error when getting software metadata: ' + errorMessage); //TODO beautiful alert
-			}
+			error => { this.$fhcAlert.handleSystemError(error); }
 		);
 	},
 	created() {
