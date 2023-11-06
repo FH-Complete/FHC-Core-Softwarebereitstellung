@@ -85,7 +85,7 @@ export const Raum = {
 					verfuegbarkeit_ende: this.verfuegbarkeit_ende
 				},
 				{
-					timeout: 30000
+					timeout: 60000
 				}
 			).then(
 				result => {

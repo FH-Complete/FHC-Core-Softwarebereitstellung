@@ -37,7 +37,7 @@ export const SoftwareForm = {
 			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareMetadata',
 			null,
 			{
-				timeout: 2000
+				timeout: 3000
 			}
 		).then(
 			result => {
@@ -121,7 +121,7 @@ export const SoftwareForm = {
 						software_id: software_id
 					},
 					{
-						timeout: 2000
+						timeout: 3000
 					}
 				).then(
 					result => {this.softwarestatus = CoreRESTClient.getData(result.data);}
@@ -136,7 +136,7 @@ export const SoftwareForm = {
 						software_id: software_id
 					},
 					{
-						timeout: 2000
+						timeout: 3000
 					}
 				).then(
 					result => {
@@ -189,6 +189,9 @@ export const SoftwareForm = {
 						software: this.extendedSoftware,
 						softwarestatus: this.softwarestatus,
 						softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
+					},
+					{
+						timeout: 5000
 					}
 				).then(
 					result => {
@@ -227,7 +230,7 @@ export const SoftwareForm = {
 					software_kurzbz: event.query
 				},
 				{
-					timeout: 2000
+					timeout: 3000
 				}
 			).then(
 				result => {
@@ -258,7 +261,7 @@ export const SoftwareForm = {
 					eventQuery: event.query
 				},
 				{
-					timeout: 2000
+					timeout: 3000
 				}
 			).then(
 				result => {
