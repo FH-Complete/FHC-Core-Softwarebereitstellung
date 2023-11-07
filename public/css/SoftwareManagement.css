@@ -42,3 +42,38 @@ a.nav-link {
     top: 5%;
 }
 
+/* Fix error message running out from content-div */
+.p-toast-message-content {
+    overflow: hidden;
+}
+.p-toast-message-text {
+    overflow-y: auto;
+    word-wrap: break-word;
+}
+
+/* Override confirm dialog buttons with bootstrap style colors (as long primevues unstyle true is not working correctly) */
+.p-confirm-dialog-reject {
+    color: #6c757d;
+    border-color: #6c757d;
+    background-color: white;
+}
+.p-confirm-dialog-accept {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+.p-confirm-dialog-reject:hover {
+    color: white !important;
+    border-color: #6c757d !important;
+    background-color: #6c757d !important;
+}
+.p-confirm-dialog-accept:hover {
+    background-color: #bb2d3b !important;
+    border-color: #b02a37 !important;
+}
+.p-confirm-dialog-accept:focus {
+    outline: none !important;
+}
+.p-dialog-header {
+    padding: 0.5rem !important;
+}
+
