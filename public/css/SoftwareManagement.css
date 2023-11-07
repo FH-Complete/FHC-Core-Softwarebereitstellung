@@ -35,3 +35,10 @@ a.nav-link {
     font-weight: normal;
     padding-left: 20px;
 }
+
+/* Fix disorder of datepicker icons when a field-validation-message is shown below the datepicker field */
+.dp__input_wrap svg.dp__input_icons {
+    transform: unset;
+    top: 5%;
+}
+
