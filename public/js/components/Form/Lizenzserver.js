@@ -85,7 +85,11 @@ export const Lizenzserver = {
 		<form ref="lizenzserverForm" class="row gy-3">
 			<div class="col-sm-4">
 				<label class="form-label">Kurzbezeichnung *</label>
-				<input type="text" class="form-control" name="lizenzserver_kurzbz" v-model="lizenzserver.lizenzserver_kurzbz" required >
+				<input type="text" class="form-control" 
+					name="lizenzserver_kurzbz"
+					v-model="lizenzserver.lizenzserver_kurzbz"
+					:disabled="lizenzserver_kurzbz !== null"
+					required >
 			</div>
 			<div class="col-sm-8">
 				<label class="form-label">Bezeichnung</label>
