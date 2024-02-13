@@ -70,7 +70,6 @@ export const Imageverwaltung = {
 					}
 				]
 			},
-			tabulatorAdditionalColumns: ['actions'],
 			softwareimageId: null,
 			softwareimage_bezeichnung: ''
 		}
@@ -101,6 +100,7 @@ export const Imageverwaltung = {
 			this.$refs.softwareimageModal.open(softwareimageId, copy);
 		},
 		onSoftwareimageSaved() {
+			console.log('onSoftwareimageSaved:');
 			this.$refs.softwareimageModal.hide();
 			this.$refs.softwareimageTable.reloadTable();
 		},
@@ -151,7 +151,6 @@ export const Imageverwaltung = {
 		ref="softwareimageTable"
 		filter-type="ImageVerwaltung"
 		:tabulator-options="softwareimageTabulatorOptions"
-		:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 		:new-btn-label="'Image'"
 		:new-btn-show="true"
 		@nw-new-entry="emitNewFilterEntry"

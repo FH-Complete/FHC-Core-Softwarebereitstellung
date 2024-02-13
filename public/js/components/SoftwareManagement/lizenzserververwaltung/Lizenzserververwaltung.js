@@ -51,8 +51,7 @@ export const Lizenzserververwaltung = {
 						}
 					}
 				]
-			},
-			tabulatorAdditionalColumns: ['actions'],
+			}
 		}
 	},
 	methods: {
@@ -94,7 +93,6 @@ export const Lizenzserververwaltung = {
 		ref="lizenzserverTable"
 		filter-type="LizenzserverVerwaltung"
 		:tabulator-options="lizenzserverTabulatorOptions"
-		:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 		new-btn-label="Lizenzserver"
 		new-btn-show="true"
 		@nw-new-entry="emitNewFilterEntry"
