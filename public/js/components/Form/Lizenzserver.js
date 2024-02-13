@@ -24,9 +24,7 @@ export const Lizenzserver = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.handleFormErrors(
-								CoreRESTClient.getError(result.data), this.$refs.lizenzserverForm
-							);
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -57,7 +55,7 @@ export const Lizenzserver = {
 					// On error
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(result.data.retval, this.$refs.lizenzserverForm);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{
@@ -76,8 +74,6 @@ export const Lizenzserver = {
 			this.lizenzserver_kurzbz = null;
 			this.lizenzserver = {};
 			this.errors = [];
-			this.$fhcAlert.resetFormErrors(this.$refs.lizenzserverForm);
-			
 		}
 	},
 	template: `
