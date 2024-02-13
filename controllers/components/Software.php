@@ -345,7 +345,31 @@ class Software extends Auth_Controller
 
 		$softwareData = json_decode($this->input->raw_input_stream, true);
 
-		if (!isset($softwareData['software_id'])) return $this->outputJsonError('Software fehlt');
+		$this->form_validation->set_data($softwareData);
+
+		$this->form_validation->set_rules(
+			'software_id',
+			'Software Id',
+			array(
+				'required',
+				array(
+					'dependencies',
+					function($software_id)
+					{
+						return $this->_checkSoftwareDependencies($software_id);
+					}
+				)
+			),
+			array(
+				'required' => 'Software fehlt'
+			)
+		);
+
+		// return error array if there were errors
+		if ($this->form_validation->run() == false){
+			return $this->outputJsonError(array_values($this->form_validation->error_array()));
+		}
+
 
 		// delete software
 		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
@@ -398,6 +422,12 @@ class Software extends Auth_Controller
 				)
 			),
 			array('cyclic_dependency' => 'Software kann einer anderen Software nicht gleichzeitig untergeordnet und übergeordnet sein')
+		);
+		$this->form_validation->set_rules(
+			'lizenzkosten',
+			'Lizenzkosten',
+			'decimal',
+			array('decimal' => 'Ungültig')
 		);
 
 		// return error array if there were errors

@@ -234,7 +234,7 @@ export const SoftwareForm = {
 					}
 					else
 					{
-						let softwareList = CoreRESTClient.getData(result.data);
+						let softwareList = CoreRESTClient.hasData(result.data) ? CoreRESTClient.getData(result.data) : [];
 
 						// set software_kurzbz_version for display of kurzbz and version in autocomple field
 						for (let sw of softwareList) {
@@ -499,7 +499,7 @@ export const SoftwareForm = {
 			<div class="col-sm-3">
 				<label class="form-label">Lizenz-Kosten</label>
 				<div class="input-group">
-					<input type="text" class="form-control" name="lizenzkosten" v-model="software.lizenzkosten">
+					<input type="text" class="form-control" name="lizenzkosten" v-model="software.lizenzkosten" placeholder="0.00">
 					<span class="input-group-text">€/Jahr</span>
 				</div>
 			</div>
