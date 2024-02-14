@@ -86,9 +86,7 @@ export const SoftwareForm = {
 					result => {
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.$fhcAlert.handleFormErrors(
-								CoreRESTClient.getError(result.data), this.$refs.softwareForm
-							);
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 						}
 						else
 						{
@@ -142,9 +140,7 @@ export const SoftwareForm = {
 					result => {
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.$fhcAlert.handleFormErrors(
-								CoreRESTClient.getError(result.data), this.$refs.softwareForm
-							);
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 						}
 						else if(CoreRESTClient.hasData(result.data))
 						{
@@ -198,9 +194,7 @@ export const SoftwareForm = {
 						// display errors
 						if (CoreRESTClient.isError(result.data))
 						{
-							this.$fhcAlert.handleFormErrors(
-								CoreRESTClient.getError(result.data), this.$refs.softwareForm
-							);
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 						}
 						else
 						{
@@ -221,7 +215,6 @@ export const SoftwareForm = {
 			this.softwareImages = [];
 			this.selLizenzserver = null;
 			this.selKostentraegerOE = null;
-			this.$fhcAlert.resetFormErrors(this.$refs.softwareForm);
 		},
 		getSoftwareByKurzbz(event) {
 			CoreRESTClient.get(
@@ -237,7 +230,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(CoreRESTClient.getError(result.data), this.$refs.softwareForm);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{
@@ -268,7 +261,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(CoreRESTClient.getError(result.data), this.$refs.softwareForm);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{
@@ -315,7 +308,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(CoreRESTClient.getError(result.data), this.$refs.softwareForm);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{
@@ -337,7 +330,7 @@ export const SoftwareForm = {
 					// display errors
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(CoreRESTClient.getError(result.data), this.$refs.softwareForm);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{

@@ -35,8 +35,7 @@ export const Raumzuordnung = {
 					{title: 'Ort-Verfügbarkeit Start', field: 'verfuegbarkeit_start', headerFilter: true, hozAlign: 'center'},
 					{title: 'Ort-Verfügbarkeit Ende', field: 'verfuegbarkeit_ende', headerFilter: true, hozAlign: 'center'},
 				]
-			},
-			tabulatorAdditionalColumns: ['actions'],
+			}
 		}
 	},
 	mounted(){
@@ -209,7 +208,6 @@ export const Raumzuordnung = {
 					:side-menu="false"
 					:table-only=true
 					:tabulator-options="orteTabulatorOptions"
-					:tabulatorAdditionalColumns="tabulatorAdditionalColumns"
 					:new-btn-label="'Raum'"
 					:new-btn-show="showBtn" 
 					@click:new="openModal()">	

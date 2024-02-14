@@ -105,7 +105,6 @@ export const Softwareverwaltung = {
 			},
 			languageIndex: null, // language of current user
 			showHierarchy: false, // display data as hierarchy tree or not
-			tabulatorAdditionalColumns: ['actions'],
 			selectedTabulatorRow: null, // currently selected tabulator row
 			softwarestatus: Array,
 			software_kurzbz: ''
@@ -341,7 +340,6 @@ export const Softwareverwaltung = {
 		ref="softwareTable"
 		filter-type="SoftwareManagement"
 		:tabulator-options="softwareTabulatorOptions"
-		:tabulator-additional-columns="tabulatorAdditionalColumns"
 		:new-btn-label="'Software'"
 		:new-btn-show="true"
 		:id-field="'software_id'"

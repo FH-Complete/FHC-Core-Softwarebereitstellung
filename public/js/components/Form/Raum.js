@@ -36,9 +36,7 @@ export const Raum = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.handleFormErrors(
-								CoreRESTClient.getError(result.data), this.$refs.raumForm
-							);
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -91,9 +89,7 @@ export const Raum = {
 				result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(
-							CoreRESTClient.getError(result.data), this.$refs.raumForm
-						);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{
@@ -113,7 +109,6 @@ export const Raum = {
 			this.orte = [];
 			this.verfuegbarkeit_start = null;
 			this.verfuegbarkeit_ende = null;
-			this.$fhcAlert.resetFormErrors(this.$refs.raumForm);
 		},
 		onComplete(event)
 		{
@@ -125,9 +120,7 @@ export const Raum = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(
-							CoreRESTClient.getError(result.data), this.$refs.raumForm
-						);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{
@@ -145,9 +138,7 @@ export const Raum = {
 			).then(result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(
-							CoreRESTClient.getError(result.data), this.$refs.raumForm
-						);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{

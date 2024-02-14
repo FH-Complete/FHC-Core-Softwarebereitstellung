@@ -29,9 +29,7 @@ export const Softwareimage = {
 				).then(
 					result => {
 						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.handleFormErrors(
-								CoreRESTClient.getError(result.data), this.$refs.softwareimageForm
-							);
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 						}
 						else {
 							if (CoreRESTClient.hasData(result.data)) {
@@ -65,7 +63,7 @@ export const Softwareimage = {
 				result => {
 					if (CoreRESTClient.isError(result.data))
 					{
-						this.$fhcAlert.handleFormErrors(result.data.retval, this.$refs.softwareimageForm);
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
 					}
 					else
 					{
@@ -81,7 +79,6 @@ export const Softwareimage = {
 			this.softwareimageId = null;
 			this.softwareimage = {};
 			this.copy = false;
-			this.$fhcAlert.resetFormErrors(this.$refs.softwareimageForm);
 		}
 	},
 	template: `
