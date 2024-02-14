@@ -60,11 +60,11 @@ export const Softwarezuordnung = {
 				<core-filter-cmpt
 					ref="zuordnungTable"
 					:side-menu="false"
-					:table-only=true
-					:tabulator-options="softwarezuordnungTabulatorOptions"
+					:table-only="true"
+					:tabulator-options="softwarezuordnungTabulatorOptions">
 				</core-filter-cmpt>
 			</div>
 		</div>
-	</div>	
+	</div>
 	`
 };
