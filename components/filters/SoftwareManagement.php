@@ -26,7 +26,9 @@
 					sw.software_id_parent,
 					sw_parent.software_kurzbz AS software_kurzbz_parent,
 					sw_typ.bezeichnung AS softwaretyp_bezeichnung,
-					sw_status.bezeichnung AS softwarestatus_bezeichnung
+					sw_status.bezeichnung AS softwarestatus_bezeichnung,
+					sw.insertamum::date,
+					sw.updateamum::date
 				FROM
 					extension.tbl_software sw
 					JOIN extension.tbl_softwaretyp sw_typ USING (softwaretyp_kurzbz)
