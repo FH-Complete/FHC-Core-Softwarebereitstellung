@@ -353,8 +353,8 @@ export const Softwareverwaltung = {
 		 </template>
 	</core-filter-cmpt>
 	<!-- Software Details -->
-	<h2 ref="softwareDetail" class="h4 fhc-hr mt-5">Software-Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
-	<div class="row">
+	<div class="row mt-3">
+		<h2 ref="softwareDetail" class="h4 mb-3">Software-Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
 		<raumzuordnung ref="raumzuordnung"></raumzuordnung>
 	</div>
 	<!-- Software modal component -->

@@ -151,10 +151,10 @@ export const Imageverwaltung = {
 		@click:new="openModal">
 	</core-filter-cmpt>
 	
-	<!-- Softwareimage Details -->
-	<h2 ref="softwareimageDetail" class="h4 fhc-hr mt-5">Softwareimage-Details
-		<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span></h2>				
-	<div class="row">						
+	<!-- Softwareimage Details -->			
+	<div class="row mt-3">
+		<h2 ref="softwareimageDetail" class="h4 mb-3">Softwareimage-Details
+			<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span></h2>								
 		<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
 		<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>								
 	</div>

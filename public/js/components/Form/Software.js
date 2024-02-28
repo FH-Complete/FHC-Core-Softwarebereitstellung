@@ -443,7 +443,6 @@ export const SoftwareForm = {
 				</auto-complete>
 			</div>
 			<!-- Lizenz -->
-			<div class="fhc-hr"></div>
 		 	<div class="col-sm-4">
 				<label class="form-label">Lizenz-Art</label>
 				<input type="text" class="form-control" name="lizenzart" v-model="software.lizenzart">

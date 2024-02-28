@@ -20,8 +20,8 @@ export const BaseLayout = {
 	},
 	template: `
 	<div :id="id" class="overflow-hidden">
-		<header v-if="title">
-			<h1 class="h2 fhc-hr">{{ title }}<span class="fhc-subtitle">{{ subtitle }}</span></h1>
+		<header v-if="title" class="mb-5">
+			<h1 class="h2">{{ title }}<span class="fhc-subtitle">{{ subtitle }}</span></h1>
 		</header>
 		<div class="row gx-5">
 			<main :class="mainGridCols">
