@@ -12,9 +12,6 @@ export const Imageverwaltung = {
 		Raumzuordnung,
 		Softwarezuordnung
 	},
-	emits: [
-		'newFilterEntry',
-	],
 	provide() {
 		return {
 			softwareimageId: Vue.computed(() => this.softwareimageId),
@@ -140,9 +137,6 @@ export const Imageverwaltung = {
 			let row = this.$refs.softwareimageTable.tabulator.getRow(this.softwareimageId);
 			let oldRaumanzahl = row.getData().ort_count;
 			row.update({ort_count: oldRaumanzahl + raumanzahlDifferenz})
-		},
-		emitNewFilterEntry: function(payload) {
-			this.$emit('newFilterEntry', payload);
 		}
 	},
 	template: `
@@ -151,9 +145,9 @@ export const Imageverwaltung = {
 		ref="softwareimageTable"
 		filter-type="ImageVerwaltung"
 		:tabulator-options="softwareimageTabulatorOptions"
+		:side-menu="false"
 		:new-btn-label="'Image'"
 		:new-btn-show="true"
-		@nw-new-entry="emitNewFilterEntry"
 		@click:new="openModal">
 	</core-filter-cmpt>
 	

@@ -7,9 +7,6 @@ export const Lizenzserververwaltung = {
 		CoreFilterCmpt,
 		LizenzserverModal
 	},
-	emits: [
-		'newFilterEntry',
-	],
 	data: function() {
 		return {
 			lizenzserverTabulatorOptions: { // tabulator options which can be modified after first render
@@ -82,9 +79,6 @@ export const Lizenzserververwaltung = {
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
-		},
-		emitNewFilterEntry: function(payload) {
-			this.$emit('newFilterEntry', payload);
 		}
 	},
 	template: `
@@ -93,9 +87,9 @@ export const Lizenzserververwaltung = {
 		ref="lizenzserverTable"
 		filter-type="LizenzserverVerwaltung"
 		:tabulator-options="lizenzserverTabulatorOptions"
+		:side-menu="false"
 		new-btn-label="Lizenzserver"
 		new-btn-show="true"
-		@nw-new-entry="emitNewFilterEntry"
 		@click:new="openModal">	
 	</core-filter-cmpt>
 	

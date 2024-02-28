@@ -12,9 +12,6 @@ export const Softwareverwaltung = {
 		Actions,
 		Raumzuordnung
 	},
-	emits: [
-		'filterMenuUpdated'
-	],
 	data: function() {
 		return {
 			softwareTabulatorOptions: { // tabulator options which can be modified after first render
@@ -332,9 +329,6 @@ export const Softwareverwaltung = {
 			}
 			this.$refs.softwareTable.reloadTable();
 		},
-		emitNewFilterEntry: function(payload) {
-			this.$emit('newFilterEntry', payload);
-		}
 	},
 	template: `
 	<!-- Software Verwaltung Tabelle -->
@@ -342,12 +336,12 @@ export const Softwareverwaltung = {
 		ref="softwareTable"
 		filter-type="SoftwareManagement"
 		:tabulator-options="softwareTabulatorOptions"
+		:side-menu="false"
 		:new-btn-label="'Software'"
 		:new-btn-show="true"
 		:id-field="'software_id'"
 		:parent-id-field="'software_id_parent'"
-		@click:new="openModal"
-		@nw-new-entry="emitNewFilterEntry">
+		@click:new="openModal">
 		<template v-slot:actions>
 			<actions
 				:softwarestatus="softwarestatus"

@@ -29,25 +29,15 @@ export const SoftwareManagement = {
 	},
 	data: function() {
 		return {
-			headerMenuEntries: {},
-			sideMenuEntries: {},
 			appTitle: "Softwarebereitstellung",
 			appSubtitle: "",
 			mainCols: [10],
 			asideCols: [2],
 		}
 	},
-	methods: {
-		updateSideMenuEntries(payload) {
-			this.sideMenuEntries = payload;
-		}
-	},
 	template: `
 	<!-- Navigation component -->
-	<core-navigation-cmpt 
-		v-bind:add-side-menu-entries="sideMenuEntries"
-		v-bind:add-header-menu-entries="headerMenuEntries">	
-	</core-navigation-cmpt>
+	<core-navigation-cmpt></core-navigation-cmpt>
 	
 	<base-layout
 		:coreNav="true" 
@@ -56,7 +46,7 @@ export const SoftwareManagement = {
 		:mainCols="mainCols"
 		:asideCols="asideCols">
 		<template v-slot:main>
-			<nav-tabs @new-filter-entry="updateSideMenuEntries"></nav-tabs>									
+			<nav-tabs></nav-tabs>									
 		</template>
       	<template v-slot:aside>
       		<notification></notification>	
