@@ -27,29 +27,17 @@ export const SoftwareManagement = {
 		Notification,
 		NavTabs
 	},
-	data: function() {
-		return {
-			appTitle: "Softwarebereitstellung",
-			appSubtitle: "",
-			mainCols: [10],
-			asideCols: [2],
-		}
-	},
 	template: `
 	<!-- Navigation component -->
 	<core-navigation-cmpt></core-navigation-cmpt>
 	
 	<base-layout
 		:coreNav="true" 
-		:title="appTitle"
-		:subtitle="appSubtitle"
-		:mainCols="mainCols"
-		:asideCols="asideCols">
+		title="Softwarebereitstellung"
+		:mainCols="12"
+		:asideCols="0">
 		<template v-slot:main>
 			<nav-tabs></nav-tabs>									
-		</template>
-      	<template v-slot:aside>
-      		<notification></notification>	
 		</template>
 	</base-layout>
 	`
