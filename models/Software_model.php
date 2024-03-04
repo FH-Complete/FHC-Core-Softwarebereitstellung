@@ -81,6 +81,9 @@ class Software_model extends DB_Model
 		// Start DB transaction
 		$this->db->trans_start(false);
 
+		$software['updateamum'] = date('Y-m-d H:i:s');
+		$software['updatevon'] = $uid;
+
 		// Update Software
 		$this->update($software['software_id'], $software);
 

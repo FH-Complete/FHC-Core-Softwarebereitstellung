@@ -324,8 +324,6 @@ class Software extends Auth_Controller
 		// return error if invalid
 		if (isError($validationRes)) return $this->outputJsonError(getError($validationRes));
 
-		$software['updatevon'] = $this->_uid;
-
 		// Update Software and inserts newer Softwarestatus
 		$result = $this->SoftwareModel->updateSoftwarePlus(
 			$software,
