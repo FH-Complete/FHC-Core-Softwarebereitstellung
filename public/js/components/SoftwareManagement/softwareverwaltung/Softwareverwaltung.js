@@ -77,7 +77,9 @@ export const Softwareverwaltung = {
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
 					{title: 'Übergeordnete Software', field: 'software_kurzbz_parent', headerFilter: true},
 					{title: 'Erstellt am', field: 'insertamum', hozAlign:"center", headerFilter: true},
-					{title: 'Zuletzt geändert', field: 'updateamum', hozAlign:"center", headerFilter: true},
+					{title: 'Erstellt von', field: 'insertvon', headerFilter: true},
+					{title: 'Geändert am', field: 'updateamum', hozAlign:"center", headerFilter: true},
+					{title: 'Geändert von', field: 'updatevon', headerFilter: true},
 					{
 						title: 'Aktionen',
 						field: 'actions',

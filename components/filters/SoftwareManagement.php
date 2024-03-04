@@ -28,7 +28,25 @@
 					sw_typ.bezeichnung AS softwaretyp_bezeichnung,
 					sw_status.bezeichnung AS softwarestatus_bezeichnung,
 					sw.insertamum::date,
-					sw.updateamum::date
+					(
+						SELECT
+							CONCAT(person.vorname, \' \', person.nachname)
+						FROM
+							tbl_person AS person
+							JOIN tbl_benutzer AS benutzer USING (person_id)
+						WHERE
+							benutzer.uid = sw.insertvon
+					) AS insertvon,
+					sw.updateamum::date,
+					(
+						SELECT
+							CONCAT(person.vorname, \' \', person.nachname)
+						FROM
+							tbl_person AS person
+							JOIN tbl_benutzer AS benutzer USING (person_id)
+						WHERE
+							benutzer.uid = sw.updatevon
+					) AS updatevon
 				FROM
 					extension.tbl_software sw
 					JOIN extension.tbl_softwaretyp sw_typ USING (softwaretyp_kurzbz)
