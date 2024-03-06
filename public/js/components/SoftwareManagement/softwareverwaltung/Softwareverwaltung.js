@@ -343,6 +343,7 @@ export const Softwareverwaltung = {
 		:new-btn-show="true"
 		:id-field="'software_id'"
 		:parent-id-field="'software_id_parent'"
+		:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]"
 		@click:new="openModal">
 		<template v-slot:actions>
 			<actions

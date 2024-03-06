@@ -148,6 +148,7 @@ export const Imageverwaltung = {
 		:side-menu="false"
 		:new-btn-label="'Image'"
 		:new-btn-show="true"
+		:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
 		@click:new="openModal">
 	</core-filter-cmpt>
 	

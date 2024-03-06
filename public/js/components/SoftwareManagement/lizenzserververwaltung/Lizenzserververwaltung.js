@@ -90,6 +90,7 @@ export const Lizenzserververwaltung = {
 		:side-menu="false"
 		new-btn-label="Lizenzserver"
 		new-btn-show="true"
+		:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
 		@click:new="openModal">	
 	</core-filter-cmpt>
 	
