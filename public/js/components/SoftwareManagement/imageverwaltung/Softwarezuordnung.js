@@ -53,7 +53,7 @@ export const Softwarezuordnung = {
 		}
 	},
 	template: `
-	<div class="col-md-6">
+	<div class="softwarezuordnung">
 		<div class="card">
 			<h3 class="h5 card-header">Softwarezuordnung<span class="fhc-subtitle">Zuordnung über Software</span></h3>
 			<div class="card-body">

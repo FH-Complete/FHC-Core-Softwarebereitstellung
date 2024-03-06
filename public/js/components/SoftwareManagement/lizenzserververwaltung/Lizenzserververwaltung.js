@@ -2,7 +2,7 @@ import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import LizenzserverModal from "../../Modals/LizenzserverModal.js";
 
-export const Lizenzserververwaltung = {
+export default {
 	components: {
 		CoreFilterCmpt,
 		LizenzserverModal
@@ -82,24 +82,29 @@ export const Lizenzserververwaltung = {
 		}
 	},
 	template: `
-	<!-- Lizenzserververwaltung Tabelle -->
-	<core-filter-cmpt
-		ref="lizenzserverTable"
-		filter-type="LizenzserverVerwaltung"
-		:tabulator-options="lizenzserverTabulatorOptions"
-		:side-menu="false"
-		new-btn-label="Lizenzserver"
-		new-btn-show="true"
-		:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
-		@click:new="openModal">	
-	</core-filter-cmpt>
-	
-	<!-- Lizenzserver modal component -->
-	<lizenzserver-modal
-		class="fade"
-		ref="lizenzserverModal"
-		dialog-class="modal-lg"
-		@on-saved="onLizenzserverSaved">
-	</lizenzserver-modal>	
+	<div class="row">
+		<div class="col">
+			<!-- Lizenzserververwaltung Tabelle -->
+			<core-filter-cmpt
+				ref="lizenzserverTable"
+				filter-type="LizenzserverVerwaltung"
+				uniqueId="lizenzserverTable"
+				:tabulator-options="lizenzserverTabulatorOptions"
+				:side-menu="false"
+				new-btn-label="Lizenzserver"
+				new-btn-show="true"
+				:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
+				@click:new="openModal">	
+			</core-filter-cmpt>
+			
+			<!-- Lizenzserver modal component -->
+			<lizenzserver-modal
+				class="fade"
+				ref="lizenzserverModal"
+				dialog-class="modal-lg"
+				@on-saved="onLizenzserverSaved">
+			</lizenzserver-modal>	
+		</div>
+	</div>
 	`
 };

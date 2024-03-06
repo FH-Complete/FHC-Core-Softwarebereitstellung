@@ -1,7 +1,7 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 
-export const Softwaresuche = {
+export default {
 	components: {
 		CoreFilterCmpt,
 		AutoComplete: primevue.autocomplete
@@ -100,26 +100,30 @@ export const Softwaresuche = {
 		}
 	},
 	template: `
-	<!-- Softwaresuche Tabelle -->
-	<core-filter-cmpt
-		ref="softwaresucheTable"
-		:side-menu="false"
-		:table-only=true
-		:tabulator-options="softwaresucheTabulatorOptions"
-		@click:new="openModal">
-		<template v-slot:search>
-				<auto-complete
-					class="w-100"
-					v-model="selOrt"
-					optionLabel="ort_kurzbz"
-					dropdown
-					dropdown-current
-					forceSelection
-					:suggestions="ortSuggestions"
-					placeholder="Suche nach Raum..."
-					@complete="onComplete">
-				</auto-complete>		
-		</template>	
-	</core-filter-cmpt>
+	<div class="row">
+		<div class="col">
+			<!-- Softwaresuche Tabelle -->
+			<core-filter-cmpt
+				ref="softwaresucheTable"
+				:side-menu="false"
+				:table-only=true
+				:tabulator-options="softwaresucheTabulatorOptions"
+				@click:new="openModal">
+				<template v-slot:search>
+						<auto-complete
+							class="w-100"
+							v-model="selOrt"
+							optionLabel="ort_kurzbz"
+							dropdown
+							dropdown-current
+							forceSelection
+							:suggestions="ortSuggestions"
+							placeholder="Suche nach Raum..."
+							@complete="onComplete">
+						</auto-complete>		
+				</template>	
+			</core-filter-cmpt>
+		</div>
+	</div>
 	`
 };

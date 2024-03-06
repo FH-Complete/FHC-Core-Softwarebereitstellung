@@ -199,7 +199,7 @@ export const Raumzuordnung = {
 		},
 	},
 	template: `
-	<div class="col-md-6">
+	<div class="raumzuordnung">
 		<div class="card">
 			<h3 class="h5 card-header">Raumzuordnung<span class="fhc-subtitle">Zuordnung über Image</span></h3>
 			<div class="card-body">
@@ -217,14 +217,13 @@ export const Raumzuordnung = {
 				</core-filter-cmpt>
 			</div>
 		</div>
-	</div>	
-	
-	<!-- Raumzuordnung modal component -->
-	<raum-modal
-		class="fade"
-		ref="raumModal"
-		dialog-class="modal-lg"
-		@on-saved="onRaumzuordnungSaved">
-	</raum-modal>	
+		<!-- Raumzuordnung modal component -->
+		<raum-modal
+			class="fade"
+			ref="raumModal"
+			dialog-class="modal-lg"
+			@on-saved="onRaumzuordnungSaved">
+		</raum-modal>	
+	</div>
 	`
 };

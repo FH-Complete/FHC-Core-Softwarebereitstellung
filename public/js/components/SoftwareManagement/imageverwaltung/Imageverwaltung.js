@@ -4,7 +4,7 @@ import SoftwareimageModal from "../../Modals/SoftwareimageModal.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
 import {Softwarezuordnung} from "./Softwarezuordnung.js";
 
-export const Imageverwaltung = {
+export default {
 	componentName: 'Imageverwaltung',
 	components: {
 		CoreFilterCmpt,
@@ -140,32 +140,42 @@ export const Imageverwaltung = {
 		}
 	},
 	template: `
-	<!-- Imageverwaltung Tabelle -->
-	<core-filter-cmpt
-		ref="softwareimageTable"
-		filter-type="ImageVerwaltung"
-		:tabulator-options="softwareimageTabulatorOptions"
-		:side-menu="false"
-		:new-btn-label="'Image'"
-		:new-btn-show="true"
-		:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
-		@click:new="openModal">
-	</core-filter-cmpt>
-	
-	<!-- Softwareimage Details -->			
-	<div class="row mt-3">
-		<h2 ref="softwareimageDetail" class="h4 mb-3">Softwareimage-Details
-			<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span></h2>								
-		<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
-		<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>								
+	<div class="row">
+		<div class="col">
+			<!-- Imageverwaltung Tabelle -->
+			<core-filter-cmpt
+				ref="softwareimageTable"
+				filter-type="ImageVerwaltung"
+				uniqueId="softwareimageTable"
+				:tabulator-options="softwareimageTabulatorOptions"
+				:side-menu="false"
+				:new-btn-label="'Image'"
+				:new-btn-show="true"
+				:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
+				@click:new="openModal">
+			</core-filter-cmpt>
+			
+			<!-- Softwareimage Details -->			
+			<div class="row mt-3">
+				<h2 ref="softwareimageDetail" class="h4 mb-3">Softwareimage-Details
+					<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span>
+				</h2>	
+				<div class="col-md-6">
+					<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
+				</div>							
+				<div class="col-md-6">						
+					<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>		
+				</div>							
+			</div>
+			
+			<!-- Softwareimage modal component -->
+			<softwareimage-modal
+				class="fade"
+				ref="softwareimageModal"
+				dialog-class="modal-lg"
+				@on-saved="onSoftwareimageSaved">
+			</softwareimage-modal>	
+		</div>
 	</div>
-	
-	<!-- Softwareimage modal component -->
-	<softwareimage-modal
-		class="fade"
-		ref="softwareimageModal"
-		dialog-class="modal-lg"
-		@on-saved="onSoftwareimageSaved">
-	</softwareimage-modal>	
 	`
 };

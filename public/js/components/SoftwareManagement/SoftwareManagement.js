@@ -16,29 +16,33 @@
  */
 
 import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
-import {BaseLayout} from "../Layout/BaseLayout.js";
-import {NavTabs} from "./NavTabs.js";
-import {Notification} from "./sidebar/Notification.js";
+import CoreBaseLayout from "../../../../../js/components/layout/BaseLayout.js";
+import CoreTabs from "../../../../../js/components/Tabs.js";
 
 export const SoftwareManagement = {
 	components: {
 		CoreNavigationCmpt,
-		BaseLayout,
-		Notification,
-		NavTabs
+		CoreBaseLayout,
+		CoreTabs
+	},
+	data:() => {
+		return {
+			tabs: {
+				tab1: { title: 'Softwareverwaltung', component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwareverwaltung/Softwareverwaltung.js' },
+				tab2: { title: 'Imageverwaltung', component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/imageverwaltung/Imageverwaltung.js' },
+				tab3: { title: 'Lizenzserververwaltung', component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/lizenzserververwaltung/Lizenzserververwaltung.js' },
+				tab4: { title: 'Suche nach Raum', component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js' }
+			}
+		}
 	},
 	template: `
 	<!-- Navigation component -->
 	<core-navigation-cmpt></core-navigation-cmpt>
 	
-	<base-layout
-		:coreNav="true" 
-		title="Softwarebereitstellung"
-		:mainCols="12"
-		:asideCols="0">
-		<template v-slot:main>
-			<nav-tabs></nav-tabs>									
+	<core-base-layout title="Software-/Lizenzserververwaltung">
+		<template #main>
+			<core-tabs :config="tabs"></core-tabs>									
 		</template>
-	</base-layout>
+	</core-base-layout>
 	`
 };

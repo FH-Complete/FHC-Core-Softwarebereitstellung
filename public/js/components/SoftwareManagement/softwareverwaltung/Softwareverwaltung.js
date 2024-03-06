@@ -4,7 +4,7 @@ import SoftwareModal from "../../Modals/SoftwareModal.js";
 import {Actions} from "./Actions.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
 
-export const Softwareverwaltung = {
+export default {
 	componentName: 'Softwareverwaltung',
 	components: {
 		CoreFilterCmpt,
@@ -334,38 +334,45 @@ export const Softwareverwaltung = {
 	},
 	template: `
 	<!-- Software Verwaltung Tabelle -->
-	<core-filter-cmpt
-		ref="softwareTable"
-		filter-type="SoftwareManagement"
-		:tabulator-options="softwareTabulatorOptions"
-		:side-menu="false"
-		:new-btn-label="'Software'"
-		:new-btn-show="true"
-		:id-field="'software_id'"
-		:parent-id-field="'software_id_parent'"
-		:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]"
-		@click:new="openModal">
-		<template v-slot:actions>
-			<actions
-				:softwarestatus="softwarestatus"
-				:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
-				 @set-status="changeStatus"
-				 @hierarchy-view-changed="handleHierarchyViewChange"
-				 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
-			 </actions>
-		 </template>
-	</core-filter-cmpt>
-	<!-- Software Details -->
-	<div class="row mt-3">
-		<h2 ref="softwareDetail" class="h4 mb-3">Software-Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
-		<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+	<div class="row">
+		<div class="col">
+			<core-filter-cmpt
+				ref="softwareTable"
+				filter-type="SoftwareManagement"
+				uniqueId="softwareTable"
+				:tabulator-options="softwareTabulatorOptions"
+				:side-menu="false"
+				:new-btn-label="'Software'"
+				:new-btn-show="true"
+				:id-field="'software_id'"
+				:parent-id-field="'software_id_parent'"
+				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]"
+				@click:new="openModal">
+				<template v-slot:actions>
+					<actions
+						:softwarestatus="softwarestatus"
+						:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
+						 @set-status="changeStatus"
+						 @hierarchy-view-changed="handleHierarchyViewChange"
+						 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
+					 </actions>
+				 </template>
+			</core-filter-cmpt>
+			<!-- Software Details -->
+			<div class="row mt-3">				
+				<h2 ref="softwareDetail" class="h4 mb-3">Software-Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
+				<div class="col-md-6">
+					<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+				</div>
+			</div>
+			<!-- Software modal component -->
+			<software-modal
+				class="fade"
+				ref="modalForSave"
+				dialog-class="modal-xl"
+				@software-saved="handleSoftwareSaved">
+			</software-modal>
+		</div>
 	</div>
-	<!-- Software modal component -->
-	<software-modal
-		class="fade"
-		ref="modalForSave"
-		dialog-class="modal-xl"
-		@software-saved="handleSoftwareSaved">
-	</software-modal>
 `
 };
