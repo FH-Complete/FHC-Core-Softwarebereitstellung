@@ -12,13 +12,8 @@ export const Softwarezuordnung = {
 			softwareTitel: null,
 			softwarezuordnung: [],
 			softwarezuordnungTabulatorOptions: {
-				maxHeight: "100%",
-				minHeight: 30,
 				layout: 'fitColumns',
 				index: 'software_id',
-				columnDefaults:{
-					tooltip:true,
-				},
 				columns: [
 					{title: 'Software-ID', field: 'software_id', visible: false, headerFilter: true, frozen: true},
 					{title: 'Softwaretyp', field: 'softwaretyp_kurzbz', headerFilter: true},
@@ -60,7 +55,7 @@ export const Softwarezuordnung = {
 				<core-filter-cmpt
 					ref="zuordnungTable"
 					:side-menu="false"
-					:table-only="true"
+					table-only
 					:tabulator-options="softwarezuordnungTabulatorOptions">
 				</core-filter-cmpt>
 			</div>

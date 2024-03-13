@@ -10,12 +10,7 @@ export default {
 		return {
 			softwaresucheTabulatorOptions: {
 				index: 'software_id',
-				maxHeight: "100%",
-				minHeight: 30,
 				layout: 'fitColumns',
-				columnDefaults:{
-					tooltip:true,
-				},
 				columns: [
 					{title: 'Ort', field: 'ort_kurzbz', headerFilter: true, frozen: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
@@ -106,7 +101,7 @@ export default {
 			<core-filter-cmpt
 				ref="softwaresucheTable"
 				:side-menu="false"
-				:table-only=true
+				table-only
 				:tabulator-options="softwaresucheTabulatorOptions"
 				@click:new="openModal">
 				<template v-slot:search>

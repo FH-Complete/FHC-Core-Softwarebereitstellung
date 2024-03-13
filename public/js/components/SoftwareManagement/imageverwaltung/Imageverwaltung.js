@@ -21,12 +21,8 @@ export default {
 	data: function() {
 		return {
 			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
-				maxHeight: "100%",
 				layout: 'fitColumns',
 				index: 'softwareimage_id',
-				columnDefaults:{
-					tooltip:true,
-				},
 				columns: [
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
 					{title: 'Bezeichnung', field: 'bezeichnung', headerFilter: true, frozen: true},
@@ -39,7 +35,9 @@ export default {
 					{
 						title: 'Aktionen',
 						field: 'actions',
-						hozAlign: 'center',
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
@@ -63,7 +61,8 @@ export default {
 							container.append(button);
 
 							return container;
-						}
+						},
+						frozen: true
 					}
 				]
 			},
@@ -149,8 +148,8 @@ export default {
 				uniqueId="softwareimageTable"
 				:tabulator-options="softwareimageTabulatorOptions"
 				:side-menu="false"
-				:new-btn-label="'Image'"
-				:new-btn-show="true"
+				new-btn-label="Image"
+				new-btn-show
 				:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
 				@click:new="openModal">
 			</core-filter-cmpt>

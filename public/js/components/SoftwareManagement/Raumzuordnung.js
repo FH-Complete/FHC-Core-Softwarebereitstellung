@@ -16,13 +16,8 @@ export const Raumzuordnung = {
 			softwareTitel: null,
 			orte: [],
 			orteTabulatorOptions: {
-				maxHeight: "100%",
-				minHeight: 30,
 				layout: 'fitColumns',
 				index: 'softwareimageort_id',
-				columnDefaults:{
-					tooltip:true,
-				},
 				columns: [
 					{title: 'Img-Ort-ID', field: 'softwareimageort_id', headerFilter: true, visible: false},
 					{title: 'Image', field: 'image', headerFilter: true},
@@ -47,15 +42,13 @@ export const Raumzuordnung = {
 				// ...add column with checkboxes as front column
 				this.$refs.raumTable.tabulator.addColumn(
 					{
-						field: 'select',
-						title: 'rowSelection',
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
 						titleFormatterParams: {
 							rowRange: "active"
 						},
-						hozAlign: 'left',
 						width: 50,
+						frozen: true
 					}, true // front column
 				);
 
@@ -64,6 +57,9 @@ export const Raumzuordnung = {
 					{
 						title: 'Aktionen',
 						field: 'actions',
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
@@ -85,7 +81,8 @@ export const Raumzuordnung = {
 							container.append(button);
 
 							return container;
-						}
+						},
+						frozen: true
 					}, false // append to end
 				);
 			}
@@ -206,9 +203,9 @@ export const Raumzuordnung = {
 				<core-filter-cmpt
 					ref="raumTable"
 					:side-menu="false"
-					:table-only=true
+					table-only
 					:tabulator-options="orteTabulatorOptions"
-					:new-btn-label="'Raum'"
+					new-btn-label="Raum"
 					:new-btn-show="showBtn" 
 					@click:new="openModal()">	
 					<template v-if="showBtn" v-slot:actions>

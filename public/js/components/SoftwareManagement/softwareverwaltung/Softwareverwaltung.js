@@ -16,21 +16,15 @@ export default {
 		return {
 			softwareTabulatorOptions: { // tabulator options which can be modified after first render
 				index: 'software_id',
-				maxHeight: "100%",
-				minHeight: 50,
 				layout: 'fitColumns',
-				columnDefaults:{
-					tooltip:true,
-				},
 				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 				columns: [
 					{
-						field: 'software_kurzbz',
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
+						titleFormatterParams: { rowRange: "active"},
 						width: 50,
-						headerSort: false,
 						frozen: true
 					},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
@@ -83,6 +77,9 @@ export default {
 					{
 						title: 'Aktionen',
 						field: 'actions',
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
@@ -100,7 +97,8 @@ export default {
 							container.append(button);
 
 							return container;
-						}
+						},
+						frozen: true
 					}
 				]
 			},
@@ -342,8 +340,8 @@ export default {
 				uniqueId="softwareTable"
 				:tabulator-options="softwareTabulatorOptions"
 				:side-menu="false"
-				:new-btn-label="'Software'"
-				:new-btn-show="true"
+				new-btn-label="Software"
+				new-btn-show
 				:id-field="'software_id'"
 				:parent-id-field="'software_id_parent'"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]"
