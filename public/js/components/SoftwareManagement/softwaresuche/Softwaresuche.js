@@ -33,15 +33,10 @@ export default {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByOrt',
 				{
 					ort_kurzbz: ort_kurzbz
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					this.$refs.softwaresucheTable.tabulator.setData(CoreRESTClient.getData(result.data));
-				}
-			).catch(
+				})
+				.then(result => result.data)
+				.then(result => {this.$refs.softwaresucheTable.tabulator.setData(CoreRESTClient.getData(result));})
+				.catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},

@@ -81,15 +81,12 @@ export const Raum = {
 					softwareimageorte_id: this.softwareimageorte_id,
 					verfuegbarkeit_start: this.verfuegbarkeit_start,
 					verfuegbarkeit_ende: this.verfuegbarkeit_ende
-				},
-				{
-					timeout: 60000
-				}
-			).then(
-				result => {
-					if (CoreRESTClient.isError(result.data))
+				})
+				.then(result => result.data)
+				.then(result => {
+					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
 					}
 					else
 					{

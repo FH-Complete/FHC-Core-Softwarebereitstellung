@@ -110,37 +110,24 @@ export default {
 		}
 	},
 	beforeCreate() {
-		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus',
-			null,
-			{
-				timeout: 2000
-			}
-		).then(
-			result => {
-				this.softwarestatus = CoreRESTClient.getData(result.data);
+		CoreRESTClient
+			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus', null)
+			.then(result => result.data)
+			.then(result => {
+				this.softwarestatus = CoreRESTClient.getData(result);
 
 				// Populate Status column with editable Softwarestatus list.
 				// NOTE: tabulator bugfixed transparent list in 5.2.3 release. (release notes)
 				this.populateTabulatorColumnStatus(this.softwarestatus);
 				this.reloadTabulator();
-			}
-		).catch(
-			error => { this.$fhcAlert.handleSystemError(error); }
-		);
-		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex',
-			null,
-			{
-				timeout: 2000
-			}
-		).then(
-			result => {
-				this.languageIndex = CoreRESTClient.getData(result.data);
-			}
-		).catch(
-			error => { this.$fhcAlert.handleSystemError(error); }
-		);
+			})
+			.catch(error => { this.$fhcAlert.handleSystemError(error); });
+
+		CoreRESTClient
+			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex', null)
+			.then(result => result.data)
+			.then(result => { this.languageIndex = CoreRESTClient.getData(result);})
+			.catch( error => { this.$fhcAlert.handleSystemError(error); } );
 	},
 	mounted(){
 		// set tabulator events
@@ -258,22 +245,17 @@ export default {
 				software_ids = selectedData.map(data => data.software_id);
 			}
 
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/changeSoftwarestatus',
-				{
-					software_ids: software_ids,
-					softwarestatus_kurzbz: softwarestatus_kurzbz
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					this.$refs.softwareTable.reloadTable(); // TODO use row update instead of reloadTable after solving datatree issues
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			CoreRESTClient
+				.post(
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/changeSoftwarestatus',
+					{
+						software_ids: software_ids,
+						softwarestatus_kurzbz: softwarestatus_kurzbz
+					}
+				)
+				.then(result => result.data)
+				.then(result => {this.$refs.softwareTable.reloadTable(); }) // TODO use row update instead of reloadTable after solving datatree issues
+				.catch( error => { this.$fhcAlert.handleSystemError(error); });
 		},
 		editSoftware(event, software_id){
 			this.openModal(event, software_id);
@@ -286,15 +268,12 @@ export default {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
 				{
 					software_id: software_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					if (CoreRESTClient.isError(result.data))
+				})
+				.then(result => result.data)
+				.then(result => {
+					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleSystemMessage(result.retval);
 					}
 					else
 					{

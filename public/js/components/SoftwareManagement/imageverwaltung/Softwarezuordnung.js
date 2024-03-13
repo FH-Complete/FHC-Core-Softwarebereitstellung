@@ -30,17 +30,14 @@ export const Softwarezuordnung = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByImage',
 				{
 					softwareimage_id: softwareimage_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
+				})
+				.then(result => result.data)
+				.then(result => {
 					this.softwarezuordnung = [];
-					if (CoreRESTClient.hasData(result.data)) {
-						this.softwarezuordnung = CoreRESTClient.getData(result.data);
+					if (CoreRESTClient.hasData(result)) {
+						this.softwarezuordnung = CoreRESTClient.getData(result);
 					}
-					this.$refs.zuordnungTable.tabulator.setData(CoreRESTClient.getData(result.data));
+					this.$refs.zuordnungTable.tabulator.setData(CoreRESTClient.getData(result));
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }

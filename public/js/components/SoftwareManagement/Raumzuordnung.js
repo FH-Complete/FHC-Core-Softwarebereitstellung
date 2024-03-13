@@ -106,15 +106,12 @@ export const Raumzuordnung = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/deleteImageort',
 				{
 					softwareimageort_id: softwareimageort_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					if (CoreRESTClient.isError(result.data))
+				})
+				.then(result => result.data)
+				.then(result => {
+					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.alertSystemMessage(Object.values(result.data.retval).join('; '));  // TODO backend result anpassen
+						this.$fhcAlert.alertSystemMessage(Object.values(result.retval).join('; '));  // TODO backend result anpassen
 					}
 					else
 					{
@@ -136,18 +133,15 @@ export const Raumzuordnung = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteBySoftware',
 				{
 					software_id: software_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
+				})
+				.then(result => result.data)
+				.then(result => {
 					this.orte = [];
 					this.softwareTitel = software_titel
-					if (CoreRESTClient.hasData(result.data)) {
-						this.orte = CoreRESTClient.getData(result.data);
+					if (CoreRESTClient.hasData(result)) {
+						this.orte = CoreRESTClient.getData(result);
 					}
-					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result.data));
+					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result));
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
@@ -158,17 +152,14 @@ export const Raumzuordnung = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
 				{
 					softwareimage_id: softwareimage_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
+				})
+				.then(result => result.data)
+				.then(result => {
 					this.orte = [];
-					if (CoreRESTClient.hasData(result.data)) {
-						this.orte = CoreRESTClient.getData(result.data);
+					if (CoreRESTClient.hasData(result)) {
+						this.orte = CoreRESTClient.getData(result);
 					}
-					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result.data));
+					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result));
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }

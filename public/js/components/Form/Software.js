@@ -34,21 +34,18 @@ export const SoftwareForm = {
 	},
 	beforeCreate() {
 		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareMetadata',
-			null,
-			{
-				timeout: 3000
-			}
-		).then(
+			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareMetadata', null)
+			.then(result => result.data)
+			.then(
 			result => {
 				// display errors
-				if (CoreRESTClient.isError(result.data))
+				if (CoreRESTClient.isError(result))
 				{
-					this.$fhcAlert.handleSystemMessage(result.data.retval);
+					this.$fhcAlert.handleSystemMessage(result.retval);
 				}
 				else
 				{
-					this.softwareMetadata = CoreRESTClient.getData(result.data);
+					this.softwareMetadata = CoreRESTClient.getData(result);
 				}
 			}
 		).catch(
@@ -117,34 +114,26 @@ export const SoftwareForm = {
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLastSoftwarestatus',
 					{
 						software_id: software_id
-					},
-					{
-						timeout: 3000
-					}
-				).then(
-					result => {this.softwarestatus = CoreRESTClient.getData(result.data);}
-				).catch(
-					error => { this.$fhcAlert.handleSystemError(error); }
-				);
+					})
+					.then(result => result.data)
+					.then(result => {this.softwarestatus = CoreRESTClient.getData(result);})
+					.catch(error => { this.$fhcAlert.handleSystemError(error); });
 
 				// Get images of software
 				CoreRESTClient.get(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesBySoftware',
 					{
 						software_id: software_id
-					},
-					{
-						timeout: 3000
-					}
-				).then(
-					result => {
-						if (CoreRESTClient.isError(result.data))
+					})
+					.then(result => result.data)
+					.then(result => {
+						if (CoreRESTClient.isError(result))
 						{
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
 						}
-						else if(CoreRESTClient.hasData(result.data))
+						else if(CoreRESTClient.hasData(result))
 						{
-							this.softwareImages = CoreRESTClient.getData(result.data);
+							this.softwareImages = CoreRESTClient.getData(result);
 						}
 					}
 				).catch(
@@ -185,16 +174,14 @@ export const SoftwareForm = {
 						software: this.extendedSoftware,
 						softwarestatus: this.softwarestatus,
 						softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
-					},
-					{
-						timeout: 5000
-					}
-				).then(
+					})
+					.then(result => result.data)
+					.then(
 					result => {
 						// display errors
-						if (CoreRESTClient.isError(result.data))
+						if (CoreRESTClient.isError(result))
 						{
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
 						}
 						else
 						{
@@ -221,20 +208,17 @@ export const SoftwareForm = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
 				{
 					software_kurzbz: event.query
-				},
-				{
-					timeout: 3000
-				}
-			).then(
-				result => {
+				})
+				.then(result => result.data)
+				.then(result => {
 					// display errors
-					if (CoreRESTClient.isError(result.data))
+					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
 					}
 					else
 					{
-						let softwareList = CoreRESTClient.hasData(result.data) ? CoreRESTClient.getData(result.data) : [];
+						let softwareList = CoreRESTClient.hasData(result) ? CoreRESTClient.getData(result) : [];
 
 						// set software_kurzbz_version for display of kurzbz and version in autocomple field
 						for (let sw of softwareList) {
@@ -252,20 +236,17 @@ export const SoftwareForm = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getOeSuggestions',
 				{
 					eventQuery: event.query
-				},
-				{
-					timeout: 3000
-				}
-			).then(
-				result => {
+				})
+				.then(result => result.data)
+				.then(result => {
 					// display errors
-					if (CoreRESTClient.isError(result.data))
+					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
 					}
 					else
 					{
-						let data = CoreRESTClient.getData(result.data);
+						let data = CoreRESTClient.getData(result);
 
 						let groupedData = {};
 
