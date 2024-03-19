@@ -46,7 +46,7 @@ class Image extends FHCAPI_Controller
 		$result = $this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
-		$this->terminateWithSuccess(hasData($result) ? getData($result) : null);
+		$this->terminateWithSuccess($result);
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Image extends FHCAPI_Controller
 		$result = $this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
-		$this->terminateWithSuccess(hasData($result) ? getData($result) : null);
+		$this->terminateWithSuccess($result);
 	}
 
 	/**
@@ -94,7 +94,7 @@ class Image extends FHCAPI_Controller
 		$result = $this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
-		$this->terminateWithSuccess(hasData($result) ? getData($result) : null);
+		$this->terminateWithSuccess($result);
 	}
 
 

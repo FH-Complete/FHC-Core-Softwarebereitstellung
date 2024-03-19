@@ -57,6 +57,17 @@ class Image extends Auth_Controller
 
 		if (!isset($data['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage fehlt');
 
+		// Exit if Image has zugeordnete Software
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareimageSoftware_model', 'SoftwareimageSoftwareModel');
+
+		$result = $this->SoftwareimageSoftwareModel->loadWhere(['softwareimage_id' => $data['softwareimage_id']]);
+
+		if (hasData($result))
+		{
+			$this->terminateWithJsonError('Löschen nicht möglich, da bereits Software zugordnet wurde.');
+		}
+
+
 		// Delete Softwareimage
 		$result = $this->SoftwareimageModel->delete($data['softwareimage_id']);
 

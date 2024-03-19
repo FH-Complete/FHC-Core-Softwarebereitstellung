@@ -117,14 +117,20 @@ export default {
 				}
 			).then(
 				result => {
-					this.$fhcAlert.alertSuccess('Gelöscht!');
-					this.$refs.softwareimageTable.reloadTable();
+					if (CoreRESTClient.isError(result.data)) {
+						this.$fhcAlert.alertWarning(result.data.retval);
+					}
+					else
+					{
+						this.$fhcAlert.alertSuccess('Gelöscht!');
+						this.$refs.softwareimageTable.reloadTable();
 
-					// Empty Raumzuordnungstabelle
-					this.$refs.raumzuordnung.getOrteByImage(null);
+						// Empty Raumzuordnungstabelle
+						this.$refs.raumzuordnung.getOrteByImage(null);
 
-					// Empty Softwarezuordnungstabelle
-					this.$refs.softwarezuordnung.getSoftwareByImage(null);
+						// Empty Softwarezuordnungstabelle
+						this.$refs.softwarezuordnung.getSoftwareByImage(null);
+					}
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
