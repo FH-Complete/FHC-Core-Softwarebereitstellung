@@ -27,8 +27,6 @@ class Software extends Auth_Controller
 				'getLanguageIndex' => 'basis/mitarbeiter:r',
 				'getLastSoftwarestatus' => 'basis/mitarbeiter:r',
 				'changeSoftwarestatus' => 'basis/mitarbeiter:rw',
-				'createSoftware' => 'basis/mitarbeiter:rw',
-				'updateSoftware' => 'basis/mitarbeiter:rw',
 				'deleteSoftware' => 'basis/mitarbeiter:rw'
 			)
 		);
@@ -279,62 +277,6 @@ class Software extends Auth_Controller
 	}
 
 	/**
-	 * Creates a software after performing necessary checks.
-	 */
-	public function createSoftware()
-	{
-		$data = json_decode($this->input->raw_input_stream, true);
-
-		$software = $data['software'];
-		$softwarestatus = $data['softwarestatus'];
-		$softwareImageIds = $data['softwareImageIds'];
-
-		// validate data
-		$validationRes = $this->_validate($software);
-
-		// return error if invalid
-		if (isError($validationRes)) return $this->outputJsonError(getError($validationRes));
-
-		$software['insertvon'] = $this->_uid;
-
-		// Insert Software and Softwarestatus
-		$result = $this->SoftwareModel->insertSoftwarePlus(
-			$software,
-			$softwarestatus['softwarestatus_kurzbz'],
-			$softwareImageIds
-		);
-
-		return $this->outputJson($result);
-	}
-
-	/**
-	 * Updates a software after performing necessary checks.
-	 */
-	public function updateSoftware()
-	{
-		$data = json_decode($this->input->raw_input_stream, true);
-
-		$software = $data['software'];
-		$softwarestatus = $data['softwarestatus'];
-		$softwareImageIds = $data['softwareImageIds'];
-
-		// validate data
-		$validationRes = $this->_validate($software);
-
-		// return error if invalid
-		if (isError($validationRes)) return $this->outputJsonError(getError($validationRes));
-
-		// Update Software and inserts newer Softwarestatus
-		$result = $this->SoftwareModel->updateSoftwarePlus(
-			$software,
-			$softwarestatus['softwarestatus_kurzbz'],
-			$softwareImageIds
-		);
-
-		return $this->outputJson($result);
-	}
-
-	/**
 	 * Deletes a software after performing necessary checks.
 	 */
 	public function deleteSoftware()
@@ -377,65 +319,6 @@ class Software extends Auth_Controller
 	// Private methods
 
 	/**
-	 * Performs software validation checks.
-	 * @return object success if software data valid, error otherwise
-	 */
-	private function _validate($software)
-	{
-		// load ci validation lib
-		$this->load->library('form_validation');
-
-		// validate data with ci lib
-		$this->form_validation->set_data($software);
-
-		$this->form_validation->set_rules('softwaretyp_kurzbz', 'Softwaretyp', 'required', array('required' => 'Pflichtfeld'));
-		$this->form_validation->set_rules(
-			'software_kurzbz',
-			'Software Kurzbezeichnung',
-			array(
-				'required',
-				array(
-					'software_exists',
-					function($software_kurzbz) use ($software)
-					{
-						return $this->_checkSoftwareExists($software_kurzbz, $software);
-					}
-				)
-			),
-			array(
-				'required' => 'Pflichtfeld',
-				'software_exists' => 'Software mit dieser Version existiert bereits'
-			)
-		);
-		$this->form_validation->set_rules(
-			'software_id_parent',
-			'Parent Software Id',
-			array(
-				array(
-					'cyclic_dependency',
-					function($software_id_parent) use ($software)
-					{
-						return $this->_checkCyclicDependency($software_id_parent, $software);
-					}
-				)
-			),
-			array('cyclic_dependency' => 'Software kann einer anderen Software nicht gleichzeitig untergeordnet und übergeordnet sein')
-		);
-		$this->form_validation->set_rules(
-			'lizenzkosten',
-			'Lizenzkosten',
-			'decimal',
-			array('decimal' => 'Ungültig')
-		);
-
-		// return error array if there were errors
-		if ($this->form_validation->run() == false) return error($this->form_validation->error_array());
-
-		// return success if valid
-		return success();
-	}
-
-	/**
 	 * Retrieve the UID of the logged user and checks if it is valid
 	 */
 	private function _setAuthUID()
@@ -458,56 +341,6 @@ class Software extends Auth_Controller
 		$langRes = $this->SpracheModel->loadWhere(array('sprache' => $userLang));
 
 		return hasData($langRes) ? getData($langRes)[0]->index : $defaultIdx;
-	}
-
-	/**
-	 * Check if there is a software with a certain kurzbz and a version.
-	 * @param software_kurzbz
-	 * @param software
-	 * @return object success or error
-	 */
-	private function _checkSoftwareExists($software_kurzbz, $software)
-	{
-		if (!isset($software['version'])) return true;
-
-		$params = array(
-			'software_kurzbz' => $software_kurzbz,
-			'version' => $software['version']
-		);
-
-		// if update (software id is present) - check only entries other than the one updating
-		if (isset($software['software_id'])) $params['software_id !='] = $software['software_id'];
-
-		// check if there is already a software with the kurzbz and version
-		$this->SoftwareModel->addSelect('1');
-		$softwareRes = $this->SoftwareModel->loadWhere(
-			$params
-		);
-
-		return isSuccess($softwareRes) && !hasData($softwareRes);
-	}
-
-	/**
-	 * Check if there is a cyclic dependency, so a parent software is a child software at the same time.
-	 * @param software_id_parent
-	 * @param software
-	 */
-	private function _checkCyclicDependency($software_id_parent, $software)
-	{
-		if (isset($software_id_parent) && isset($software['software_id']))
-		{
-			// get parents of software parents
-			$softwareRes = $this->SoftwareModel->getParents($software_id_parent);
-
-			$swParents = getData($softwareRes);
-
-			foreach ($swParents as $swParent)
-			{
-				// if one of the software parents has the software as a parent -> error
-				if ($swParent->software_id == $software['software_id']) return false;
-			}
-		}
-		return true;
 	}
 
 	/**

@@ -28,6 +28,8 @@ class Software_model extends DB_Model
 		// Start DB transaction
 		$this->db->trans_start(false);
 
+		$software['insertvon'] = $uid;
+
 		// Insert Software
 		$result = $this->insert($software);
 
