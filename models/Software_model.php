@@ -37,7 +37,7 @@ class Software_model extends DB_Model
 		$lastInsert_id = getData($result);
 
 		// Insert Softwarestatus
-		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
 		$this->SoftwareSoftwarestatusModel->insert(
 			array(
 				'software_id' => $lastInsert_id,
