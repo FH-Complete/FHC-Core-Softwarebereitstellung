@@ -90,7 +90,7 @@ class Software_model extends DB_Model
 		$this->update($software['software_id'], $software);
 
 		// Insert newer Softwarestatus
-		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
 		$this->SoftwareSoftwarestatusModel->changeSoftwarestatus(
 			array($software['software_id']),
 			$softwarestatus_kurzbz
