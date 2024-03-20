@@ -16,9 +16,9 @@ class Lizenzserver extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'getLizenzserver' => 'basis/mitarbeiter:r',
-				'deleteLizenzserver' => 'basis/mitarbeiter:r',
-				'getLizenzserverByKurzbz' => 'basis/mitarbeiter:r'
+				'getLizenzserver' => 'admin:rw',
+				'deleteLizenzserver' => 'admin:rw',
+				'getLizenzserverByKurzbz' => 'admin:rw'
 			)
 		);
 

@@ -14,7 +14,7 @@ class SoftwareManagement extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'basis/mitarbeiter:r'
+				'index' => 'admin:rw'
 			)
 		);
 

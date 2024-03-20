@@ -16,18 +16,18 @@ class Software extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'basis/mitarbeiter:r',
-				'getSoftwareMetadata' => 'basis/mitarbeiter:r',
-				'getSoftware' => 'basis/mitarbeiter:r',
-				'getSoftwareByKurzbz' => 'basis/mitarbeiter:r',
-				'getSoftwareByImage' => 'basis/mitarbeiter:r',
-				'getSoftwareByOrt' => 'basis/mitarbeiter:r',
-				'getOeSuggestions' => 'basis/mitarbeiter:r',
-				'getStatus' => 'basis/mitarbeiter:r',
-				'getLanguageIndex' => 'basis/mitarbeiter:r',
-				'getLastSoftwarestatus' => 'basis/mitarbeiter:r',
-				'changeSoftwarestatus' => 'basis/mitarbeiter:rw',
-				'deleteSoftware' => 'basis/mitarbeiter:rw'
+				'index' => 'admin:rw',
+				'getSoftwareMetadata' => 'admin:rw',
+				'getSoftware' => 'admin:rw',
+				'getSoftwareByKurzbz' => 'admin:rw',
+				'getSoftwareByImage' => 'admin:rw',
+				'getSoftwareByOrt' => 'admin:rw',
+				'getOeSuggestions' => 'admin:rw',
+				'getStatus' => 'admin:rw',
+				'getLanguageIndex' => 'admin:rw',
+				'getLastSoftwarestatus' => 'admin:rw',
+				'changeSoftwarestatus' => 'admin:rw',
+				'deleteSoftware' => 'admin:rw'
 			)
 		);
 

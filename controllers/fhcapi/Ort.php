@@ -13,14 +13,8 @@ class Ort extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
-				'autofill' => 'basis/mitarbeiter:r',
-				'getOrte' => 'basis/mitarbeiter:r',
-				'getImageort' => 'basis/mitarbeiter:r',
-				'insertImageort' => 'basis/mitarbeiter:r',
-				'updateImageort' => 'basis/mitarbeiter:r',
-				'deleteImageort' => 'basis/mitarbeiter:r',
-				'getOrteBySoftware' => 'basis/mitarbeiter:r',
-				'getOrteByImage' => 'basis/mitarbeiter:r'
+				'insertImageort' => 'admin:rw',
+				'updateImageort' => 'admin:rw',
 			)
 		);
 

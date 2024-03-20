@@ -16,12 +16,12 @@ class Ort extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'autofill' => 'basis/mitarbeiter:r',
-				'getOrte' => 'basis/mitarbeiter:r',
-				'getImageort' => 'basis/mitarbeiter:r',
-				'deleteImageort' => 'basis/mitarbeiter:r',
-				'getOrteBySoftware' => 'basis/mitarbeiter:r',
-				'getOrteByImage' => 'basis/mitarbeiter:r'
+				'autofill' => 'admin:rw',
+				'getOrte' => 'admin:rw',
+				'getImageort' => 'admin:rw',
+				'deleteImageort' => 'admin:rw',
+				'getOrteBySoftware' => 'admin:rw',
+				'getOrteByImage' => 'admin:rw'
 			)
 		);
 
