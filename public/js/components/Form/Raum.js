@@ -1,9 +1,15 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import CoreForm from '../../../../../js/components/Form/Form.js';
+import CoreFormInput from '../../../../../js/components/Form/Input.js';
+import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
 
 export const Raum = {
 	components: {
 		AutoComplete: primevue.autocomplete,
-		"datepicker": VueDatePicker
+		"datepicker": VueDatePicker,
+		CoreForm,
+		CoreFormInput,
+		CoreFormValidation
 	},
 	emits: [
 		 'onSaved'
@@ -69,7 +75,7 @@ export const Raum = {
 			let method = this.softwareimageorte_id === null ? 'insertImageort' : 'updateImageort';
 
 			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/' + method,
+				'/extensions/FHC-Core-Softwarebereitstellung/fhcapi/Ort/' + method,
 				method === 'insertImageort' ?
 				{
 					softwareimage_id: this.softwareimage_id,
@@ -82,26 +88,19 @@ export const Raum = {
 					verfuegbarkeit_start: this.verfuegbarkeit_start,
 					verfuegbarkeit_ende: this.verfuegbarkeit_ende
 				})
-				.then(result => result.data)
 				.then(result => {
-					if (CoreRESTClient.isError(result))
-					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
-					}
-					else
-					{
-						// Store added Räume to update Raumanzahl in Imagetabelle
-						let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
+					// Store added Räume to update Raumanzahl in Imagetabelle
+					let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
 
-						this.$fhcAlert.alertSuccess('Gespeichert!');
-						this.$emit('onSaved', raumanzahlDifferenz);
-					}
+					this.$fhcAlert.alertSuccess('Gespeichert!');
+					this.$emit('onSaved', raumanzahlDifferenz);
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		reset(){
+			this.$refs.raumForm.clearValidation();
 			this.softwareimageorte_id = null;
 			this.orte = [];
 			this.verfuegbarkeit_start = null;
@@ -149,59 +148,70 @@ export const Raum = {
 	},
 	template: `
 	<div>
-		<form ref="raumForm" class="row gy-3">
+		<core-form ref="raumForm" class="row gy-3">
+			<core-form-validation></core-form-validation>
 			<div class="col-sm-6">
-				<label class="form-label">Softwareimage</label>
-				<input type="text" class="form-control" name="softwareimage_bezeichnung" v-model="softwareimage_bezeichnung" readonly>
+				<core-form-input
+					v-model="softwareimage_bezeichnung"
+					name="softwareimage_bezeichnung"
+					label="Softwareimage"
+					readonly
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-12">
-				<label class="form-label">Raum *</label>
-				<auto-complete
-					class="w-100"
-					name="ort_kurzbz"
+				<core-form-input
+					type="autocomplete"
 					v-model="orte"
-					optionLabel="ort_kurzbz"
+					name="ort_kurzbz"
+					label="Raum *"
+					option-label="ort_kurzbz"
 					dropdown
 					dropdown-current
 					forceSelection
 					multiple
 					:disabled="ortSelectionDisabled"
 					:suggestions="ortSuggestions"
-					@complete="onComplete">
+					@complete="onComplete"
+					>
 					<template #header>
 						<button class="w-100 btn btn-secondary" @click="selectAllOrte">Alle wählen</button>
 					</template>
-				</auto-complete>
+				</core-form-input>
 			</div>
 			<div class="col-sm-3">
-				<label class="form-label">Verfügbarkeit Start</label>
-				<datepicker
+				<core-form-input
+					type="datepicker"
 					v-model="verfuegbarkeit_start"
-					v-bind:enable-time-picker="false"
-					v-bind:placeholder="'TT.MM.YY'"
-					v-bind:text-input="true"
-					v-bind:auto-apply="true"
 					name="verfuegbarkeit_start"
+					label="Verfügbarkeit Start"
 					locale="de"
 					format="dd.MM.yyyy"
-					model-type="yyyy-MM-dd">
-				</datepicker>
+					model-type="yyyy-MM-dd"
+					:enable-time-picker="false"
+					:placeholder="'TT.MM.YY'"
+					:text-input="true"
+					:auto-apply="true"
+					>
+				</core-form-input>
 			</div>
 			<div class="col-sm-3">
-				<label class="form-label">Verfügbarkeit Ende</label>
-				<datepicker
+				<core-form-input
+					type="datepicker"
 					v-model="verfuegbarkeit_ende"
-					v-bind:enable-time-picker="false"
-					v-bind:placeholder="'TT.MM.YY'"
-					v-bind:text-input="true"
-					v-bind:auto-apply="true"
 					name="verfuegbarkeit_ende"
+					label="Verfügbarkeit Ende"
 					locale="de"
 					format="dd.MM.yyyy"
-					model-type="yyyy-MM-dd">
-				</datepicker>
+					model-type="yyyy-MM-dd"
+					:enable-time-picker="false"
+					:placeholder="'TT.MM.YY'"
+					:text-input="true"
+					:auto-apply="true"
+					>
+				</core-form-input>
 			</div>
-		</form>
+		</core-form>
 	</div>
 	`
 }
