@@ -74,29 +74,31 @@ export const Raum = {
 			// Decide if add or update Raumzuordnung
 			let method = this.softwareimageorte_id === null ? 'insertImageort' : 'updateImageort';
 
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/fhcapi/Ort/' + method,
-				method === 'insertImageort' ?
-				{
-					softwareimage_id: this.softwareimage_id,
-					ort_kurzbz: this.orte.map(ort => ort.ort_kurzbz),
-					verfuegbarkeit_start: this.verfuegbarkeit_start,
-					verfuegbarkeit_ende: this.verfuegbarkeit_ende
-				} :
-				{
-					softwareimageorte_id: this.softwareimageorte_id,
-					verfuegbarkeit_start: this.verfuegbarkeit_start,
-					verfuegbarkeit_ende: this.verfuegbarkeit_ende
-				})
-				.then(result => {
-					// Store added Räume to update Raumanzahl in Imagetabelle
-					let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
+			if (this.$refs.raumForm)
+				this.$refs.raumForm
+					.post('/extensions/FHC-Core-Softwarebereitstellung/fhcapi/Ort/' + method,
+						method === 'insertImageort' ?
+						{
+							softwareimage_id: this.softwareimage_id,
+							ort_kurzbz: this.orte.map(ort => ort.ort_kurzbz),
+							verfuegbarkeit_start: this.verfuegbarkeit_start,
+							verfuegbarkeit_ende: this.verfuegbarkeit_ende
+						} :
+						{
+							softwareimageorte_id: this.softwareimageorte_id,
+							verfuegbarkeit_start: this.verfuegbarkeit_start,
+							verfuegbarkeit_ende: this.verfuegbarkeit_ende
+						}
+					)
+					.then(result => {
+						// Store added Räume to update Raumanzahl in Imagetabelle
+						let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
 
-					this.$fhcAlert.alertSuccess('Gespeichert!');
-					this.$emit('onSaved', raumanzahlDifferenz);
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
+						this.$fhcAlert.alertSuccess('Gespeichert!');
+						this.$emit('onSaved', raumanzahlDifferenz);
+					}
+				)
+				.catch(error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		reset(){

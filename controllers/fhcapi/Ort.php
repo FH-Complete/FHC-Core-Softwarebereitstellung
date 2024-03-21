@@ -35,35 +35,27 @@ class Ort extends FHCAPI_Controller
 	 */
 	public function insertImageort()
 	{
-		$data = json_decode($this->input->raw_input_stream, true);
-
 		// Validate data
-		$result = $this->_validate($data, $new = true);
+		$this->_validate(true);
 
-		if (isError($result))
-		{
-			$this->terminateWithJsonError(getError($result));
-		}
-
-		foreach ($data['ort_kurzbz'] as $ort_kurzbz)
+		foreach ($this->input->post('ort_kurzbz') as $ort_kurzbz)
 		{
 			// Update image
 			$result = $this->SoftwareimageOrtModel->insert(
 				array(
-					'softwareimage_id' => $data['softwareimage_id'],
+					'softwareimage_id' => $this->input->post('softwareimage_id'),
 					'ort_kurzbz' => $ort_kurzbz,
-					'verfuegbarkeit_start' => $data['verfuegbarkeit_start'],
-					'verfuegbarkeit_ende' => $data['verfuegbarkeit_ende']
+					'verfuegbarkeit_start' => $this->input->post('verfuegbarkeit_start'),
+					'verfuegbarkeit_ende' => $this->input->post('verfuegbarkeit_ende')
 				)
 			);
 
-			if (isError($result))
-			{
-				$this->terminateWithJsonError(getError($result));
-			}
+		// On error
+		$this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
 		}
 
-		return $this->outputJsonSuccess('Gespeichert');
+		// On success
+		$this->terminateWithSuccess();
 	}
 
 	/**
@@ -74,17 +66,10 @@ class Ort extends FHCAPI_Controller
 	 */
 	public function updateImageort()
 	{
-		$data = json_decode($this->input->raw_input_stream, true);
-
 		// Validate data
-		$result = $this->_validate($data);
+		$this->_validate();
 
-		if (isError($result))
-		{
-			$this->terminateWithJsonError(getError($result));
-		}
-
-		foreach ($data['softwareimageorte_id'] as $softwareimageort_id)
+		foreach ($this->input->post('softwareimageorte_id') as $softwareimageort_id)
 		{
 			// Update image
 			$result = $this->SoftwareimageOrtModel->update(
@@ -92,18 +77,17 @@ class Ort extends FHCAPI_Controller
 					'softwareimageort_id' => $softwareimageort_id,
 				),
 				array(
-					'verfuegbarkeit_start' => $data['verfuegbarkeit_start'],
-					'verfuegbarkeit_ende' => $data['verfuegbarkeit_ende']
+					'verfuegbarkeit_start' => $this->input->post('verfuegbarkeit_start'),
+					'verfuegbarkeit_ende' => $this->input->post('verfuegbarkeit_ende')
 				)
 			);
 
-			if (isError($result))
-			{
-				$this->terminateWithJsonError(getError($result));
-			}
+			// On error
+			$this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
 		}
 
-		return $this->outputJsonSuccess('Gespeichert');
+		// On success
+		$this->terminateWithSuccess();
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -123,8 +107,9 @@ class Ort extends FHCAPI_Controller
 	 * Performs validation checks.
 	 * @return object error if invalid, success otherwise
 	 */
-	private function _validate($data, $new = false)
+	private function _validate($new = false)
 	{
+		$data = $this->input->post();
 		$this->load->library('form_validation');
 
 		$verfuegbarkeit_start = isset($data['verfuegbarkeit_start']) ? $data['verfuegbarkeit_start'] : null;
@@ -132,7 +117,7 @@ class Ort extends FHCAPI_Controller
 		// reform data because ci validator can't handle arrays'
 		$ortFieldname = $new ? 'ort_kurzbz' : 'softwareimageorte_id';
 		$data[$ortFieldname] = isset($data[$ortFieldname]) && !isEmptyArray($data[$ortFieldname]) ? true : null;
-		//var_dump($data['ort_kurzbz']);
+
 		// Validate form data
 		$this->form_validation->set_data($data);
 		$this->form_validation->set_rules(
@@ -159,11 +144,8 @@ class Ort extends FHCAPI_Controller
 		// On error
 		if ($this->form_validation->run() == false)
 		{
-			return error($this->form_validation->error_array());
+			$this->terminateWithValidationErrors($this->form_validation->error_array());
 		}
-
-		// On success
-		return success();
 	}
 
 	/**
