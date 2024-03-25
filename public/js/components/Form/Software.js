@@ -520,7 +520,6 @@ export const SoftwareForm = {
 				>
 				</core-form-input>
 			</div>
-			 <!-- TODO add input-groups to core form input and adapt here -->
 			<div class="col-sm-3">
 				<label class="form-label">Lizenz-Kosten</label>
 				<div class="input-group">
