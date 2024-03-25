@@ -213,6 +213,26 @@ export const Raum = {
 					>
 				</core-form-input>
 			</div>
+			<div class="col-sm-12">
+				<core-form-input
+					type="autocomplete"
+					v-model="orte"
+					name="ort_kurzbz"
+					label="Raum *"
+					option-label="ort_kurzbz"
+					dropdown
+					dropdown-current
+					forceSelection
+					multiple
+					:disabled="ortSelectionDisabled"
+					:suggestions="ortSuggestions"
+					@complete="onComplete"
+					>
+					<template #header>
+						<button class="w-100 btn btn-secondary" @click="selectAllOrte">Alle wählen</button>
+					</template>
+				</core-form-input>
+			</div>
 		</core-form>
 	</div>
 	`
