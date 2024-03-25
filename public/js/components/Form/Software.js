@@ -172,6 +172,11 @@ export const SoftwareForm = {
 				? this.selKostentraegerOE.oe_kurzbz
 				: null;
 
+			if (!isNaN(this.software.lizenzkosten) && Number.isInteger(parseInt(this.software.lizenzkosten))) {
+				// If lizenzkosten was entered as an integer, convert it to a decimal
+				this.software.lizenzkosten += '.00';
+			}
+
 			if (method)
 			{
 				if (this.$refs.softwareForm)
