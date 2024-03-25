@@ -38,21 +38,26 @@ class Ort extends FHCAPI_Controller
 		// Validate data
 		$this->_validate(true);
 
+		// Validate if at least one Raum exists
+		$this->checkIfRaumExists();
+
+		// Prepare post data for insert
+		$batch = [];
 		foreach ($this->input->post('ort_kurzbz') as $ort_kurzbz)
 		{
-			// Update image
-			$result = $this->SoftwareimageOrtModel->insert(
-				array(
-					'softwareimage_id' => $this->input->post('softwareimage_id'),
-					'ort_kurzbz' => $ort_kurzbz,
-					'verfuegbarkeit_start' => $this->input->post('verfuegbarkeit_start'),
-					'verfuegbarkeit_ende' => $this->input->post('verfuegbarkeit_ende')
-				)
-			);
+			$batch[]= [
+				'softwareimage_id' => $this->input->post('softwareimage_id'),
+				'ort_kurzbz' => $ort_kurzbz,
+				'verfuegbarkeit_start' => $this->input->post('verfuegbarkeit_start'),
+				'verfuegbarkeit_ende' => $this->input->post('verfuegbarkeit_ende')
+			];
+		}
+
+		// Insert batch
+		$result = $this->SoftwareimageOrtModel->insertBatch($batch);
 
 		// On error
 		$this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
-		}
 
 		// On success
 		$this->terminateWithSuccess();
@@ -69,22 +74,22 @@ class Ort extends FHCAPI_Controller
 		// Validate data
 		$this->_validate();
 
+		// Prepare post data for insert
+		$batch = [];
 		foreach ($this->input->post('softwareimageorte_id') as $softwareimageort_id)
 		{
-			// Update image
-			$result = $this->SoftwareimageOrtModel->update(
-				array(
-					'softwareimageort_id' => $softwareimageort_id,
-				),
-				array(
-					'verfuegbarkeit_start' => $this->input->post('verfuegbarkeit_start'),
-					'verfuegbarkeit_ende' => $this->input->post('verfuegbarkeit_ende')
-				)
-			);
-
-			// On error
-			$this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
+			$batch[]= [
+				'softwareimageort_id' => $softwareimageort_id,
+				'verfuegbarkeit_start' => $this->input->post('verfuegbarkeit_start'),
+				'verfuegbarkeit_ende' => $this->input->post('verfuegbarkeit_ende')
+			];
 		}
+
+		// Update batch
+		$result = $this->SoftwareimageOrtModel->updateBatch($batch);
+
+		// On error
+		$this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess();
@@ -162,5 +167,31 @@ class Ort extends FHCAPI_Controller
 		$ende = strtotime($verfuegbarkeit_ende);
 
 		return $start && $ende && $start <= $ende;
+	}
+
+	public function checkIfRaumExists()
+	{
+		if ( $this->input->post('ort_kurzbz'))
+		{
+			$escaped_ort_kurzbz_arr = array_map(function($value) {
+				return $this->db->escape($value);
+			}, $this->input->post('ort_kurzbz'));
+
+			$this->SoftwareimageOrtModel->addSelect('1');
+			$result = $this->SoftwareimageOrtModel->loadWhere('
+				softwareimage_id = '. $this->db->escape($this->input->post('softwareimage_id'), FHC_INTEGER). '
+				AND
+				ort_kurzbz IN (' . implode(', ', $escaped_ort_kurzbz_arr). ')'
+			);
+
+			if(isSuccess($result) && hasData($result))
+			{
+				$this->terminateWithValidationErrors(['ort_kurzbz' => 'Mindestens 1 Raum davon existiert schon']);
+			}
+		}
+		else
+		{
+			$this->terminateWithValidationErrors(['ort_kurzbz' => 'Pflichtfeld']);
+		}
 	}
 }
