@@ -70,27 +70,6 @@ export default {
 			softwareimage_bezeichnung: ''
 		}
 	},
-	mounted(){
-		// Row click event (showing softwareimage details)
-		this.$refs.softwareimageTable.tabulator.on('rowClick', (e, row) => {
-			// Exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
-			// Get Orte
-			this.$refs.raumzuordnung.getOrteByImage(row.getIndex());
-
-			// Get Software
-			this.$refs.softwarezuordnung.getSoftwareByImage(row.getIndex());
-
-			// Get Softwareimage Bezeichnung
-			this.softwareimageId = row.getData().softwareimage_id;
-			this.softwareimage_bezeichnung = row.getData().bezeichnung;
-
-
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.softwareimageDetail.offsetTop);
-		});
-	},
 	methods: {
 		openModal(event, softwareimageId, copy = false) {
 			this.$refs.softwareimageModal.open(softwareimageId, copy);
@@ -141,46 +120,62 @@ export default {
 			let row = this.$refs.softwareimageTable.tabulator.getRow(this.softwareimageId);
 			let oldRaumanzahl = row.getData().ort_count;
 			row.update({ort_count: oldRaumanzahl + raumanzahlDifferenz})
+		},
+		onTableRowClick(e, row){
+			// Exclude other clicked elements like buttons, icons...
+			if (e.target.nodeName != 'DIV') return;
+
+			// Get Orte
+			this.$refs.raumzuordnung.getOrteByImage(row.getIndex(), row.getData().bezeichnung);
+
+			// Get Software
+			this.$refs.softwarezuordnung.getSoftwareByImage(row.getIndex(), row.getData().bezeichnung);
+
+			// Get Softwareimage Bezeichnung
+			this.softwareimageId = row.getData().softwareimage_id;
+			this.softwareimage_bezeichnung = row.getData().bezeichnung;
+
+
+			// Scroll to Detail
+			//window.scrollTo(0, this.$refs.softwareimageDetail.offsetTop);
 		}
 	},
 	template: `
-	<div class="row">
-		<div class="col">
-			<!-- Imageverwaltung Tabelle -->
-			<core-filter-cmpt
-				ref="softwareimageTable"
-				filter-type="ImageVerwaltung"
-				uniqueId="softwareimageTable"
-				:tabulator-options="softwareimageTabulatorOptions"
-				:tabulator-events="[{event: 'rowClick', handler: onTableRowClick}]"
-				:side-menu="false"
-				new-btn-label="Image"
-				new-btn-show
-				:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
-				@click:new="openModal">
-			</core-filter-cmpt>
-			
-			<!-- Softwareimage Details -->			
-			<div class="row mt-3">
-				<h2 ref="softwareimageDetail" class="h4 mb-3">{{ $p.t('global/details')}}
-					<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span>
-				</h2>	
-				<div class="col-md-6">
-					<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
-				</div>							
-				<div class="col-md-6">						
-					<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>		
-				</div>							
+	<div class="imageVerwaltung">
+		<!-- Softwareimage Table -->
+		<div class="row mb-5">
+			<div class="col">
+				<!-- Imageverwaltung Tabelle -->
+				<core-filter-cmpt
+					ref="softwareimageTable"
+					filter-type="ImageVerwaltung"
+					uniqueId="softwareimageTable"
+					:tabulator-options="softwareimageTabulatorOptions"
+					:tabulator-events="[{event: 'rowClick', handler: onTableRowClick}]"
+					:side-menu="false"
+					new-btn-label="Image"
+					new-btn-show
+					:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
+					@click:new="openModal">
+				</core-filter-cmpt>
 			</div>
-			
-			<!-- Softwareimage modal component -->
-			<softwareimage-modal
-				class="fade"
-				ref="softwareimageModal"
-				dialog-class="modal-lg"
-				@on-saved="onSoftwareimageSaved">
-			</softwareimage-modal>	
 		</div>
-	</div>
+		<!-- Softwareimage Details -->			
+		<div class="row mb-5">
+			<div class="col-md-6">
+				<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
+			</div>							
+			<div class="col-md-6">						
+				<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>		
+			</div>							
+		</div>
+		<!-- Softwareimage modal component -->
+		<softwareimage-modal
+		class="fade"
+		ref="softwareimageModal"
+		dialog-class="modal-lg"
+		@on-saved="onSoftwareimageSaved">
+	</softwareimage-modal>
+	</div>	
 	`
 };

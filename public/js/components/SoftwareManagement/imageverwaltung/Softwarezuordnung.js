@@ -10,6 +10,7 @@ export const Softwarezuordnung = {
 		return {
 			softwareimageId: Vue.inject('softwareimageId'),
 			softwareTitel: null,
+			softwareimage_bezeichnung: null,
 			softwarezuordnung: [],
 			softwarezuordnungTabulatorOptions: {
 				layout: 'fitColumns',
@@ -24,8 +25,23 @@ export const Softwarezuordnung = {
 			}
 		}
 	},
+	computed: {
+		softwarezuordnungTableTitle() {
+			if (this.$parent.$options.componentName === 'Imageverwaltung')
+			{
+				return this.softwareimage_bezeichnung ? this.softwareimage_bezeichnung : '[ ' + this.$p.t('global/imageAuswaehlen') + ' ]';
+			}
+			else
+			{
+				return this.softwareTitel ? this.softwareTitel : '[ ' + this.$p.t('global/softwareAuswaehlen') + ' ]';
+			}
+		}
+	},
 	methods: {
-		getSoftwareByImage(softwareimage_id) {
+		getSoftwareByImage(softwareimage_id, softwareimage_bezeichnung = null) {
+
+			this.softwareimage_bezeichnung = softwareimage_bezeichnung;
+
 			CoreRESTClient.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByImage',
 				{
@@ -51,6 +67,7 @@ export const Softwarezuordnung = {
 			<div class="card-body">
 				<core-filter-cmpt
 					ref="zuordnungTable"
+					:title="softwarezuordnungTableTitle"
 					:side-menu="false"
 					table-only
 					:tabulator-options="softwarezuordnungTabulatorOptions">

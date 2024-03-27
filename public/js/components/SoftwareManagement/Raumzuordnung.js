@@ -14,6 +14,7 @@ export const Raumzuordnung = {
 		return {
 			softwareimageId: Vue.inject('softwareimageId'),
 			softwareTitel: null,
+			softwareimage_bezeichnung: null,
 			orte: [],
 			orteTabulatorOptions: {
 				layout: 'fitColumns',
@@ -33,63 +34,18 @@ export const Raumzuordnung = {
 			}
 		}
 	},
-	mounted(){
-		this.$refs.raumTable.tabulator.on("tableBuilt", (e, row) => {
-
-			// Raumzuordnung can be readonly or editable. If editable...
+	computed: {
+		showBtn() { return Number.isInteger(this.softwareimageId) ? true : false },
+		raumTableTitle() {
 			if (this.$parent.$options.componentName === 'Imageverwaltung')
 			{
-				// ...add column with checkboxes as front column
-				this.$refs.raumTable.tabulator.addColumn(
-					{
-						formatter: 'rowSelection',
-						titleFormatter: 'rowSelection',
-						titleFormatterParams: {
-							rowRange: "active"
-						},
-						width: 50,
-						frozen: true
-					}, true // front column
-				);
-
-				// ...add column with action buttons at the end
-				this.$refs.raumTable.tabulator.addColumn(
-					{
-						title: 'Aktionen',
-						field: 'actions',
-						width: 105,
-						minWidth: 105,
-						maxWidth: 105,
-						formatter: (cell, formatterParams, onRendered) => {
-							let container = document.createElement('div');
-							container.className = "d-flex gap-2";
-
-							let button = document.createElement('button');
-							button.className = 'btn btn-outline-secondary';
-							button.innerHTML = '<i class="fa fa-edit"></i>';
-							button.addEventListener('click', (event) =>
-								this.editOrt(cell.getRow().getIndex())
-							);
-							container.append(button);
-
-							button = document.createElement('button');
-							button.className = 'btn btn-outline-secondary';
-							button.innerHTML = '<i class="fa fa-xmark"></i>';
-							button.addEventListener('click', () =>
-								this.deleteOrt(cell.getRow().getIndex())
-							);
-							container.append(button);
-
-							return container;
-						},
-						frozen: true
-					}, false // append to end
-				);
+				return this.softwareimage_bezeichnung ? this.softwareimage_bezeichnung : '[ ' + this.$p.t('global/imageAuswaehlen') + ' ]';
 			}
-		});
-	},
-	computed: {
-		showBtn() { return Number.isInteger(this.softwareimageId) ? true : false }
+			else
+			{
+				return this.softwareTitel ? this.softwareTitel : '[ ' + this.$p.t('global/softwareAuswaehlen') + ' ]';
+			}
+		}
 	},
 	methods: {
 		openModal(softwareimageort_id) {
@@ -147,7 +103,10 @@ export const Raumzuordnung = {
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
-		getOrteByImage(softwareimage_id) {
+		getOrteByImage(softwareimage_id, softwareimage_bezeichnung = null) {
+
+			this.softwareimage_bezeichnung = softwareimage_bezeichnung;
+
 			CoreRESTClient.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
 				{
@@ -185,6 +144,58 @@ export const Raumzuordnung = {
 
 			this.$refs.raumModal.openVerfuebarkeitAendernModal(selectedData);
 		},
+		onTableBuilt(e, row){
+			// Raumzuordnung can be readonly or editable. If editable...
+			if (this.$parent.$options.componentName === 'Imageverwaltung')
+			{
+				// ...add column with checkboxes as front column
+				this.$refs.raumTable.tabulator.addColumn(
+					{
+						formatter: 'rowSelection',
+						titleFormatter: 'rowSelection',
+						titleFormatterParams: {
+							rowRange: "active"
+						},
+						width: 50,
+						frozen: true
+					}, true // front column
+				);
+
+				// ...add column with action buttons at the end
+				this.$refs.raumTable.tabulator.addColumn(
+					{
+						title: 'Aktionen',
+						field: 'actions',
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
+						formatter: (cell, formatterParams, onRendered) => {
+							let container = document.createElement('div');
+							container.className = "d-flex gap-2";
+
+							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-edit"></i>';
+							button.addEventListener('click', (event) =>
+								this.editOrt(cell.getRow().getIndex())
+							);
+							container.append(button);
+
+							button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-xmark"></i>';
+							button.addEventListener('click', () =>
+								this.deleteOrt(cell.getRow().getIndex())
+							);
+							container.append(button);
+
+							return container;
+						},
+						frozen: true
+					}, false // append to end
+				);
+			}
+		}
 	},
 	template: `
 	<div class="raumzuordnung">
@@ -194,9 +205,11 @@ export const Raumzuordnung = {
 				<core-filter-cmpt
 					ref="raumTable"
 					:side-menu="false"
+					:title="raumTableTitle"
 					table-only
 					:tabulator-options="orteTabulatorOptions"
-					new-btn-label="Raum"
+					:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
+					:new-btn-label="$p.t('global/raum')"
 					:new-btn-show="showBtn" 
 					@click:new="openModal()">	
 					<template v-if="showBtn" v-slot:actions>

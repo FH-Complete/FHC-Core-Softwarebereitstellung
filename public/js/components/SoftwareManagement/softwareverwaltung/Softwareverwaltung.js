@@ -129,62 +129,6 @@ export default {
 			.then(result => { this.languageIndex = CoreRESTClient.getData(result);})
 			.catch( error => { this.$fhcAlert.handleSystemError(error); } );
 	},
-	mounted(){
-		// set tabulator events
-
-		// in-table status edit event
-		this.$refs.softwareTable.tabulator.on("cellEdited", (cell) => {
-			this.changeStatus(cell.getValue(), cell.getRow().getIndex());
-		});
-
-		// row click event (showing software details)
-		this.$refs.softwareTable.tabulator.on("rowClick", (e, row) => {
-
-			// exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
-			// save currently clicked row
-			this.selectedTabulatorRow = row;
-
-			// get row data
-			this.getSoftwareRowDetails();
-
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.softwareDetail.offsetTop);
-		});
-
-		this.$refs.softwareTable.tabulator.on("dataLoaded", data => {
-			// no promoting of children if hierarchy shown
-			if (this.showHierarchy == false)
-			{
-				let allChildrenArr = [];
-
-				// loop through all data
-				for (let child of data)
-				{
-					// if it has children
-					if (child._children)
-					{
-						// promote children, i.e. put them on 0 level
-						this.promoteChildren(child._children, data);
-
-						// remove children from lower level
-						delete child._children;
-					}
-				}
-				// Resort data
-				data.sort((a, b) => {
-					let sort = a.software_kurzbz.localeCompare(b.software_kurzbz);
-
-					if (sort == 0) sort = b.version - a.version;
-					if (sort == 0) sort = b.software_id - a.software_id;
-
-					return sort;
-				});
-			}
-
-		});
-	},
 	methods: {
 		handleHierarchyViewChange(showHierarchy) {
 			this.showHierarchy = showHierarchy;
@@ -300,49 +244,113 @@ export default {
 			}
 		},
 		reloadTabulator() {
-			for (let option in this.softwareTabulatorOptions)
+			if (this.$refs.softwareTable.tabulator !== null && this.$refs.softwareTable.tabulator !== undefined)
 			{
-				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
-					this.$refs.softwareTable.tabulator.options[option] = this.softwareTabulatorOptions[option];
+				for (let option in this.softwareTabulatorOptions)
+				{
+					if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
+						this.$refs.softwareTable.tabulator.options[option] = this.softwareTabulatorOptions[option];
+				}
+				this.$refs.softwareTable.reloadTable();
 			}
-			this.$refs.softwareTable.reloadTable();
 		},
+		onTableCellEdited(cell){
+			this.changeStatus(cell.getValue(), cell.getRow().getIndex());
+		},
+		onTableRowClick(e, row){
+			// exclude other clicked elements like buttons, icons...
+			if (e.target.nodeName != 'DIV') return;
+
+			// save currently clicked row
+			this.selectedTabulatorRow = row;
+
+			// get row data
+			this.getSoftwareRowDetails();
+
+			// Scroll to Detail
+			//window.scrollTo(0, this.$refs.raumzuordnung.offsetTop); TODO
+		},
+		onTableDataLoaded(data){
+			// no promoting of children if hierarchy shown
+			if (this.showHierarchy == false)
+			{
+				let allChildrenArr = [];
+
+				// loop through all data
+				for (let child of data)
+				{
+					// if it has children
+					if (child._children)
+					{
+						// promote children, i.e. put them on 0 level
+						this.promoteChildren(child._children, data);
+
+						// remove children from lower level
+						delete child._children;
+					}
+				}
+				// Resort data
+				data.sort((a, b) => {
+					let sort = a.software_kurzbz.localeCompare(b.software_kurzbz);
+
+					if (sort == 0) sort = b.version - a.version;
+					if (sort == 0) sort = b.software_id - a.software_id;
+
+					return sort;
+				});
+			}
+		}
 	},
 	template: `
-	<!-- Software Verwaltung Tabelle -->
-	<div class="row">
-		<div class="col">
-			<core-filter-cmpt
-				ref="softwareTable"
-				filter-type="SoftwareManagement"
-				uniqueId="softwareTable"
-				:tabulator-options="softwareTabulatorOptions"
-				:tabulator-events="[
-					{event: 'cellEdited', handler: onTableCellEdited},
-					{event: 'rowClick', handler: onTableRowClick},
-					{event: 'dataLoaded', handler: onTableDataLoaded}
-				]"
-				:side-menu="false"
-				new-btn-label="Software"
-				new-btn-show
-				:id-field="'software_id'"
-				:parent-id-field="'software_id_parent'"
-				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]"
-				@click:new="openModal">
-				<template v-slot:actions>
-					<actions
-						:softwarestatus="softwarestatus"
-						:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
-						 @set-status="changeStatus"
-						 @hierarchy-view-changed="handleHierarchyViewChange"
-						 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
-					 </actions>
-				 </template>
-			</core-filter-cmpt>
-			<!-- Software Details -->
-			
-			
+	<div class="softwareVerwaltung">
+		<!-- Software Verwaltung Table -->
+		<div class="row mb-5">
+			<div class="col">
+				<core-filter-cmpt
+					ref="softwareTable"
+					filter-type="SoftwareManagement"
+					uniqueId="softwareTable"
+					:tabulator-options="softwareTabulatorOptions"
+					:tabulator-events="[
+						{event: 'cellEdited', handler: onTableCellEdited},
+						{event: 'rowClick', handler: onTableRowClick},
+						{event: 'dataLoaded', handler: onTableDataLoaded}
+					]"
+					:side-menu="false"
+					new-btn-label="Software"
+					new-btn-show
+					:id-field="'software_id'"
+					:parent-id-field="'software_id_parent'"
+					:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]"
+					@click:new="openModal">
+					<template v-slot:actions>
+						<actions
+							:softwarestatus="softwarestatus"
+							:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
+							 @set-status="changeStatus"
+							 @hierarchy-view-changed="handleHierarchyViewChange"
+							 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
+						 </actions>
+					 </template>
+				</core-filter-cmpt>
+				<!-- Software Details -->
+				
+				
+			</div>
 		</div>
+		<!-- Software Details -->
+		<div class="row mb-5">				
+			<div class="col-md-6">
+				<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+			</div>
+		</div>
+		<!-- Software modal component -->
+		<software-modal
+				class="fade"
+				ref="modalForSave"
+				dialog-class="modal-xl"
+				@software-saved="handleSoftwareSaved">
+			</software-modal>
 	</div>
 `
 };
