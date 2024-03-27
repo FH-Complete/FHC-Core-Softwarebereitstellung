@@ -13,8 +13,8 @@ export const Raumzuordnung = {
 	data() {
 		return {
 			softwareimageId: Vue.inject('softwareimageId'),
+			softwareimage_bezeichnung: Vue.inject('softwareimage_bezeichnung'),
 			softwareTitel: null,
-			softwareimage_bezeichnung: null,
 			orte: [],
 			orteTabulatorOptions: {
 				layout: 'fitColumns',
@@ -103,10 +103,7 @@ export const Raumzuordnung = {
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
-		getOrteByImage(softwareimage_id, softwareimage_bezeichnung = null) {
-
-			this.softwareimage_bezeichnung = softwareimage_bezeichnung;
-
+		getOrteByImage(softwareimage_id) {
 			CoreRESTClient.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
 				{
