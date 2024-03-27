@@ -25,15 +25,15 @@ export default {
 				index: 'softwareimage_id',
 				columns: [
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
-					{title: 'Bezeichnung', field: 'bezeichnung', headerFilter: true, frozen: true},
-					{title: 'Betriebssystem', field: 'betriebssystem', headerFilter: true},
-					{title: 'Verfügbarkeit Start', field: 'verfuegbarkeit_start', headerFilter: true, hozAlign: 'center'},
-					{title: 'Verfügbarkeit Ende', field: 'verfuegbarkeit_ende', headerFilter: true, hozAlign: 'center'},
+					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/betriebssystem'), field: 'betriebssystem', headerFilter: true},
+					{title: this.$p.t('global/verfuegbarkeitStart'), field: 'verfuegbarkeit_start', headerFilter: true, hozAlign: 'center'},
+					{title: this.$p.t('global/verfuegbarkeitEnde'), field: 'verfuegbarkeit_ende', headerFilter: true, hozAlign: 'center'},
 					{title: 'Anzahl Räume', field: 'ort_count', headerFilter: true, hozAlign: 'right'},
 					{title: 'Anzahl Software', field: 'software_count', headerFilter: true, hozAlign: 'right'},
-					{title: 'Anmerkung', field: 'anmerkung', headerFilter: true},
+					{title: this.$p.t('global/anmerkung'), field: 'anmerkung', headerFilter: true},
 					{
-						title: 'Aktionen',
+						title: this.$p.t('global/aktionen'),
 						field: 'actions',
 						width: 105,
 						minWidth: 105,
@@ -96,7 +96,6 @@ export default {
 			this.$refs.softwareimageModal.open(softwareimageId, copy);
 		},
 		onSoftwareimageSaved() {
-			console.log('onSoftwareimageSaved:');
 			this.$refs.softwareimageModal.hide();
 			this.$refs.softwareimageTable.reloadTable();
 		},
@@ -122,7 +121,7 @@ export default {
 					}
 					else
 					{
-						this.$fhcAlert.alertSuccess('Gelöscht!');
+						this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
 						this.$refs.softwareimageTable.reloadTable();
 
 						// Empty Raumzuordnungstabelle
@@ -153,6 +152,7 @@ export default {
 				filter-type="ImageVerwaltung"
 				uniqueId="softwareimageTable"
 				:tabulator-options="softwareimageTabulatorOptions"
+				:tabulator-events="[{event: 'rowClick', handler: onTableRowClick}]"
 				:side-menu="false"
 				new-btn-label="Image"
 				new-btn-show
@@ -162,7 +162,7 @@ export default {
 			
 			<!-- Softwareimage Details -->			
 			<div class="row mt-3">
-				<h2 ref="softwareimageDetail" class="h4 mb-3">Softwareimage-Details
+				<h2 ref="softwareimageDetail" class="h4 mb-3">{{ $p.t('global/details')}}
 					<span class="text-uppercase">{{ softwareimage_bezeichnung }}</span>
 				</h2>	
 				<div class="col-md-6">

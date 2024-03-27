@@ -188,7 +188,7 @@ export const SoftwareForm = {
 						})
 						.then(result => {
 							this.$emit("softwareFormSaved");
-							this.$fhcAlert.alertSuccess('Gespeichert');
+							this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
 						})
 						.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
@@ -332,7 +332,7 @@ export const SoftwareForm = {
 					type="select"
 					v-model="software.softwaretyp_kurzbz"
 					name="softwaretyp_kurzbz"
-					label="Softwaretyp *"
+					:label="$p.t('global/softwaretyp')"
 					>
 					<option v-for="(bezeichnung, softwaretyp_kurzbz) in softwareMetadata.softwaretyp" :key="index" :value="softwaretyp_kurzbz">
 						{{bezeichnung}}
@@ -343,7 +343,7 @@ export const SoftwareForm = {
 				<core-form-input
 					v-model="software.software_kurzbz"
 					name="software_kurzbz"
-					label="Software Kurzbz *"
+					:label="$p.t('global/softwareKurzbz')"
 				>
 				</core-form-input>
 			</div>
@@ -371,7 +371,7 @@ export const SoftwareForm = {
 				<core-form-input
 					v-model="software.os"
 					name="os"
-					label="Betriebssystem"
+					:label="$p.t('global/betriebssystem')"
 				>
 				</core-form-input>
 			</div>
@@ -379,7 +379,7 @@ export const SoftwareForm = {
 				<core-form-input
 					v-model="software.hersteller"
 					name="hersteller"
-					label="Hersteller"
+					:label="$p.t('global/hersteller')"
 				>
 				</core-form-input>
 			</div>
@@ -387,7 +387,7 @@ export const SoftwareForm = {
 				<core-form-input
 					v-model="software.verantwortliche"
 					name="verantwortliche"
-					label="Verantwortliche"
+					:label="$p.t('global/verantwortliche')"
 				>
 				</core-form-input>
 			</div>
@@ -396,7 +396,7 @@ export const SoftwareForm = {
 					type="autocomplete"
 					v-model="parentSoftware"
 					name="parentSoftware"
-					label="Übergeordnete Software"
+					:label="$p.t('global/uebergeordneteSoftware')"
 					option-label="software_kurzbz_version"
 					dropdown
 					dropdown-current
@@ -410,7 +410,7 @@ export const SoftwareForm = {
 				<core-form-input
 					v-model="software.ansprechpartner_intern"
 					name="ansprechpartner_intern"
-					label="Ansprechpartner (intern)"
+					:label="$p.t('global/ansprechpartnerIntern')"
 				>
 				</core-form-input>
 			</div>
@@ -418,7 +418,7 @@ export const SoftwareForm = {
 				<core-form-input
 					v-model="software.ansprechpartner_extern"
 					name="ansprechpartner_extern"
-					label="Ansprechpartner (extern)"
+					:label="$p.t('global/ansprechpartnerExtern')"
 				>
 				</core-form-input>
 			</div>
@@ -427,7 +427,7 @@ export const SoftwareForm = {
 					type="textarea"
 					v-model="software.beschreibung"
 					name="beschreibung"
-					label="Beschreibung"
+					:label="$p.t('global/beschreibung')"
 					rows="3"
 				>
 				</core-form-input>
@@ -437,7 +437,7 @@ export const SoftwareForm = {
 					type="textarea"
 					v-model="software.anmerkung_intern"
 					name="anmerkung_intern"
-					label="Anmerkung (intern)"
+					:label="$p.t('global/anmerkungIntern')"
 					rows="3"
 				>
 				</core-form-input>
@@ -447,7 +447,7 @@ export const SoftwareForm = {
 					type="autocomplete"
 					v-model="softwareImages"
 					name="softwareImages"
-					label="Zugeordnete Images"
+					:label="$p.t('global/zugeordneteImages')"
 					option-label="image_bezeichnung"
 					dropdown
 					dropdown-current
@@ -463,7 +463,7 @@ export const SoftwareForm = {
 		 		<core-form-input
 					v-model="software.lizenzart"
 					name="lizenzart"
-					label="Lizenz-Art"
+					:label="$p.t('global/lizenzart')"
 				>
 				</core-form-input>
 			</div>
@@ -472,7 +472,7 @@ export const SoftwareForm = {
 					type="autocomplete"
 					v-model="selLizenzserver"
 					name="lizenzserver_kurzbz"
-					label="Lizenz-Server Kurzbezeichnung"
+					:label="$p.t('global/lizenzserverKurzbz')"
 					option-label="lizenzserver_kurzbz"
 					dropdown
 					dropdown-current
@@ -487,7 +487,7 @@ export const SoftwareForm = {
 					type="number"
 					v-model="software.anzahl_lizenzen"
 					name="anzahl_lizenzen"
-					label="Lizenz-Anzahl"
+					:label="$p.t('global/lizenzAnzahl')"
 					>
 				</core-form-input>
 			</div>
@@ -496,7 +496,7 @@ export const SoftwareForm = {
 					type="datepicker"
 					v-model="software.lizenzlaufzeit"
 					name="verfuegbarkeit_ende"
-					label="Lizenz-Laufzeit"
+					:label="$p.t('global/lizenzLaufzeit')"
 					locale="de"
 					format="dd.MM.yyyy"
 					model-type="yyyy-MM-dd"
@@ -512,7 +512,7 @@ export const SoftwareForm = {
 					type="autocomplete"
 					v-model="selKostentraegerOE"
 					name="selKostentraegerOE"
-					label="Kostenträger-OE"
+					:label="$p.t('global/kostentraegerOe')"
 					option-label="bezeichnung"
 					option-group-label="organisationseinheittyp_kurzbz"
 					option-group-children="oes"
@@ -526,7 +526,7 @@ export const SoftwareForm = {
 				</core-form-input>
 			</div>
 			<div class="col-sm-3">
-				<label class="form-label">Lizenz-Kosten</label>
+				<label class="form-label">{{ $p.t('global/lizenzKosten') }}</label>
 				<div class="input-group">
 					<core-form-input
 						v-model="software.lizenzkosten"
@@ -535,7 +535,7 @@ export const SoftwareForm = {
 						input-group
 					>
 					</core-form-input>
-					<span class="input-group-text">€/Jahr</span>
+					<span class="input-group-text">{{ $p.t('global/euroProJahr') }}</span>
 				</div>
 			</div>
 		</form>

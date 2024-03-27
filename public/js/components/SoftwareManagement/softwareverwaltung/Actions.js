@@ -30,7 +30,7 @@ export const Actions = {
 	template: `
 		<div class="dropdown">
 			<button class="btn btn-outline-secondary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-				{{ selected ? selected : 'Status setzen' }}
+				{{ selected ? selected : $p.t('global/statusSetzen') }}
 			</button>
 			 <ul class="dropdown-menu" aria-labelledby="statusDropdown">
 				<li v-for="status in softwarestatus" :key="status.softwarestatus_kurzbz">
@@ -49,7 +49,7 @@ export const Actions = {
 						v-model="hierarchyView"
 						:checked="hierarchyView"
 						@change="handleHierarchyViewChange" >
-					<label class="form-check-label" for="hierarchyView">Hierarchie-Ansicht</label>
+					<label class="form-check-label" for="hierarchyView">{{ $p.t('global/hierarchieAnsicht') }}</label>
 				</div>
 				<div class="form-check form-check-inline" v-show="hierarchyView">
 					<input
@@ -59,7 +59,7 @@ export const Actions = {
 						name="expandHierarchy"
 						:checked="expandHierarchy"
 						@change="handleHierarchyExpansion">
-					<label class="form-check-label" for="expandHierarchy">aufgeklappt</label>
+					<label class="form-check-label" for="expandHierarchy">{{ $p.t('global/aufgeklappt') }}</label>
 				</div>
 			</div>
 		</div>

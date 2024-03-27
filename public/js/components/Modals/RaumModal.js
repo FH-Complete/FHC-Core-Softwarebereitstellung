@@ -22,12 +22,12 @@ export default {
 	},
 	methods: {
 		open(softwareimageort_id) {
-			this.title = softwareimageort_id ? 'Raum zu Image bearbeiten' : 'Raum zu Image anlegen';
+			this.title = softwareimageort_id ? this.$p.t('global/raumZuImageBearbeiten') : this.$p.t('global/raumZuImageAnlegen');
 			if (softwareimageort_id) this.$refs.raum.prefill(softwareimageort_id);
 			this.$refs.modalContainer.show();
 		},
 		openVerfuebarkeitAendernModal(selectedData){
-			this.title = 'Verfügbarkeit bearbeiten';
+			this.title = this.$p.t('global/verfuegbarkeitBearbeiten');
 			this.$refs.raum.prefillOrte(selectedData);
 			this.$refs.modalContainer.show();
 		},
@@ -42,7 +42,7 @@ export default {
 				<raum ref="raum" @on-saved="emitOnSaved"></raum>
 			</template>
 			<template v-slot:footer>
-				<button type="button" class="btn btn-primary" @click="$refs.raum.save()">Speichern</button>
+				<button type="button" class="btn btn-primary" @click="$refs.raum.save()">{{ $p.t('global/speichern') }} </button>
 			</template>
 		</bs-modal>
 	`

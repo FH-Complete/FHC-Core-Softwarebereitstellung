@@ -23,9 +23,9 @@ export default {
 	methods: {
 		open(softwareimage_id, copy = false) {
 			if (copy === true){
-				this.title = 'Softwareimage und zugeordnete Räume kopieren';
+				this.title = this.$p.t('global/softwareimageUndZugeordneteRaeumeKopieren');
 			} else {
-				this.title = softwareimage_id ? 'Softwareimage bearbeiten' : 'Softwareimage anlegen';
+				this.title = softwareimage_id ? this.$p.t('global/softwareimageBearbeiten') : this.$p.t('global/softwareimageAnlegen');
 			}
 			this.$refs.softwareimage.prefill(softwareimage_id, copy);
 			this.$refs.modalContainer.show();
@@ -38,7 +38,7 @@ export default {
 				<softwareimage ref="softwareimage" @on-saved="$emit('onSaved')"></softwareimage>
 			</template>
 			<template v-slot:footer>
-				<button type="button" class="btn btn-primary" @click="$refs.softwareimage.save()">Speichern</button>
+				<button type="button" class="btn btn-primary" @click="$refs.softwareimage.save()">{{ $p.t('global/speichern') }}</button>
 			</template>
 		</bs-modal>
 	`

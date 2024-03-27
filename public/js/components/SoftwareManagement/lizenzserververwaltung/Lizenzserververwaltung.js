@@ -13,15 +13,15 @@ export default {
 				layout: 'fitColumns',
 				index: 'lizenzserver_kurzbz',
 				columns: [
-					{title: 'Kurzbezeichung', field: 'lizenzserver_kurzbz', headerFilter: true, frozen: true},
-					{title: 'Bezeichnung', field: 'bezeichnung', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
 					{title: 'Mac-Adresse', field: 'macadresse', headerFilter: true},
 					{title: 'IP-Adresse', field: 'ipadresse', headerFilter: true},
-					{title: 'Anpsprechpartner', field: 'ansprechpartner', headerFilter: true},
+					{title: this.$p.t('global/ansprechpartner'), field: 'ansprechpartner', headerFilter: true},
 					{title: 'Location', field: 'location', headerFilter: true, hozAlign: 'right'},
-					{title: 'Anmerkung', field: 'anmerkung', headerFilter: true, hozAlign: 'right'},
+					{title: this.$p.t('global/anmerkung'), field: 'anmerkung', headerFilter: true, hozAlign: 'right'},
 					{
-						title: 'Aktionen',
+						title: this.$p.t('global/aktionen'),
 						field: 'actions',
 						width: 105,
 						minWidth: 105,
@@ -72,7 +72,7 @@ export default {
 				}
 			).then(
 				result => {
-					this.$fhcAlert.alertSuccess('Gelöscht!');
+					this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
 					this.$refs.lizenzserverTable.reloadTable();
 				}
 			).catch(
@@ -90,7 +90,7 @@ export default {
 				uniqueId="lizenzserverTable"
 				:tabulator-options="lizenzserverTabulatorOptions"
 				:side-menu="false"
-				new-btn-label="Lizenzserver"
+				:new-btn-label="$p.t('global/lizenzserver')"
 				new-btn-show
 				:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
 				@click:new="openModal">	

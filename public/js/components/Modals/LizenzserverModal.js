@@ -22,7 +22,7 @@ export default {
 	},
 	methods: {
 		open(lizenzserver_kurzbz) {
-			this.title = lizenzserver_kurzbz === undefined ? 'Lizenzserver anlegen' : 'Lizenzserver bearbeiten';
+			this.title = lizenzserver_kurzbz === undefined ? this.$p.t('global/lizenzserverAnlegen') : this.$p.t('global/lizenzserverBearbeiten');
 			if (lizenzserver_kurzbz !== undefined) this.$refs.lizenzserver.prefill(lizenzserver_kurzbz);
 			this.$refs.modalContainer.show();
 		}
@@ -34,7 +34,7 @@ export default {
 				<lizenzserver ref="lizenzserver" @on-saved="$emit('onSaved')"></lizenzserver>
 			</template>
 			<template v-slot:footer>
-				<button type="button" class="btn btn-primary" @click="$refs.lizenzserver.save()">Speichern</button>
+				<button type="button" class="btn btn-primary" @click="$refs.lizenzserver.save()">{{ $p.t('global/speichern') }}</button>
 			</template>
 		</bs-modal>
 	`

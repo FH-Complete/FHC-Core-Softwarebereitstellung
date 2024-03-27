@@ -39,7 +39,7 @@ export const SoftwareManagement = {
 	<!-- Navigation component -->
 	<core-navigation-cmpt></core-navigation-cmpt>
 	
-	<core-base-layout title="Software-/Lizenzserververwaltung">
+	<core-base-layout :title="$p.t('global/softwareUndLizenzManagement')">
 		<template #main>
 			<core-tabs :config="tabs"></core-tabs>									
 		</template>

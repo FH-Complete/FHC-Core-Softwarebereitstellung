@@ -94,7 +94,7 @@ export const Raum = {
 						// Store added Räume to update Raumanzahl in Imagetabelle
 						let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
 
-						this.$fhcAlert.alertSuccess('Gespeichert!');
+						this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
 						this.$emit('onSaved', raumanzahlDifferenz);
 					}
 				)
@@ -166,7 +166,7 @@ export const Raum = {
 					type="datepicker"
 					v-model="verfuegbarkeit_start"
 					name="verfuegbarkeit_start"
-					label="Verfügbarkeit Start"
+					:label="$p.t('global/verfuegbarkeitStart')"
 					locale="de"
 					format="dd.MM.yyyy"
 					model-type="yyyy-MM-dd"
@@ -182,7 +182,7 @@ export const Raum = {
 					type="datepicker"
 					v-model="verfuegbarkeit_ende"
 					name="verfuegbarkeit_ende"
-					label="Verfügbarkeit Ende"
+					:label="$p.t('global/verfuegbarkeitEnde')"
 					locale="de"
 					format="dd.MM.yyyy"
 					model-type="yyyy-MM-dd"
@@ -198,7 +198,7 @@ export const Raum = {
 					type="autocomplete"
 					v-model="orte"
 					name="ort_kurzbz"
-					label="Raum *"
+					:label="$p.t('global/raum')"
 					option-label="ort_kurzbz"
 					dropdown
 					dropdown-current
@@ -209,7 +209,7 @@ export const Raum = {
 					@complete="onComplete"
 					>
 					<template #header>
-						<button class="w-100 btn btn-secondary" @click="selectAllOrte">Alle wählen</button>
+						<button class="w-100 btn btn-secondary" @click="selectAllOrte">{{ $p.t('global/alleWaehlen') }}</button>
 					</template>
 				</core-form-input>
 			</div>

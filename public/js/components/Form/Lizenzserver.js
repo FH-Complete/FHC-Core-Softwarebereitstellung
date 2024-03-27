@@ -59,7 +59,7 @@ export const Lizenzserver = {
 					})
 					.then(result => {
 						this.$emit('onSaved');
-						this.$fhcAlert.alertSuccess('Gespeichert');
+						this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
@@ -77,7 +77,7 @@ export const Lizenzserver = {
 				<core-form-input
 					v-model="lizenzserver.lizenzserver_kurzbz"
 					name="lizenzserver_kurzbz"
-					label="Kurzbezeichnung *"
+					:label="$p.t('global/lizenzserverKurzbz')"
 					:disabled="lizenzserver_kurzbz !== null"
 				>
 				</core-form-input>
@@ -86,7 +86,7 @@ export const Lizenzserver = {
 				<core-form-input
 					v-model="lizenzserver.bezeichnung"
 					name="bezeichnung"
-					label="Bezeichnung"
+					:label="$p.t('global/bezeichnung')"
 				>
 				</core-form-input>
 			</div>
@@ -118,7 +118,7 @@ export const Lizenzserver = {
 				<core-form-input
 					v-model="lizenzserver.ansprechpartner"
 					name="ansprechpartner"
-					label="Ansprechpartner"
+					:label="$p.t('global/ansprechpartner')"
 				>
 				</core-form-input>
 			</div>
@@ -127,7 +127,7 @@ export const Lizenzserver = {
 					type="textarea"
 					v-model="lizenzserver.anmerkung"
 					name="anmerkung"
-					label="Anmerkung"
+					:label="$p.t('global/anmerkung')"
 					rows="5"
 				>
 				</core-form-input>

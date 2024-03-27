@@ -12,15 +12,15 @@ export default {
 				index: 'software_id',
 				layout: 'fitColumns',
 				columns: [
-					{title: 'Ort', field: 'ort_kurzbz', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true, frozen: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
 					{title: 'Software-ID', field: 'software_id', headerFilter: true, visible: false},
-					{title: 'Softwaretyp', field: 'softwaretyp_bezeichnung', headerFilter: true},
+					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_bezeichnung', headerFilter: true},
 					{title: 'Image', field: 'image_bezeichnung', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
-					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
-					{title: 'Betriebssystem', field: 'os', headerFilter: true},
-					{title: 'Softwarestatus Bezeichnung', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150}
+					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
+					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
+					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150}
 				]
 			},
 			selOrt: null,

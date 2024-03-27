@@ -18,6 +18,7 @@
 import {SoftwareManagement} from '../components/SoftwareManagement/SoftwareManagement.js';
 import FhcAlert from '../../../../js/plugin/FhcAlert.js';
 import FhcApi from "../../../../js/plugin/FhcApi.js";
+import Phrasen from "../../../../js/plugin/Phrasen.js";
 
 const softwareManagementApp = Vue.createApp({
 	components: {
@@ -29,4 +30,5 @@ softwareManagementApp
 	.use(primevue.config.default,{zIndex: {overlay: 9999}})
 	.use(FhcAlert)
 	.use(FhcApi)
+	.use(Phrasen)
 	.mount('#main')

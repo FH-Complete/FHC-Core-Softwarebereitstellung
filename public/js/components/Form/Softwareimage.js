@@ -66,7 +66,7 @@ export const Softwareimage = {
 						softwareimage: this.softwareimage}
 					)
 					.then(result => {
-						this.$fhcAlert.alertSuccess('Gespeichert!');
+						this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
 						this.$emit('onSaved');
 					})
 					.catch(this.$fhcAlert.handleSystemError);
@@ -86,7 +86,7 @@ export const Softwareimage = {
 				<core-form-input
 					v-model="softwareimage.bezeichnung"
 					name="bezeichnung"
-					label="Bezeichnung *"
+					:label="$p.t('global/bezeichnung')"
 				>
 				</core-form-input>
 			</div>
@@ -94,7 +94,7 @@ export const Softwareimage = {
 			<core-form-input
 					v-model="softwareimage.betriebssystem"
 					name="betriebssystem"
-					label="Betriebssystem"
+					:label="$p.t('global/betriebssystem')"
 				>
 				</core-form-input>
 			</div>
@@ -103,7 +103,7 @@ export const Softwareimage = {
 					type="datepicker"
 					v-model="softwareimage.verfuegbarkeit_start"
 					name="verfuegbarkeit_start"
-					label="Verfügbarkeit Start"
+					:label="$p.t('global/verfuegbarkeitStart')"
 					locale="de"
 					format="dd.MM.yyyy"
 					model-type="yyyy-MM-dd"
@@ -119,7 +119,7 @@ export const Softwareimage = {
 					type="datepicker"
 					v-model="softwareimage.verfuegbarkeit_ende"
 					name="verfuegbarkeit_ende"
-					label="Verfügbarkeit Ende"
+					:label="$p.t('global/verfuegbarkeitEnde')"
 					locale="de"
 					format="dd.MM.yyyy"
 					model-type="yyyy-MM-dd"
@@ -135,7 +135,7 @@ export const Softwareimage = {
 					type="textarea"
 					v-model="softwareimage.anmerkung"
 					name="anmerkung"
-					label="Anmerkung"
+					:label="$p.t('global/anmerkung')"
 					rows="5"
 				>
 				</core-form-input>

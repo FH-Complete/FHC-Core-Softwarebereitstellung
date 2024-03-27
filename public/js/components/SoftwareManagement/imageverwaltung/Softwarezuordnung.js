@@ -16,7 +16,7 @@ export const Softwarezuordnung = {
 				index: 'software_id',
 				columns: [
 					{title: 'Software-ID', field: 'software_id', visible: false, headerFilter: true, frozen: true},
-					{title: 'Softwaretyp', field: 'softwaretyp_kurzbz', headerFilter: true},
+					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_kurzbz', headerFilter: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true},
 					{title: 'Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
@@ -47,7 +47,7 @@ export const Softwarezuordnung = {
 	template: `
 	<div class="softwarezuordnung">
 		<div class="card">
-			<h3 class="h5 card-header">Softwarezuordnung<span class="fhc-subtitle">Zuordnung über Software</span></h3>
+			<h3 class="h5 card-header">{{ $p.t('global/softwareZuordnung')}}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberSoftware')}}</span></h3>
 			<div class="card-body">
 				<core-filter-cmpt
 					ref="zuordnungTable"

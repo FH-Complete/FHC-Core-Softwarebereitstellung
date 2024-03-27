@@ -29,26 +29,26 @@ export default {
 					},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
 					{
-						title: 'Softwaretyp',
+						title: this.$p.t('global/softwaretyp'),
 						field: 'softwaretyp_bezeichnung',
 						headerFilter: true,
 						formatter: (cell) => {
 							return cell.getValue()[this.languageIndex - 1];
 						}
 					},
-					{title: 'Softwaretyp Kurzbezeichnung', field: 'softwaretyp_kurzbz', headerFilter: true},
+					{title: this.$p.t('global/softwaretypKurzbz'), field: 'softwaretyp_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
-					{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
-					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
-					{title: 'Betriebssystem', field: 'os', headerFilter: true},
-					{title: 'Verantwortliche', field: 'verantwortliche', headerFilter: true},
-					{title: 'Lizenz-Art', field: 'lizenzart', headerFilter: true},
-					{title: 'Lizenz-Server', field: 'lizenzserver_kurzbz', headerFilter: true},
-					{title: 'Lizenz-Anzahl', field: 'anzahl_lizenzen', headerFilter: true},
-					{title: 'Lizenz-Laufzeit', field: 'lizenzlaufzeit', headerFilter: true},
-					{title: 'Lizenz-Kosten', field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
+					{title: this.$p.t('global/beschreibung'), field: 'beschreibung', headerFilter: true},
+					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
+					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
+					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true},
+					{title: this.$p.t('global/lizenzArt'), field: 'lizenzart', headerFilter: true},
+					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
+					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true},
+					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
+					{title: this.$p.t('global/lizenzKosten'), field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
 					{
-						title: 'Status',
+						title: 'Software-Status',
 						field: 'softwarestatus_kurzbz',
 						editor: "list",
 						editorParams:{values:[]},
@@ -59,23 +59,23 @@ export default {
 						}
 					},
 					{
-						title: 'Softwarestatus Bezeichnung',
+						title: 'Software-Status',
 						field: 'softwarestatus_bezeichnung',
 						headerFilter: true,
 						formatter: (cell) => {
 							return cell.getValue()[this.languageIndex - 1];
 						}
 					},
-					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
+					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
-					{title: 'Übergeordnete Software', field: 'software_kurzbz_parent', headerFilter: true},
-					{title: 'Erstellt am', field: 'insertamum', hozAlign:"center", headerFilter: true},
-					{title: 'Erstellt von', field: 'insertvon', headerFilter: true},
-					{title: 'Geändert am', field: 'updateamum', hozAlign:"center", headerFilter: true},
-					{title: 'Geändert von', field: 'updatevon', headerFilter: true},
+					{title: this.$p.t('global/uebergeordneteSoftware'), field: 'software_kurzbz_parent', headerFilter: true},
+					{title: this.$p.t('global/insertamum'), field: 'insertamum', hozAlign:"center", headerFilter: true},
+					{title: this.$p.t('global/insertvon'), field: 'insertvon', headerFilter: true},
+					{title: this.$p.t('global/updateamum'), field: 'updateamum', hozAlign:"center", headerFilter: true},
+					{title: this.$p.t('global/updatevon'), field: 'updatevon', headerFilter: true},
 					{
-						title: 'Aktionen',
+						title: this.$p.t('global/aktionen'),
 						field: 'actions',
 						width: 105,
 						minWidth: 105,
@@ -238,7 +238,7 @@ export default {
 
 				if (selectedData.length == 0)
 				{
-					this.$fhcAlert.handleSystemMessage( 'Bitte erst Zeilen auswählen');
+					this.$fhcAlert.handleSystemMessage( this.$p.t('core/zeilenAuswaehlen'));
 					return;
 				}
 
@@ -277,7 +277,7 @@ export default {
 					}
 					else
 					{
-						this.$fhcAlert.alertSuccess('Gelöscht!');
+						this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
 						this.$refs.softwareTable.reloadTable();
 					}
 				}
@@ -285,7 +285,6 @@ export default {
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
-
 		promoteChildren(children, resultArr) {
 			for (let child of children) {
 				// add child to result array
@@ -318,6 +317,11 @@ export default {
 				filter-type="SoftwareManagement"
 				uniqueId="softwareTable"
 				:tabulator-options="softwareTabulatorOptions"
+				:tabulator-events="[
+					{event: 'cellEdited', handler: onTableCellEdited},
+					{event: 'rowClick', handler: onTableRowClick},
+					{event: 'dataLoaded', handler: onTableDataLoaded}
+				]"
 				:side-menu="false"
 				new-btn-label="Software"
 				new-btn-show
@@ -336,19 +340,8 @@ export default {
 				 </template>
 			</core-filter-cmpt>
 			<!-- Software Details -->
-			<div class="row mt-3">				
-				<h2 ref="softwareDetail" class="h4 mb-3">Software-Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
-				<div class="col-md-6">
-					<raumzuordnung ref="raumzuordnung"></raumzuordnung>
-				</div>
-			</div>
-			<!-- Software modal component -->
-			<software-modal
-				class="fade"
-				ref="modalForSave"
-				dialog-class="modal-xl"
-				@software-saved="handleSoftwareSaved">
-			</software-modal>
+			
+			
 		</div>
 	</div>
 `
