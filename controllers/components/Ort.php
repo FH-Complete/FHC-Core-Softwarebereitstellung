@@ -28,6 +28,11 @@ class Ort extends Auth_Controller
 		$this->load->model('ressource/Ort_model', 'OrtModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareimageOrt_model', 'SoftwareimageOrtModel');
 
+		// Load language phrases
+		$this->loadPhrases([
+			'ui'
+		]);
+
 		$this->_setAuthUID(); // sets property uid
 	}
 
@@ -45,7 +50,7 @@ class Ort extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Orte: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -58,7 +63,7 @@ class Ort extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Orte: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -75,7 +80,7 @@ class Ort extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen des zugeordnenten Ortes');
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
@@ -88,7 +93,7 @@ class Ort extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		if (!isset($data['softwareimageort_id'])) return $this->outputJsonError('Imageort fehlt');
+		if (!isset($data['softwareimageort_id'])) return $this->outputJsonError($this->p->t('ui', 'errorFelderFehlen'));
 
 		// Delete softwareimageort
 		return $this->outputJson($this->SoftwareimageOrtModel->delete(array(
@@ -106,7 +111,7 @@ class Ort extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Orte: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -123,7 +128,7 @@ class Ort extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der zugeordneten Orte');
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);

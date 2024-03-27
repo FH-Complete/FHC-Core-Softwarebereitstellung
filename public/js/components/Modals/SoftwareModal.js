@@ -32,7 +32,7 @@ export default {
 		},
 		openSoftwareModal(software_id) {
 			// Prefill form with Softwaredata
-			this.title = software_id ? this.$p.t('global/SoftwareBearbeiten') : this.$p.t('global/SoftwareAnlegen');
+			this.title = software_id ? this.$p.t('global/softwareBearbeiten') : this.$p.t('global/softwareAnlegen');
 			this.$refs.softwareFormCmpt.prefillSoftware(software_id);
 			this.$refs.modalContainer.show();
 		}

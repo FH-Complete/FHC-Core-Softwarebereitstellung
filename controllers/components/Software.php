@@ -39,15 +39,6 @@ class Software extends Auth_Controller
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwaretyp_model', 'SoftwaretypModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
-
-		// Loads phrases system
-		//~ $this->loadPhrases(
-			//~ array(
-				//~ 'global',
-				//~ 'ui',
-				//~ 'filter'
-			//~ )
-		//~ );
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -63,7 +54,7 @@ class Software extends Auth_Controller
 		$language_index = $this->_getLanguageIndex();
 		$softwaretypRes = $this->SoftwaretypModel->getBezeichnungByLanguageIndex($language_index);
 
-		if (isError($softwaretypRes)) $this->terminateWithJsonError('Fehler beim Holen der Softwaretypen: '.getError($result));
+		if (isError($softwaretypRes)) $this->terminateWithJsonError(getError($softwaretypRes));
 
 		$softwaretypes = array();
 
@@ -82,7 +73,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Softwarestatus: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		if (hasData($result))
@@ -114,7 +105,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Software');
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		if (hasData($result))
@@ -130,7 +121,7 @@ class Software extends Auth_Controller
 
 				if (isError($result))
 				{
-					$this->terminateWithJsonError('Fehler beim Holen der parent Software');
+					$this->terminateWithJsonError(getError($result));
 				}
 				if (hasData($parentResult)) $extendedSoftware['software_parent'] = getData($parentResult)[0];
 			}
@@ -154,7 +145,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Software: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -172,7 +163,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der zugeordneten Software: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -190,7 +181,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Suchen der Software: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -210,7 +201,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Software: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -226,7 +217,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Softwarestatus: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -253,7 +244,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen des Softwarestatus: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
@@ -270,7 +261,7 @@ class Software extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Ändern des Softwarestatus: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -299,9 +290,6 @@ class Software extends Auth_Controller
 						return $this->_checkSoftwareDependencies($software_id);
 					}
 				)
-			),
-			array(
-				'required' => 'Software fehlt'
 			)
 		);
 

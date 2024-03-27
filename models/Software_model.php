@@ -62,7 +62,7 @@ class Software_model extends DB_Model
 		if ($this->db->trans_status() === false)
 		{
 			$this->db->trans_rollback();
-			return error('Fehler beim Hinzufügen der Software', EXIT_ERROR);
+			return error($this->db->error(), EXIT_DATABASE);
 		}
 
 		return success($lastInsert_id);
@@ -139,7 +139,7 @@ class Software_model extends DB_Model
 		if ($this->db->trans_status() === false)
 		{
 			$this->db->trans_rollback();
-			return error('Fehler beim Update der Software', EXIT_ERROR);
+			return error($this->db->error(), EXIT_DATABASE);
 		}
 
 		return success();
@@ -277,7 +277,7 @@ class Software_model extends DB_Model
 		$this->addJoin('extension.tbl_softwaretyp swt', 'softwaretyp_kurzbz');
 
 		return $this->loadWhere(
-			'lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE' // TODO (cris) bestimmte stati eingrenzen oder ausnehmen?
+			'lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE'
 		);
 	}
 

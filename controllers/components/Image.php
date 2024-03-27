@@ -25,6 +25,11 @@ class Image extends Auth_Controller
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwareimage_model', 'SoftwareimageModel');
 
+		// Load language phrases
+		$this->loadPhrases([
+				'ui'
+		]);
+
 		$this->_setAuthUID(); // sets property uid
 	}
 
@@ -42,7 +47,7 @@ class Image extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen des Softwareimages');
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
@@ -55,7 +60,7 @@ class Image extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		if (!isset($data['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage fehlt');
+		if (!isset($data['softwareimage_id'])) $this->terminateWithJsonError($this->p->t('ui', 'errorFelderFehlen'));
 
 		// Exit if Image has zugeordnete Software
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareimageSoftware_model', 'SoftwareimageSoftwareModel');
@@ -64,7 +69,7 @@ class Image extends Auth_Controller
 
 		if (hasData($result))
 		{
-			$this->terminateWithJsonError('Löschen nicht möglich, da bereits Software zugordnet wurde.');
+			$this->terminateWithJsonError($this->p->t('global', 'loeschenNichtMoeglichSoftwareBereitsZugeordnet'));
 		}
 
 
@@ -88,7 +93,7 @@ class Image extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Images: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -108,7 +113,7 @@ class Image extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Images: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);

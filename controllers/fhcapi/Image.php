@@ -24,6 +24,11 @@ class Image extends FHCAPI_Controller
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwareimage_model', 'SoftwareimageModel');
 
+		// Load language phrases
+		$this->loadPhrases([
+			'ui'
+		]);
+
 		$this->_setAuthUID(); // sets property uid
 	}
 
@@ -82,7 +87,7 @@ class Image extends FHCAPI_Controller
 	public function copyImageAndOrte()
 	{
 		if (!isset($this->input->post('softwareimage')['softwareimage_id']))
-			$this->terminateWithError('SoftwareimageId fehlt');
+			$this->terminateWithError($this->p->t('ui', 'errorFelderFehlen'));
 
 		// Validate data
 		$this->_validate();
@@ -150,8 +155,7 @@ class Image extends FHCAPI_Controller
 				)
 			),
 			array(
-				'required' => 'Pflichtfeld',
-				'imageVerwendet' => 'Existiert bereits'
+				'imageVerwendet' => $this->p->t('ui', 'existiertBereits')
 			)
 		);
 		$this->form_validation->set_rules(
@@ -166,7 +170,7 @@ class Image extends FHCAPI_Controller
 					}
 				)
 			),
-			array('imageVerfuegbarkeit' => 'Datumende vor Datumstart')
+			array('imageVerfuegbarkeit' => $this->p->t('ui', 'datumEndeVorDatumStart'))
 		);
 
 		// On error

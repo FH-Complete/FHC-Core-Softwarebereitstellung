@@ -21,6 +21,11 @@ class Ort extends FHCAPI_Controller
 		$this->load->model('ressource/Ort_model', 'OrtModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareimageOrt_model', 'SoftwareimageOrtModel');
 
+		// Load language phrases
+		$this->loadPhrases([
+			'ui'
+		]);
+
 		$this->_setAuthUID(); // sets property uid
 	}
 
@@ -128,8 +133,7 @@ class Ort extends FHCAPI_Controller
 		$this->form_validation->set_rules(
 			$ortFieldname,
 			'Orte',
-			'required',
-			array('required' => 'Pflichtfeld')
+			'required'
 		);
 		$this->form_validation->set_rules(
 			'verfuegbarkeit_ende',
@@ -143,7 +147,7 @@ class Ort extends FHCAPI_Controller
 					}
 				)
 			),
-			array('orteVerfuegbarkeit' => 'Datumende vor Datumstart')
+			array('orteVerfuegbarkeit' => $this->p->t('ui', 'datumEndeVorDatumStart'))
 		);
 
 		// On error

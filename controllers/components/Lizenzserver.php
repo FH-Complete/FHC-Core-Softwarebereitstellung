@@ -24,6 +24,11 @@ class Lizenzserver extends Auth_Controller
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarelizenzserver_model', 'SoftwarelizenzserverModel');
 
+		// Load language phrases
+		$this->loadPhrases([
+			'ui'
+		]);
+
 		$this->_setAuthUID(); // sets property uid
 	}
 
@@ -41,7 +46,7 @@ class Lizenzserver extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen des Lizenzservers');
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
@@ -54,7 +59,7 @@ class Lizenzserver extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		if (!isset($data['lizenzserver_kurzbz'])) $this->terminateWithJsonError('Lizenzserver fehlt');
+		if (!isset($data['lizenzserver_kurzbz'])) $this->terminateWithJsonError($this->p->t('ui', 'errorFelderFehlen'));
 
 		// Delete Softwarelizenzserver
 		$result = $this->SoftwarelizenzserverModel->delete(
@@ -78,7 +83,7 @@ class Lizenzserver extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Lizenzserver: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);

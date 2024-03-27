@@ -26,6 +26,11 @@ class Software extends FHCAPI_Controller
 		// load models
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
 
+		// Load language phrases
+		$this->loadPhrases([
+			'ui'
+		]);
+
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -107,8 +112,7 @@ class Software extends FHCAPI_Controller
 				)
 			),
 			array(
-				'required' => 'Pflichtfeld',
-				'software_exists' => 'Existiert bereits in Kombination mit der Version'
+				'software_exists' => $this->p->t('ui', 'existiertBereitsInKombinationMitDerVersion')
 			)
 		);
 		$this->form_validation->set_rules(
@@ -123,7 +127,7 @@ class Software extends FHCAPI_Controller
 					}
 				)
 			),
-			array('cyclic_dependency' => 'Software kann einer anderen Software nicht gleichzeitig untergeordnet und übergeordnet sein')
+			array('cyclic_dependency' => $this->p->t('ui', 'nichtGleichzeitigUntergeordnetUndUebergeordnet'))
 		);
 		$this->form_validation->set_rules('lizenzkosten', 'Lizenzkosten', 'decimal');
 
