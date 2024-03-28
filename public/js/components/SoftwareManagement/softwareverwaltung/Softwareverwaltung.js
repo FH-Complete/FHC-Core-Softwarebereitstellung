@@ -182,7 +182,7 @@ export default {
 
 				if (selectedData.length == 0)
 				{
-					this.$fhcAlert.handleSystemMessage( this.$p.t('core/zeilenAuswaehlen'));
+					this.$fhcAlert.alertWarning( this.$p.t('global/zeilenAuswaehlen'));
 					return;
 				}
 
@@ -198,7 +198,9 @@ export default {
 					}
 				)
 				.then(result => result.data)
-				.then(result => {this.$refs.softwareTable.reloadTable(); }) // TODO use row update instead of reloadTable after solving datatree issues
+				.then(result => {
+					this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+					this.$refs.softwareTable.reloadTable(); }) // TODO use row update instead of reloadTable after solving datatree issues
 				.catch( error => { this.$fhcAlert.handleSystemError(error); });
 		},
 		editSoftware(event, software_id){

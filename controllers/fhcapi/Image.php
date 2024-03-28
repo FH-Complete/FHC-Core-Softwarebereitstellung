@@ -60,7 +60,7 @@ class Image extends FHCAPI_Controller
 	public function updateImage()
 	{
 		if (!isset($this->input->post('softwareimage')['softwareimage_id']))
-			$this->terminateWithError('SoftwareimageId fehlt');
+			$this->terminateWithError($this->p->t('ui', 'errorFelderFehlen'));
 
 		// Validate data
 		$this->_validate($this->input->post('softwareimage')['softwareimage_id']);

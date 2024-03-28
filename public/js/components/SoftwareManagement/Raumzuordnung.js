@@ -135,7 +135,7 @@ export const Raumzuordnung = {
 
 			if (selectedData.length == 0)
 			{
-				this.$fhcAlert.handleSystemMessage(this.$p.t('core/zeilenAuswaehlen'));
+				this.$fhcAlert.handleSystemMessage(this.$p.t('global/zeilenAuswaehlen'));
 				return;
 			}
 
