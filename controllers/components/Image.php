@@ -27,7 +27,8 @@ class Image extends Auth_Controller
 
 		// Load language phrases
 		$this->loadPhrases([
-				'ui'
+				'ui',
+				'global'
 		]);
 
 		$this->_setAuthUID(); // sets property uid

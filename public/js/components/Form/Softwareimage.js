@@ -51,7 +51,6 @@ export const Softwareimage = {
 			}
 		},
 		save(){
-
 			// Decide if copy, create or update image
 			if (this.copy === true) {
 				var method = 'copyImageAndOrte';
@@ -66,7 +65,19 @@ export const Softwareimage = {
 						softwareimage: this.softwareimage}
 					)
 					.then(result => {
-						this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+						if (method == 'copyImageAndOrte')
+						{
+							this.$fhcAlert.alertDefault(
+								'success',
+								this.$p.t('global/gespeichert'),
+								this.$p.t('global/imageverwaltungImageCopySuccessText'),
+								true
+							);
+						}
+						else
+						{
+							this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+						}
 						this.$emit('onSaved');
 					})
 					.catch(this.$fhcAlert.handleSystemError);
