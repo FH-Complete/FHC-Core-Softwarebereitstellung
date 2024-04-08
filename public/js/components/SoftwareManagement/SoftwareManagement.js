@@ -16,51 +16,33 @@
  */
 
 import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
-import {BaseLayout} from "../Layout/BaseLayout.js";
-import {NavTabs} from "./NavTabs.js";
-import {Notification} from "./sidebar/Notification.js";
+import CoreBaseLayout from "../../../../../js/components/layout/BaseLayout.js";
+import CoreTabs from "../../../../../js/components/Tabs.js";
 
 export const SoftwareManagement = {
 	components: {
 		CoreNavigationCmpt,
-		BaseLayout,
-		Notification,
-		NavTabs
+		CoreBaseLayout,
+		CoreTabs
 	},
-	data: function() {
+	data() {
 		return {
-			headerMenuEntries: {},
-			sideMenuEntries: {},
-			appTitle: "Softwarebereitstellung",
-			appSubtitle: "",
-			mainCols: [10],
-			asideCols: [2],
-		}
-	},
-	methods: {
-		updateSideMenuEntries(payload) {
-			this.sideMenuEntries = payload;
+			tabs: {
+				tab1: { title: Vue.computed(() => this.$p.t('global/softwareverwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwareverwaltung/Softwareverwaltung.js' },
+				tab2: { title: Vue.computed(() => this.$p.t('global/imageverwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/imageverwaltung/Imageverwaltung.js' },
+				tab3: { title: Vue.computed(() => this.$p.t('global/lizenzserververwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/lizenzserververwaltung/Lizenzserververwaltung.js' },
+				tab4: { title: Vue.computed(() => this.$p.t('global/sucheNachRaum')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js' }
+			}
 		}
 	},
 	template: `
 	<!-- Navigation component -->
-	<core-navigation-cmpt 
-		v-bind:add-side-menu-entries="sideMenuEntries"
-		v-bind:add-header-menu-entries="headerMenuEntries">	
-	</core-navigation-cmpt>
+	<core-navigation-cmpt></core-navigation-cmpt>
 	
-	<base-layout
-		:coreNav="true" 
-		:title="appTitle"
-		:subtitle="appSubtitle"
-		:mainCols="mainCols"
-		:asideCols="asideCols">
-		<template v-slot:main>
-			<nav-tabs @new-filter-entry="updateSideMenuEntries"></nav-tabs>									
+	<core-base-layout :title="$p.t('global/softwareUndLizenzManagement')">
+		<template #main>
+			<core-tabs :config="tabs"></core-tabs>									
 		</template>
-      	<template v-slot:aside>
-      		<notification></notification>	
-		</template>
-	</base-layout>
+	</core-base-layout>
 	`
 };

@@ -32,7 +32,7 @@ export default {
 		},
 		openSoftwareModal(software_id) {
 			// Prefill form with Softwaredata
-			this.title = software_id ? 'Software bearbeiten' : 'Software anlegen';
+			this.title = software_id ? this.$p.t('global/softwareBearbeiten') : this.$p.t('global/softwareAnlegen');
 			this.$refs.softwareFormCmpt.prefillSoftware(software_id);
 			this.$refs.modalContainer.show();
 		}
@@ -44,7 +44,7 @@ export default {
 				<software-form ref="softwareFormCmpt" @software-form-saved="handleSoftwareFormSaved"></software-form>
 			</template>
 			<template v-slot:footer>
-				<button type="button" class="btn btn-primary" @click="onBsModalSave">Speichern</button>
+				<button type="button" class="btn btn-primary" @click="onBsModalSave">{{ $p.t('global/speichern') }}</button>
 			</template>
 		</bs-modal>
 	`

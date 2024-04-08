@@ -4,7 +4,7 @@ import SoftwareModal from "../../Modals/SoftwareModal.js";
 import {Actions} from "./Actions.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
 
-export const Softwareverwaltung = {
+export default {
 	componentName: 'Softwareverwaltung',
 	components: {
 		CoreFilterCmpt,
@@ -12,52 +12,43 @@ export const Softwareverwaltung = {
 		Actions,
 		Raumzuordnung
 	},
-	emits: [
-		'filterMenuUpdated'
-	],
 	data: function() {
 		return {
 			softwareTabulatorOptions: { // tabulator options which can be modified after first render
 				index: 'software_id',
-				maxHeight: "100%",
-				minHeight: 50,
 				layout: 'fitColumns',
-				columnDefaults:{
-					tooltip:true,
-				},
 				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 				columns: [
 					{
-						field: 'software_kurzbz',
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
+						titleFormatterParams: { rowRange: "active"},
 						width: 50,
-						headerSort: false,
 						frozen: true
 					},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
 					{
-						title: 'Softwaretyp',
+						title: this.$p.t('global/softwaretyp'),
 						field: 'softwaretyp_bezeichnung',
 						headerFilter: true,
 						formatter: (cell) => {
 							return cell.getValue()[this.languageIndex - 1];
 						}
 					},
-					{title: 'Softwaretyp Kurzbezeichnung', field: 'softwaretyp_kurzbz', headerFilter: true},
+					{title: this.$p.t('global/softwaretypKurzbz'), field: 'softwaretyp_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
-					{title: 'Beschreibung', field: 'beschreibung', headerFilter: true},
-					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
-					{title: 'Betriebssystem', field: 'os', headerFilter: true},
-					{title: 'Verantwortliche', field: 'verantwortliche', headerFilter: true},
-					{title: 'Lizenz-Art', field: 'lizenzart', headerFilter: true},
-					{title: 'Lizenz-Server', field: 'lizenzserver_kurzbz', headerFilter: true},
-					{title: 'Lizenz-Anzahl', field: 'anzahl_lizenzen', headerFilter: true},
-					{title: 'Lizenz-Laufzeit', field: 'lizenzlaufzeit', headerFilter: true},
-					{title: 'Lizenz-Kosten', field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
+					{title: this.$p.t('global/beschreibung'), field: 'beschreibung', headerFilter: true},
+					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
+					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
+					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true},
+					{title: this.$p.t('global/lizenzArt'), field: 'lizenzart', headerFilter: true},
+					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
+					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true},
+					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
+					{title: this.$p.t('global/lizenzKosten'), field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
 					{
-						title: 'Status',
+						title: 'Software-Status',
 						field: 'softwarestatus_kurzbz',
 						editor: "list",
 						editorParams:{values:[]},
@@ -68,20 +59,27 @@ export const Softwareverwaltung = {
 						}
 					},
 					{
-						title: 'Softwarestatus Bezeichnung',
+						title: 'Software-Status',
 						field: 'softwarestatus_bezeichnung',
 						headerFilter: true,
 						formatter: (cell) => {
 							return cell.getValue()[this.languageIndex - 1];
 						}
 					},
-					{title: 'Anmerkung intern', field: 'anmerkung_intern', headerFilter: true},
+					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
-					{title: 'Übergeordnete Software', field: 'software_kurzbz_parent', headerFilter: true},
+					{title: this.$p.t('global/uebergeordneteSoftware'), field: 'software_kurzbz_parent', headerFilter: true},
+					{title: this.$p.t('global/insertamum'), field: 'insertamum', hozAlign:"center", headerFilter: true},
+					{title: this.$p.t('global/insertvon'), field: 'insertvon', headerFilter: true},
+					{title: this.$p.t('global/updateamum'), field: 'updateamum', hozAlign:"center", headerFilter: true},
+					{title: this.$p.t('global/updatevon'), field: 'updatevon', headerFilter: true},
 					{
-						title: 'Aktionen',
+						title: this.$p.t('global/aktionen'),
 						field: 'actions',
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
@@ -99,7 +97,8 @@ export const Softwareverwaltung = {
 							container.append(button);
 
 							return container;
-						}
+						},
+						frozen: true
 					}
 				]
 			},
@@ -111,93 +110,24 @@ export const Softwareverwaltung = {
 		}
 	},
 	beforeCreate() {
-		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus',
-			null,
-			{
-				timeout: 2000
-			}
-		).then(
-			result => {
-				this.softwarestatus = CoreRESTClient.getData(result.data);
+		CoreRESTClient
+			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus', null)
+			.then(result => result.data)
+			.then(result => {
+				this.softwarestatus = CoreRESTClient.getData(result);
 
 				// Populate Status column with editable Softwarestatus list.
 				// NOTE: tabulator bugfixed transparent list in 5.2.3 release. (release notes)
 				this.populateTabulatorColumnStatus(this.softwarestatus);
 				this.reloadTabulator();
-			}
-		).catch(
-			error => { this.$fhcAlert.handleSystemError(error); }
-		);
-		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex',
-			null,
-			{
-				timeout: 2000
-			}
-		).then(
-			result => {
-				this.languageIndex = CoreRESTClient.getData(result.data);
-			}
-		).catch(
-			error => { this.$fhcAlert.handleSystemError(error); }
-		);
-	},
-	mounted(){
-		// set tabulator events
+			})
+			.catch(error => { this.$fhcAlert.handleSystemError(error); });
 
-		// in-table status edit event
-		this.$refs.softwareTable.tabulator.on("cellEdited", (cell) => {
-			this.changeStatus(cell.getValue(), cell.getRow().getIndex());
-		});
-
-		// row click event (showing software details)
-		this.$refs.softwareTable.tabulator.on("rowClick", (e, row) => {
-
-			// exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
-			// save currently clicked row
-			this.selectedTabulatorRow = row;
-
-			// get row data
-			this.getSoftwareRowDetails();
-
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.softwareDetail.offsetTop);
-		});
-
-		this.$refs.softwareTable.tabulator.on("dataLoaded", data => {
-			// no promoting of children if hierarchy shown
-			if (this.showHierarchy == false)
-			{
-				let allChildrenArr = [];
-
-				// loop through all data
-				for (let child of data)
-				{
-					// if it has children
-					if (child._children)
-					{
-						// promote children, i.e. put them on 0 level
-						this.promoteChildren(child._children, data);
-
-						// remove children from lower level
-						delete child._children;
-					}
-				}
-				// Resort data
-				data.sort((a, b) => {
-					let sort = a.software_kurzbz.localeCompare(b.software_kurzbz);
-
-					if (sort == 0) sort = b.version - a.version;
-					if (sort == 0) sort = b.software_id - a.software_id;
-
-					return sort;
-				});
-			}
-
-		});
+		CoreRESTClient
+			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex', null)
+			.then(result => result.data)
+			.then(result => { this.languageIndex = CoreRESTClient.getData(result);})
+			.catch( error => { this.$fhcAlert.handleSystemError(error); } );
 	},
 	methods: {
 		handleHierarchyViewChange(showHierarchy) {
@@ -252,29 +182,26 @@ export const Softwareverwaltung = {
 
 				if (selectedData.length == 0)
 				{
-					this.$fhcAlert.handleSystemMessage( 'Bitte erst Zeilen auswählen');
+					this.$fhcAlert.alertWarning( this.$p.t('global/zeilenAuswaehlen'));
 					return;
 				}
 
 				software_ids = selectedData.map(data => data.software_id);
 			}
 
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/changeSoftwarestatus',
-				{
-					software_ids: software_ids,
-					softwarestatus_kurzbz: softwarestatus_kurzbz
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					this.$refs.softwareTable.reloadTable(); // TODO use row update instead of reloadTable after solving datatree issues
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			CoreRESTClient
+				.post(
+					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/changeSoftwarestatus',
+					{
+						software_ids: software_ids,
+						softwarestatus_kurzbz: softwarestatus_kurzbz
+					}
+				)
+				.then(result => result.data)
+				.then(result => {
+					this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+					this.$refs.softwareTable.reloadTable(); }) // TODO use row update instead of reloadTable after solving datatree issues
+				.catch( error => { this.$fhcAlert.handleSystemError(error); });
 		},
 		editSoftware(event, software_id){
 			this.openModal(event, software_id);
@@ -287,19 +214,16 @@ export const Softwareverwaltung = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
 				{
 					software_id: software_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					if (CoreRESTClient.isError(result.data))
+				})
+				.then(result => result.data)
+				.then(result => {
+					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						this.$fhcAlert.handleSystemMessage(result.retval);
 					}
 					else
 					{
-						this.$fhcAlert.alertSuccess('Gelöscht!');
+						this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
 						this.$refs.softwareTable.reloadTable();
 					}
 				}
@@ -307,7 +231,6 @@ export const Softwareverwaltung = {
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
-
 		promoteChildren(children, resultArr) {
 			for (let child of children) {
 				// add child to result array
@@ -323,50 +246,113 @@ export const Softwareverwaltung = {
 			}
 		},
 		reloadTabulator() {
-			for (let option in this.softwareTabulatorOptions)
+			if (this.$refs.softwareTable.tabulator !== null && this.$refs.softwareTable.tabulator !== undefined)
 			{
-				if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
-					this.$refs.softwareTable.tabulator.options[option] = this.softwareTabulatorOptions[option];
+				for (let option in this.softwareTabulatorOptions)
+				{
+					if (this.$refs.softwareTable.tabulator.options.hasOwnProperty(option))
+						this.$refs.softwareTable.tabulator.options[option] = this.softwareTabulatorOptions[option];
+				}
+				this.$refs.softwareTable.reloadTable();
 			}
-			this.$refs.softwareTable.reloadTable();
 		},
-		emitNewFilterEntry: function(payload) {
-			this.$emit('newFilterEntry', payload);
+		onTableCellEdited(cell){
+			this.changeStatus(cell.getValue(), cell.getRow().getIndex());
+		},
+		onTableRowClick(e, row){
+			// exclude other clicked elements like buttons, icons...
+			if (e.target.nodeName != 'DIV') return;
+
+			// save currently clicked row
+			this.selectedTabulatorRow = row;
+
+			// get row data
+			this.getSoftwareRowDetails();
+
+			// Scroll to Detail
+			//window.scrollTo(0, this.$refs.raumzuordnung.offsetTop); TODO
+		},
+		onTableDataLoaded(data){
+			// no promoting of children if hierarchy shown
+			if (this.showHierarchy == false)
+			{
+				let allChildrenArr = [];
+
+				// loop through all data
+				for (let child of data)
+				{
+					// if it has children
+					if (child._children)
+					{
+						// promote children, i.e. put them on 0 level
+						this.promoteChildren(child._children, data);
+
+						// remove children from lower level
+						delete child._children;
+					}
+				}
+				// Resort data
+				data.sort((a, b) => {
+					let sort = a.software_kurzbz.localeCompare(b.software_kurzbz);
+
+					if (sort == 0) sort = b.version - a.version;
+					if (sort == 0) sort = b.software_id - a.software_id;
+
+					return sort;
+				});
+			}
 		}
 	},
 	template: `
-	<!-- Software Verwaltung Tabelle -->
-	<core-filter-cmpt
-		ref="softwareTable"
-		filter-type="SoftwareManagement"
-		:tabulator-options="softwareTabulatorOptions"
-		:new-btn-label="'Software'"
-		:new-btn-show="true"
-		:id-field="'software_id'"
-		:parent-id-field="'software_id_parent'"
-		@click:new="openModal"
-		@nw-new-entry="emitNewFilterEntry">
-		<template v-slot:actions>
-			<actions
-				:softwarestatus="softwarestatus"
-				:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
-				 @set-status="changeStatus"
-				 @hierarchy-view-changed="handleHierarchyViewChange"
-				 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
-			 </actions>
-		 </template>
-	</core-filter-cmpt>
-	<!-- Software Details -->
-	<h2 ref="softwareDetail" class="h4 fhc-hr mt-5">Software-Details <span class="text-uppercase">{{ software_kurzbz }}</span></h2>
-	<div class="row">
-		<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+	<div class="softwareVerwaltung">
+		<!-- Software Verwaltung Table -->
+		<div class="row mb-5">
+			<div class="col">
+				<core-filter-cmpt
+					ref="softwareTable"
+					filter-type="SoftwareManagement"
+					uniqueId="softwareTable"
+					:tabulator-options="softwareTabulatorOptions"
+					:tabulator-events="[
+						{event: 'cellEdited', handler: onTableCellEdited},
+						{event: 'rowClick', handler: onTableRowClick},
+						{event: 'dataLoaded', handler: onTableDataLoaded}
+					]"
+					:side-menu="false"
+					new-btn-label="Software"
+					new-btn-show
+					:id-field="'software_id'"
+					:parent-id-field="'software_id_parent'"
+					:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]"
+					@click:new="openModal">
+					<template v-slot:actions>
+						<actions
+							:softwarestatus="softwarestatus"
+							:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
+							 @set-status="changeStatus"
+							 @hierarchy-view-changed="handleHierarchyViewChange"
+							 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
+						 </actions>
+					 </template>
+				</core-filter-cmpt>
+				<!-- Software Details -->
+				
+				
+			</div>
+		</div>
+		<!-- Software Details -->
+		<div class="row mb-5">				
+			<div class="col-md-6">
+				<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+			</div>
+		</div>
+		<!-- Software modal component -->
+		<software-modal
+				class="fade"
+				ref="modalForSave"
+				dialog-class="modal-xl"
+				@software-saved="handleSoftwareSaved">
+			</software-modal>
 	</div>
-	<!-- Software modal component -->
-	<software-modal
-		class="fade"
-		ref="modalForSave"
-		dialog-class="modal-xl"
-		@software-saved="handleSoftwareSaved">
-	</software-modal>
 `
 };

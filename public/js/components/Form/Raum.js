@@ -1,9 +1,15 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import CoreForm from '../../../../../js/components/Form/Form.js';
+import CoreFormInput from '../../../../../js/components/Form/Input.js';
+import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
 
 export const Raum = {
 	components: {
 		AutoComplete: primevue.autocomplete,
-		"datepicker": VueDatePicker
+		"datepicker": VueDatePicker,
+		CoreForm,
+		CoreFormInput,
+		CoreFormValidation
 	},
 	emits: [
 		 'onSaved'
@@ -68,43 +74,35 @@ export const Raum = {
 			// Decide if add or update Raumzuordnung
 			let method = this.softwareimageorte_id === null ? 'insertImageort' : 'updateImageort';
 
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/' + method,
-				method === 'insertImageort' ?
-				{
-					softwareimage_id: this.softwareimage_id,
-					ort_kurzbz: this.orte.map(ort => ort.ort_kurzbz),
-					verfuegbarkeit_start: this.verfuegbarkeit_start,
-					verfuegbarkeit_ende: this.verfuegbarkeit_ende
-				} :
-				{
-					softwareimageorte_id: this.softwareimageorte_id,
-					verfuegbarkeit_start: this.verfuegbarkeit_start,
-					verfuegbarkeit_ende: this.verfuegbarkeit_ende
-				},
-				{
-					timeout: 60000
-				}
-			).then(
-				result => {
-					if (CoreRESTClient.isError(result.data))
-					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
-					}
-					else
-					{
+			if (this.$refs.raumForm)
+				this.$refs.raumForm
+					.post('/extensions/FHC-Core-Softwarebereitstellung/fhcapi/Ort/' + method,
+						method === 'insertImageort' ?
+						{
+							softwareimage_id: this.softwareimage_id,
+							ort_kurzbz: this.orte.map(ort => ort.ort_kurzbz),
+							verfuegbarkeit_start: this.verfuegbarkeit_start,
+							verfuegbarkeit_ende: this.verfuegbarkeit_ende
+						} :
+						{
+							softwareimageorte_id: this.softwareimageorte_id,
+							verfuegbarkeit_start: this.verfuegbarkeit_start,
+							verfuegbarkeit_ende: this.verfuegbarkeit_ende
+						}
+					)
+					.then(result => {
 						// Store added Räume to update Raumanzahl in Imagetabelle
 						let raumanzahlDifferenz = method === 'insertImageort' ? this.orte.length : 0;
 
-						this.$fhcAlert.alertSuccess('Gespeichert!');
+						this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
 						this.$emit('onSaved', raumanzahlDifferenz);
 					}
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
+				)
+				.catch(error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
 		reset(){
+			this.$refs.raumForm.clearValidation();
 			this.softwareimageorte_id = null;
 			this.orte = [];
 			this.verfuegbarkeit_start = null;
@@ -152,59 +150,70 @@ export const Raum = {
 	},
 	template: `
 	<div>
-		<form ref="raumForm" class="row gy-3">
+		<core-form ref="raumForm" class="row gy-3">
+			<core-form-validation></core-form-validation>
 			<div class="col-sm-6">
-				<label class="form-label">Softwareimage</label>
-				<input type="text" class="form-control" name="softwareimage_bezeichnung" v-model="softwareimage_bezeichnung" readonly>
+				<core-form-input
+					v-model="softwareimage_bezeichnung"
+					name="softwareimage_bezeichnung"
+					label="Softwareimage"
+					readonly
+				>
+				</core-form-input>
+			</div>
+			<div class="col-sm-3">
+				<core-form-input
+					type="datepicker"
+					v-model="verfuegbarkeit_start"
+					name="verfuegbarkeit_start"
+					:label="$p.t('global/verfuegbarkeitStart')"
+					locale="de"
+					format="dd.MM.yyyy"
+					model-type="yyyy-MM-dd"
+					:enable-time-picker="false"
+					:placeholder="'TT.MM.YY'"
+					:text-input="true"
+					:auto-apply="true"
+					>
+				</core-form-input>
+			</div>
+			<div class="col-sm-3">
+				<core-form-input
+					type="datepicker"
+					v-model="verfuegbarkeit_ende"
+					name="verfuegbarkeit_ende"
+					:label="$p.t('global/verfuegbarkeitEnde')"
+					locale="de"
+					format="dd.MM.yyyy"
+					model-type="yyyy-MM-dd"
+					:enable-time-picker="false"
+					:placeholder="'TT.MM.YY'"
+					:text-input="true"
+					:auto-apply="true"
+					>
+				</core-form-input>
 			</div>
 			<div class="col-sm-12">
-				<label class="form-label">Raum *</label>
-				<auto-complete
-					class="w-100"
-					name="ort_kurzbz"
+				<core-form-input
+					type="autocomplete"
 					v-model="orte"
-					optionLabel="ort_kurzbz"
+					name="ort_kurzbz"
+					:label="$p.t('global/raum')"
+					option-label="ort_kurzbz"
 					dropdown
 					dropdown-current
 					forceSelection
 					multiple
 					:disabled="ortSelectionDisabled"
 					:suggestions="ortSuggestions"
-					@complete="onComplete">
+					@complete="onComplete"
+					>
 					<template #header>
-						<button class="w-100 btn btn-secondary" @click="selectAllOrte">Alle wählen</button>
+						<button class="w-100 btn btn-secondary" @click="selectAllOrte">{{ $p.t('global/alleWaehlen') }}</button>
 					</template>
-				</auto-complete>
+				</core-form-input>
 			</div>
-			<div class="col-sm-3">
-				<label class="form-label">Verfügbarkeit Start</label>
-				<datepicker
-					v-model="verfuegbarkeit_start"
-					v-bind:enable-time-picker="false"
-					v-bind:placeholder="'TT.MM.YY'"
-					v-bind:text-input="true"
-					v-bind:auto-apply="true"
-					name="verfuegbarkeit_start"
-					locale="de"
-					format="dd.MM.yyyy"
-					model-type="yyyy-MM-dd">
-				</datepicker>
-			</div>
-			<div class="col-sm-3">
-				<label class="form-label">Verfügbarkeit Ende</label>
-				<datepicker
-					v-model="verfuegbarkeit_ende"
-					v-bind:enable-time-picker="false"
-					v-bind:placeholder="'TT.MM.YY'"
-					v-bind:text-input="true"
-					v-bind:auto-apply="true"
-					name="verfuegbarkeit_ende"
-					locale="de"
-					format="dd.MM.yyyy"
-					model-type="yyyy-MM-dd">
-				</datepicker>
-			</div>
-		</form>
+		</core-form>
 	</div>
 	`
 }

@@ -64,4 +64,53 @@ class SoftwareimageOrt_model extends DB_Model
 		return $this->execQuery($qry, array($softwareimage_id)
 		);
 	}
+
+	/**
+	 * Inserts Orte into the SoftwareimagOrt Table.
+	 *
+	 * @param array $batch The batch of data to be inserted.
+	 * @return array An array containing success or error message.
+	 */
+	public function insertBatch($batch)
+	{
+		// Check class properties
+		if (is_null($this->dbTable)) return error('The given database table name is not valid', EXIT_MODEL);
+
+		// Insert data
+		$insert = $this->db->insert_batch($this->dbTable, $batch);
+
+		if ($insert)
+		{
+			return success();
+		}
+		else
+		{
+			return error($this->db->error(), EXIT_DATABASE);
+		}
+	}
+
+	/**
+	 * Updates Orte into the SoftwareimagOrt Table.
+	 *
+	 * @param array $batch The batch of data to be inserted.
+	 * @return array An array containing success or error message.
+	 */
+
+	public function updateBatch($batch)
+	{
+		// Check class properties
+		if (is_null($this->dbTable)) return error('The given database table name is not valid', EXIT_MODEL);
+
+		// Update data
+		$update = $this->db->update_batch($this->dbTable, $batch, 'softwareimageort_id');
+
+		if ($update)
+		{
+			return success();
+		}
+		else
+		{
+			return error($this->db->error(), EXIT_DATABASE);
+		}
+	}
 }

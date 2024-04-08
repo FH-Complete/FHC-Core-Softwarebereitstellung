@@ -1,7 +1,7 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 
-export const Softwaresuche = {
+export default {
 	components: {
 		CoreFilterCmpt,
 		AutoComplete: primevue.autocomplete
@@ -10,22 +10,17 @@ export const Softwaresuche = {
 		return {
 			softwaresucheTabulatorOptions: {
 				index: 'software_id',
-				maxHeight: "100%",
-				minHeight: 30,
 				layout: 'fitColumns',
-				columnDefaults:{
-					tooltip:true,
-				},
 				columns: [
-					{title: 'Ort', field: 'ort_kurzbz', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true, frozen: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
 					{title: 'Software-ID', field: 'software_id', headerFilter: true, visible: false},
-					{title: 'Softwaretyp', field: 'softwaretyp_bezeichnung', headerFilter: true},
+					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_bezeichnung', headerFilter: true},
 					{title: 'Image', field: 'image_bezeichnung', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
-					{title: 'Hersteller', field: 'hersteller', headerFilter: true},
-					{title: 'Betriebssystem', field: 'os', headerFilter: true},
-					{title: 'Softwarestatus Bezeichnung', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150}
+					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
+					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
+					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150}
 				]
 			},
 			selOrt: null,
@@ -38,15 +33,10 @@ export const Softwaresuche = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByOrt',
 				{
 					ort_kurzbz: ort_kurzbz
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					this.$refs.softwaresucheTable.tabulator.setData(CoreRESTClient.getData(result.data));
-				}
-			).catch(
+				})
+				.then(result => result.data)
+				.then(result => {this.$refs.softwaresucheTable.tabulator.setData(CoreRESTClient.getData(result));})
+				.catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
@@ -100,26 +90,30 @@ export const Softwaresuche = {
 		}
 	},
 	template: `
-	<!-- Softwaresuche Tabelle -->
-	<core-filter-cmpt
-		ref="softwaresucheTable"
-		:side-menu="false"
-		:table-only=true
-		:tabulator-options="softwaresucheTabulatorOptions"
-		@click:new="openModal">
-		<template v-slot:search>
-				<auto-complete
-					class="w-100"
-					v-model="selOrt"
-					optionLabel="ort_kurzbz"
-					dropdown
-					dropdown-current
-					forceSelection
-					:suggestions="ortSuggestions"
-					placeholder="Suche nach Raum..."
-					@complete="onComplete">
-				</auto-complete>		
-		</template>	
-	</core-filter-cmpt>
+	<div class="row">
+		<div class="col">
+			<!-- Softwaresuche Tabelle -->
+			<core-filter-cmpt
+				ref="softwaresucheTable"
+				:side-menu="false"
+				table-only
+				:tabulator-options="softwaresucheTabulatorOptions"
+				@click:new="openModal">
+				<template v-slot:search>
+						<auto-complete
+							class="w-100"
+							v-model="selOrt"
+							optionLabel="ort_kurzbz"
+							dropdown
+							dropdown-current
+							forceSelection
+							:suggestions="ortSuggestions"
+							placeholder="Suche nach Raum..."
+							@complete="onComplete">
+						</auto-complete>		
+				</template>	
+			</core-filter-cmpt>
+		</div>
+	</div>
 	`
 };

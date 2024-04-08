@@ -1,10 +1,16 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import CoreForm from '../../../../../js/components/Form/Form.js';
+import CoreFormInput from '../../../../../js/components/Form/Input.js';
+import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
 //import Phrasen from '../../../mixins/Phrasen.js';
 
 export const SoftwareForm = {
 	components: {
 		AutoComplete: primevue.autocomplete,
-		"datepicker": VueDatePicker
+		"datepicker": VueDatePicker,
+		CoreForm,
+		CoreFormInput,
+		CoreFormValidation
 	},
 	emits: [
 		'softwareFormSaved'
@@ -34,21 +40,18 @@ export const SoftwareForm = {
 	},
 	beforeCreate() {
 		CoreRESTClient.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareMetadata',
-			null,
-			{
-				timeout: 3000
-			}
-		).then(
+			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareMetadata', null)
+			.then(result => result.data)
+			.then(
 			result => {
 				// display errors
-				if (CoreRESTClient.isError(result.data))
+				if (CoreRESTClient.isError(result))
 				{
-					this.$fhcAlert.handleSystemMessage(result.data.retval);
+					this.$fhcAlert.handleSystemMessage(result.retval);
 				}
 				else
 				{
-					this.softwareMetadata = CoreRESTClient.getData(result.data);
+					this.softwareMetadata = CoreRESTClient.getData(result);
 				}
 			}
 		).catch(
@@ -117,34 +120,26 @@ export const SoftwareForm = {
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLastSoftwarestatus',
 					{
 						software_id: software_id
-					},
-					{
-						timeout: 3000
-					}
-				).then(
-					result => {this.softwarestatus = CoreRESTClient.getData(result.data);}
-				).catch(
-					error => { this.$fhcAlert.handleSystemError(error); }
-				);
+					})
+					.then(result => result.data)
+					.then(result => {this.softwarestatus = CoreRESTClient.getData(result);})
+					.catch(error => { this.$fhcAlert.handleSystemError(error); });
 
 				// Get images of software
 				CoreRESTClient.get(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesBySoftware',
 					{
 						software_id: software_id
-					},
-					{
-						timeout: 3000
-					}
-				).then(
-					result => {
-						if (CoreRESTClient.isError(result.data))
+					})
+					.then(result => result.data)
+					.then(result => {
+						if (CoreRESTClient.isError(result))
 						{
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
 						}
-						else if(CoreRESTClient.hasData(result.data))
+						else if(CoreRESTClient.hasData(result))
 						{
-							this.softwareImages = CoreRESTClient.getData(result.data);
+							this.softwareImages = CoreRESTClient.getData(result);
 						}
 					}
 				).catch(
@@ -179,35 +174,22 @@ export const SoftwareForm = {
 
 			if (method)
 			{
-				CoreRESTClient.post(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/' + method,
-					{
-						software: this.extendedSoftware,
-						softwarestatus: this.softwarestatus,
-						softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
-					},
-					{
-						timeout: 5000
-					}
-				).then(
-					result => {
-						// display errors
-						if (CoreRESTClient.isError(result.data))
-						{
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
-						}
-						else
-						{
-							this.$fhcAlert.alertSuccess('Gespeichert');
+				if (this.$refs.softwareForm)
+					this.$refs.softwareForm
+						.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/' + method, {
+							software: this.extendedSoftware,
+							softwarestatus: this.softwarestatus,
+							softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
+						})
+						.then(result => {
 							this.$emit("softwareFormSaved");
-						}
-					}
-				).catch(
-					error => { this.$fhcAlert.handleSystemError(error); }
-				);
+							this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+						})
+						.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		resetSoftware(){
+			this.$refs.softwareForm.clearValidation();
 			this.softwareId = null;
 			this.software = this.getDefaultSoftware();
 			this.softwarestatus = this.getDefaultSoftwarestatus();
@@ -221,20 +203,17 @@ export const SoftwareForm = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
 				{
 					software_kurzbz: event.query
-				},
-				{
-					timeout: 3000
-				}
-			).then(
-				result => {
+				})
+				.then(result => result.data)
+				.then(result => {
 					// display errors
-					if (CoreRESTClient.isError(result.data))
+					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
 					}
 					else
 					{
-						let softwareList = CoreRESTClient.hasData(result.data) ? CoreRESTClient.getData(result.data) : [];
+						let softwareList = CoreRESTClient.hasData(result) ? CoreRESTClient.getData(result) : [];
 
 						// set software_kurzbz_version for display of kurzbz and version in autocomple field
 						for (let sw of softwareList) {
@@ -252,20 +231,17 @@ export const SoftwareForm = {
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getOeSuggestions',
 				{
 					eventQuery: event.query
-				},
-				{
-					timeout: 3000
-				}
-			).then(
-				result => {
+				})
+				.then(result => result.data)
+				.then(result => {
 					// display errors
-					if (CoreRESTClient.isError(result.data))
+					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
 					}
 					else
 					{
-						let data = CoreRESTClient.getData(result.data);
+						let data = CoreRESTClient.getData(result);
 
 						let groupedData = {};
 
@@ -344,163 +320,217 @@ export const SoftwareForm = {
 	},
 	template: `
 	<div>
-		<form ref="softwareForm" class="row gy-3">
+		<core-form ref="softwareForm" class="row gy-3">
+			<core-form-validation></core-form-validation>
 			<div class="col-sm-3">
-				<label class="form-label">Softwaretyp *</label>
-				<select
-					class="form-select"
+				<core-form-input
+					type="select"
+					v-model="software.softwaretyp_kurzbz"
 					name="softwaretyp_kurzbz"
-					required
-					v-model="software.softwaretyp_kurzbz">
+					:label="$p.t('global/softwaretyp')"
+					>
 					<option v-for="(bezeichnung, softwaretyp_kurzbz) in softwareMetadata.softwaretyp" :key="index" :value="softwaretyp_kurzbz">
 						{{bezeichnung}}
 					</option>
-				</select>
+				</core-form-input>		
 			</div>
 			<div class="col-sm-5">
-				<label class="form-label">Software Kurzbz *</label>
-				<input type="text" class="form-control" name="software_kurzbz" v-model="software.software_kurzbz">
+				<core-form-input
+					v-model="software.software_kurzbz"
+					name="software_kurzbz"
+					:label="$p.t('global/softwareKurzbz')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-4">
-				<label class="form-label">Softwarestatus *</label>
-				<select
-					class="form-select"
+				<core-form-input
+					type="select"
+					v-model="softwarestatus.softwarestatus_kurzbz"
 					name="softwarestatus_kurzbz"
-					required
-					v-model="softwarestatus.softwarestatus_kurzbz">
+					label="Softwarestatus *"
+					>
 					<option v-for="(bezeichnung, softwarestatus_kurzbz) in softwareMetadata.softwarestatus" :key="index" :value="softwarestatus_kurzbz">
 						{{bezeichnung}}
 					</option>
-				</select>
+				</core-form-input>
 			</div>
 			<div class="col-sm-1">
-				<label class="form-label">Version</label>
-				<input type="text" class="form-control" name="version" v-model="software.version">
+				<core-form-input
+					v-model="software.version"
+					name="version"
+					label="Version"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-5">
-				<label class="form-label">Betriebssystem</label>
-				<input type="text" class="form-control" name="os" v-model="software.os">
+				<core-form-input
+					v-model="software.os"
+					name="os"
+					:label="$p.t('global/betriebssystem')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Hersteller</label>
-				<input type="text" class="form-control" name="hersteller" v-model="software.hersteller">
+				<core-form-input
+					v-model="software.hersteller"
+					name="hersteller"
+					:label="$p.t('global/hersteller')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Verantwortliche</label>
-				<input type="text" class="form-control" name="verantwortliche" v-model="software.verantwortliche">
+				<core-form-input
+					v-model="software.verantwortliche"
+					name="verantwortliche"
+					:label="$p.t('global/verantwortliche')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Übergeordnete Software</label>
-				<auto-complete
-					class="w-100"
+				<core-form-input
+					type="autocomplete"
 					v-model="parentSoftware"
-					optionLabel="software_kurzbz_version"
+					name="parentSoftware"
+					:label="$p.t('global/uebergeordneteSoftware')"
+					option-label="software_kurzbz_version"
 					dropdown
 					dropdown-current
 					forceSelection
 					:suggestions="parentSoftwareSuggestions"
-					@complete="getSoftwareByKurzbz">
-				</auto-complete>
+					@complete="getSoftwareByKurzbz"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Ansprechpartner (intern)</label>
-				<input type="text" class="form-control" name="ansprechpartner_intern" v-model="software.ansprechpartner_intern">
+				<core-form-input
+					v-model="software.ansprechpartner_intern"
+					name="ansprechpartner_intern"
+					:label="$p.t('global/ansprechpartnerIntern')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Ansprechpartner (extern)</label>
-				<input type="text" class="form-control" name="ansprechpartner_extern" v-model="software.ansprechpartner_extern">
+				<core-form-input
+					v-model="software.ansprechpartner_extern"
+					name="ansprechpartner_extern"
+					:label="$p.t('global/ansprechpartnerExtern')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Beschreibung</label>
-				<textarea
-					class="form-control"
-					name="beschreibung"
+				<core-form-input
+					type="textarea"
 					v-model="software.beschreibung"
-					rows="3">
-				</textarea>
+					name="beschreibung"
+					:label="$p.t('global/beschreibung')"
+					rows="3"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Anmerkung (intern)</label>
-				<textarea
-					class="form-control"
-					name="anmerkung_intern"
+				<core-form-input
+					type="textarea"
 					v-model="software.anmerkung_intern"
-					rows="3">
-				</textarea>
+					name="anmerkung_intern"
+					:label="$p.t('global/anmerkungIntern')"
+					rows="3"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-12">
-				<label class="form-label">Zugeordnete Images</label>
-				<auto-complete
-					class="w-100"
+				<core-form-input
+					type="autocomplete"
 					v-model="softwareImages"
-					optionLabel="image_bezeichnung"
+					name="softwareImages"
+					:label="$p.t('global/zugeordneteImages')"
+					option-label="image_bezeichnung"
 					dropdown
 					dropdown-current
 					forceSelection
 					multiple
 					:suggestions="softwareImageSuggestions"
-					@complete="getImagesByBezeichnung">
-				</auto-complete>
+					@complete="getImagesByBezeichnung"
+				>
+				</core-form-input>
 			</div>
 			<!-- Lizenz -->
-			<div class="fhc-hr"></div>
 		 	<div class="col-sm-4">
-				<label class="form-label">Lizenz-Art</label>
-				<input type="text" class="form-control" name="lizenzart" v-model="software.lizenzart">
+		 		<core-form-input
+					v-model="software.lizenzart"
+					name="lizenzart"
+					:label="$p.t('global/lizenzart')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-8">
-				<label class="form-label">Lizenz-Server Kurzbezeichnung</label>
-				<auto-complete
-					class="w-100"
-					name="lizenzserver_kurzbz"
+				<core-form-input
+					type="autocomplete"
 					v-model="selLizenzserver"
-					optionLabel="lizenzserver_kurzbz"
+					name="lizenzserver_kurzbz"
+					:label="$p.t('global/lizenzserverKurzbz')"
+					option-label="lizenzserver_kurzbz"
 					dropdown
 					dropdown-current
 					forceSelection
 					:suggestions="lizenzserverSuggestions"
-					@complete="getLizenzserverByKurzbz">
-				</auto-complete>
+					@complete="getLizenzserverByKurzbz"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-2">
-				<label class="form-label">Lizenz-Anzahl</label>
-				<input type="text" class="form-control" name="anzahl_lizenzen" v-model="software.anzahl_lizenzen">
+				<core-form-input
+					type="number"
+					v-model="software.anzahl_lizenzen"
+					name="anzahl_lizenzen"
+					:label="$p.t('global/lizenzAnzahl')"
+					>
+				</core-form-input>
 			</div>
 			<div class="col-sm-2">
-				<label class="form-label">Lizenz-Laufzeit</label>
-				<datepicker
+				<core-form-input
+					type="datepicker"
 					v-model="software.lizenzlaufzeit"
-					v-bind:enable-time-picker="false"
-					v-bind:placeholder="'TT.MM.YY'"
-					v-bind:text-input="true"
-					v-bind:auto-apply="true"
 					name="verfuegbarkeit_ende"
+					:label="$p.t('global/lizenzLaufzeit')"
 					locale="de"
 					format="dd.MM.yyyy"
-					model-type="yyyy-MM-dd">
-				</datepicker>
+					model-type="yyyy-MM-dd"
+					:enable-time-picker="false"
+					:placeholder="'TT.MM.YY'"
+					:text-input="true"
+					:auto-apply="true"
+					>
+				</core-form-input>
 			</div>
 			<div class="col-sm-5">
-				<label class="form-label">Kostenträger-OE</label>
-				<auto-complete
-					class="w-100"
+				<core-form-input
+					type="autocomplete"
 					v-model="selKostentraegerOE"
-					optionLabel="bezeichnung"
-					optionGroupLabel="organisationseinheittyp_kurzbz"
-					optionGroupChildren="oes"
+					name="selKostentraegerOE"
+					:label="$p.t('global/kostentraegerOe')"
+					option-label="bezeichnung"
+					option-group-label="organisationseinheittyp_kurzbz"
+					option-group-children="oes"
 					:optionDisabled="option => !option.aktiv"
 					dropdown
 					dropdown-current
 					forceSelection
 					:suggestions="oeSuggestions"
-					@complete="getOeSuggestions">
-				</auto-complete>
+					@complete="getOeSuggestions"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-3">
-				<label class="form-label">Lizenz-Kosten</label>
+				<label class="form-label">{{ $p.t('global/lizenzKosten') }}</label>
 				<div class="input-group">
-					<input type="text" class="form-control" name="lizenzkosten" v-model="software.lizenzkosten" placeholder="0.00">
-					<span class="input-group-text">€/Jahr</span>
+					<core-form-input
+						v-model="software.lizenzkosten"
+						name="lizenzkosten"
+						placeholder="0.00"
+						input-group
+					>
+					</core-form-input>
+					<span class="input-group-text">{{ $p.t('global/euroProJahr') }}</span>
 				</div>
 			</div>
 		</form>
