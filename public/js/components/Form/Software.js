@@ -21,6 +21,7 @@ export const SoftwareForm = {
 			softwareId: null,
 			software: {},
 			softwarestatus: {},
+			softwarelizenztypen: {},
 			parentSoftwareSuggestions: [], // autocomplete suggestions
 			parentSoftware: null, // selected autocomplete value
 			softwareImageSuggestions: [], // autocomplete suggestions
@@ -57,6 +58,15 @@ export const SoftwareForm = {
 		).catch(
 			error => { this.$fhcAlert.handleSystemError(error); }
 		);
+
+		// Get Softwarelizenztypen
+		CoreRESTClient
+			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelizenztypen')
+			.then(result => result.data)
+			.then(result => {
+				this.softwarelizenztypen = CoreRESTClient.hasData(result) ? CoreRESTClient.getData(result) : {};
+			})
+			.catch(error => { this.$fhcAlert.handleSystemError(error); });
 	},
 	created() {
 		// Prefill form with default values
@@ -453,13 +463,18 @@ export const SoftwareForm = {
 				>
 				</core-form-input>
 			</div>
-			<!-- Lizenz -->
 		 	<div class="col-sm-4">
 		 		<core-form-input
+		 			type="select"
 					v-model="software.lizenzart"
 					name="lizenzart"
 					:label="$p.t('global/lizenzart')"
 				>
+				<option v-for="softwarelizenztyp in softwarelizenztypen" 
+					:key="softwarelizenztyp.softwarelizenztyp_kurzbz"
+					:value="softwarelizenztyp.softwarelizenztyp_kurzbz">
+					{{ softwarelizenztyp.bezeichnung }}
+				</option>
 				</core-form-input>
 			</div>
 			<div class="col-sm-8">

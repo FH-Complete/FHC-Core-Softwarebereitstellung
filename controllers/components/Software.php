@@ -27,7 +27,8 @@ class Software extends Auth_Controller
 				'getLanguageIndex' => 'admin:rw',
 				'getLastSoftwarestatus' => 'admin:rw',
 				'changeSoftwarestatus' => 'admin:rw',
-				'deleteSoftware' => 'admin:rw'
+				'deleteSoftware' => 'admin:rw',
+				'getSoftwarelizenztypen' => 'admin:rw'
 			)
 		);
 
@@ -301,6 +302,19 @@ class Software extends Auth_Controller
 
 		// delete software
 		return $this->outputJson($this->SoftwareModel->delete(array('software_id' => $softwareData['software_id'])));
+	}
+
+	/* Get all Softwarelizenztypen */
+	public function getSoftwarelizenztypen(){
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarelizenztyp_model', 'SoftwarelizenztypModel');
+		$result = $this->SoftwarelizenztypModel->load();
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
