@@ -270,7 +270,7 @@ export default {
 			this.getSoftwareRowDetails();
 
 			// Scroll to Detail
-			//window.scrollTo(0, this.$refs.raumzuordnung.offsetTop); TODO
+			window.scrollTo(0, this.$refs.raumzuordnung._.vnode.el.offsetTop);
 		},
 		onTableDataLoaded(data){
 			// no promoting of children if hierarchy shown

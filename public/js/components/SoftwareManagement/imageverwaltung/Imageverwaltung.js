@@ -137,7 +137,7 @@ export default {
 
 
 			// Scroll to Detail
-			//window.scrollTo(0, this.$refs.softwareimageDetail.offsetTop);
+			window.scrollTo(0, this.$refs.softwarezuordnung._.vnode.el.offsetTop);
 		}
 	},
 	template: `
