@@ -2,7 +2,6 @@ import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
-//import Phrasen from '../../../mixins/Phrasen.js';
 
 export const SoftwareForm = {
 	components: {

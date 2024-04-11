@@ -17,15 +17,6 @@ class SoftwareManagement extends Auth_Controller
 				'index' => 'admin:rw'
 			)
 		);
-
-		// Loads phrases system
-		//~ $this->loadPhrases(
-			//~ array(
-				//~ 'global',
-				//~ 'ui',
-				//~ 'filter'
-			//~ )
-		//~ );
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
