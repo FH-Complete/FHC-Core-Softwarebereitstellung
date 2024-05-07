@@ -199,7 +199,27 @@ export default {
 				)
 				.then(result => result.data)
 				.then(result => {
-					this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+					if (result.retval.parentArray.length > 0)
+					{
+						// Sticky success msg
+						this.$fhcAlert.alertDefault('success', 'Info', this.$p.t('global/gespeichert'), true);
+
+						// Sticky info msg
+						this.$fhcAlert.alertDefault(
+							'info',
+							this.$p.t('global/statusErfolgreichUebertragen'),
+							this.$p.t('global/statusUebertragenMsg', {
+								status: softwarestatus_kurzbz,
+								parentSoftware: result.retval.parentArray.join(', ')
+							}),
+							true
+						);
+					}
+					else
+					{
+						this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+					}
+
 					this.$refs.softwareTable.reloadTable(); }) // TODO use row update instead of reloadTable after solving datatree issues
 				.catch( error => { this.$fhcAlert.handleSystemError(error); });
 		},
