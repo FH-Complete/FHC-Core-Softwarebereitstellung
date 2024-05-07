@@ -167,6 +167,32 @@ class Software_model extends DB_Model
 		return $this->execQuery($query, array($software_id));
 	}
 
+
+	/**
+	 * Get all children software of given software.
+	 *
+	 * @param $software_id
+	 * @return mixed
+	 */
+	public function getChildren($software_id){
+		$query = "
+			WITH RECURSIVE software(software_id, software_id_parent) as
+			(
+				SELECT software_id, software_id_parent FROM extension.tbl_software
+				WHERE software_id = ? 
+				UNION ALL
+				SELECT s.software_id, s.software_id_parent FROM extension.tbl_software s
+    			JOIN software ON s.software_id_parent = software.software_id 
+			)
+			
+			SELECT software_id
+			FROM software s
+			WHERE software_id != ?;
+		";
+
+		return $this->execQuery($query, array($software_id, $software_id));
+	}
+
 	/**
 	 * Get Software by Image. (Zugeordnete Software)
 	 */
