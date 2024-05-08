@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {SoftwareManagement} from '../components/SoftwareManagement/SoftwareManagement.js';
+import SoftwareManagement from '../components/SoftwareManagement/SoftwareManagement.js';
 import FhcAlert from '../../../../js/plugin/FhcAlert.js';
 import FhcApi from "../../../../js/plugin/FhcApi.js";
 import Phrasen from "../../../../js/plugin/Phrasen.js";

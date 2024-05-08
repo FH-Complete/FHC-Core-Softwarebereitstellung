@@ -19,7 +19,7 @@ import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Naviga
 import CoreBaseLayout from "../../../../../js/components/layout/BaseLayout.js";
 import CoreTabs from "../../../../../js/components/Tabs.js";
 
-export const SoftwareManagement = {
+export default {
 	components: {
 		CoreNavigationCmpt,
 		CoreBaseLayout,
