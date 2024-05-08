@@ -15,9 +15,9 @@ export const Actions = {
 		}
 	},
 	methods: {
-		changeStatus(softwarestatus) {
-			this.selected = softwarestatus.bezeichnung;
-			this.$emit("setStatus", softwarestatus.softwarestatus_kurzbz);
+		changeStatus(softwarestatus_kurzbz, bezeichnung) {
+			this.selected = bezeichnung;
+			this.$emit("setStatus", softwarestatus_kurzbz);
 		},
 
 		handleHierarchyViewChange (event) {
@@ -33,8 +33,8 @@ export const Actions = {
 				{{ selected ? selected : $p.t('global/statusSetzen') }}
 			</button>
 			 <ul class="dropdown-menu" aria-labelledby="statusDropdown">
-				<li v-for="status in softwarestatus" :key="status.softwarestatus_kurzbz">
-					<a class="dropdown-item" @click="changeStatus(status)">{{status.bezeichnung}}</a>
+				<li v-for="(bezeichnung, softwarestatus_kurzbz) in softwarestatus" :key="softwarestatus_kurzbz">
+					<a class="dropdown-item" @click="changeStatus(softwarestatus_kurzbz, bezeichnung)">{{ bezeichnung }}</a>
 				</li>
 			</ul>
 		</div>

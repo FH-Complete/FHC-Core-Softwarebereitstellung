@@ -14,7 +14,16 @@ export default {
 	},
 	data: function() {
 		return {
-			softwareTabulatorOptions: { // tabulator options which can be modified after first render
+			languageIndex: null, // language of current user
+			showHierarchy: false, // display data as hierarchy tree or not
+			selectedTabulatorRow: null, // currently selected tabulator row
+			softwarestatus: null,
+			software_kurzbz: ''
+		}
+	},
+	computed: {
+		softwareTabulatorOptions() {
+			return {// tabulator options which can be modified after first render
 				index: 'software_id',
 				layout: 'fitColumns',
 				dataTreeStartExpanded: true,
@@ -24,7 +33,7 @@ export default {
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
 						titleFormatterParams: { rowRange: "active"},
-						width: 50,
+						width: 70,
 						frozen: true
 					},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
@@ -51,19 +60,12 @@ export default {
 						title: 'Software-Status',
 						field: 'softwarestatus_kurzbz',
 						editor: "list",
-						editorParams:{values:[]},
+						editorParams:{ valuesLookup: this.getSoftwarestatus },
 						headerFilter: true,
-						headerFilterParams:{values:[]},
+						headerFilterParams:{ valuesLookup: this.getSoftwarestatus },
 						formatter: (cell) => {
-							return cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1];
-						}
-					},
-					{
-						title: 'Software-Status',
-						field: 'softwarestatus_bezeichnung',
-						headerFilter: true,
-						formatter: (cell) => {
-							return cell.getValue()[this.languageIndex - 1];
+							let value = cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1];
+							return '<div>' + value + '</div>';
 						}
 					},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},
@@ -101,28 +103,10 @@ export default {
 						frozen: true
 					}
 				]
-			},
-			languageIndex: null, // language of current user
-			showHierarchy: false, // display data as hierarchy tree or not
-			selectedTabulatorRow: null, // currently selected tabulator row
-			softwarestatus: Array,
-			software_kurzbz: ''
-		}
+			}
+		},
 	},
 	beforeCreate() {
-		CoreRESTClient
-			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus', null)
-			.then(result => result.data)
-			.then(result => {
-				this.softwarestatus = CoreRESTClient.getData(result);
-
-				// Populate Status column with editable Softwarestatus list.
-				// NOTE: tabulator bugfixed transparent list in 5.2.3 release. (release notes)
-				this.populateTabulatorColumnStatus(this.softwarestatus);
-				this.reloadTabulator();
-			})
-			.catch(error => { this.$fhcAlert.handleSystemError(error); });
-
 		CoreRESTClient
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex', null)
 			.then(result => result.data)
@@ -147,17 +131,6 @@ export default {
 			// reload Raumzuordnung data
 			this.getSoftwareRowDetails();
 		},
-		populateTabulatorColumnStatus(status_arr) {
-			// Modify format
-			let result = status_arr.reduce((res, x) => {
-				res[x.softwarestatus_kurzbz] = x.bezeichnung;
-				return res;
-			}, {});
-
-			let statusCol = this.softwareTabulatorOptions.columns.find(col => col.field === 'softwarestatus_kurzbz');
-			statusCol.editorParams = {values: result};
-			statusCol.headerFilterParams = {values: result};
-		},
 		getSoftwareRowDetails() {
 			if (!this.selectedTabulatorRow) return;
 
@@ -166,6 +139,21 @@ export default {
 
 			// get Softwarekurzbz
 			this.software_kurzbz = this.selectedTabulatorRow.getData().software_kurzbz;
+		},
+		getSoftwarestatus() {
+			return CoreRESTClient
+				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus')
+				.then(result => result.data)
+				.then(result => {
+					// Reduce array of objects into one object
+					return this.softwarestatus = CoreRESTClient.getData(result).reduce((o, x) => {
+						o[x.softwarestatus_kurzbz] = x.bezeichnung;
+						return o;
+					}, {});
+				})
+				.catch(error => {
+					this.$fhcAlert.handleSystemError(error);
+				});
 		},
 		changeStatus(softwarestatus_kurzbz, software_id = null) {
 			let software_ids = [];
