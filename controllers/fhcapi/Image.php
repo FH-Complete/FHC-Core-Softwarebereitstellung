@@ -48,7 +48,7 @@ class Image extends FHCAPI_Controller
 		$result = $this->SoftwareimageModel->insert($this->input->post('softwareimage'));
 
 		// On error
-		$result = $this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		$result = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess($result);
@@ -72,7 +72,7 @@ class Image extends FHCAPI_Controller
 		);
 
 		// On error
-		$result = $this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		$result = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess($result);
@@ -96,7 +96,7 @@ class Image extends FHCAPI_Controller
 		$result = $this->SoftwareimageModel->copyImageAndOrteOf($this->input->post('softwareimage'));
 
 		// On error
-		$result = $this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		$result = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess($result);

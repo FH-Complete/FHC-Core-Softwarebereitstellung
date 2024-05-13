@@ -43,7 +43,7 @@ class Lizenzserver extends FHCAPI_Controller
 		$result = $this->SoftwarelizenzserverModel->insert($this->input->post('lizenzserver'));
 
 		// On error
-		$result = $this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		$result = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess($result);
@@ -66,7 +66,7 @@ class Lizenzserver extends FHCAPI_Controller
 		);
 
 		// On error
-		$result = $this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		$result = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess($result);

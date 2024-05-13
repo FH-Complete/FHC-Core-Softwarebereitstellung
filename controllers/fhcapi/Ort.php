@@ -62,7 +62,7 @@ class Ort extends FHCAPI_Controller
 		$result = $this->SoftwareimageOrtModel->insertBatch($batch);
 
 		// On error
-		$this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		$this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess();
@@ -94,7 +94,7 @@ class Ort extends FHCAPI_Controller
 		$result = $this->SoftwareimageOrtModel->updateBatch($batch);
 
 		// On error
-		$this->checkForErrors($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		$this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess();
