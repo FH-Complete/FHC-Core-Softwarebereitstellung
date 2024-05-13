@@ -63,10 +63,10 @@ export default {
 						editorParams:{ valuesLookup: this.getSoftwarestatus },
 						headerFilter: true,
 						headerFilterParams:{ valuesLookup: this.getSoftwarestatus },
-						formatter: (cell) => {
-							let value = cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1];
-							return '<div>' + value + '</div>';
-						}
+						formatter: (cell) => this.softwarestatus
+								? this.softwarestatus[cell.getValue()]
+								: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1],
+						frozen: true
 					},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
