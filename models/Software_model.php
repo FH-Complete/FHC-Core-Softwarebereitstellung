@@ -28,6 +28,8 @@ class Software_model extends DB_Model
 		// Start DB transaction
 		$this->db->trans_start(false);
 
+		$software['insertvon'] = $uid;
+
 		// Insert Software
 		$result = $this->insert($software);
 
@@ -35,7 +37,7 @@ class Software_model extends DB_Model
 		$lastInsert_id = getData($result);
 
 		// Insert Softwarestatus
-		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
 		$this->SoftwareSoftwarestatusModel->insert(
 			array(
 				'software_id' => $lastInsert_id,
@@ -60,7 +62,7 @@ class Software_model extends DB_Model
 		if ($this->db->trans_status() === false)
 		{
 			$this->db->trans_rollback();
-			return error('Fehler beim Hinzufügen der Software', EXIT_ERROR);
+			return error($this->db->error(), EXIT_DATABASE);
 		}
 
 		return success($lastInsert_id);
@@ -81,11 +83,14 @@ class Software_model extends DB_Model
 		// Start DB transaction
 		$this->db->trans_start(false);
 
+		$software['updateamum'] = date('Y-m-d H:i:s');
+		$software['updatevon'] = $uid;
+
 		// Update Software
 		$this->update($software['software_id'], $software);
 
 		// Insert newer Softwarestatus
-		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
 		$this->SoftwareSoftwarestatusModel->changeSoftwarestatus(
 			array($software['software_id']),
 			$softwarestatus_kurzbz
@@ -134,7 +139,7 @@ class Software_model extends DB_Model
 		if ($this->db->trans_status() === false)
 		{
 			$this->db->trans_rollback();
-			return error('Fehler beim Update der Software', EXIT_ERROR);
+			return error($this->db->error(), EXIT_DATABASE);
 		}
 
 		return success();
@@ -160,6 +165,32 @@ class Software_model extends DB_Model
 		FROM software";
 
 		return $this->execQuery($query, array($software_id));
+	}
+
+
+	/**
+	 * Get all children software of given software.
+	 *
+	 * @param $software_id
+	 * @return mixed
+	 */
+	public function getChildren($software_id){
+		$query = "
+			WITH RECURSIVE software(software_id, software_id_parent) as
+			(
+				SELECT software_id, software_id_parent FROM extension.tbl_software
+				WHERE software_id = ? 
+				UNION ALL
+				SELECT s.software_id, s.software_id_parent FROM extension.tbl_software s
+    			JOIN software ON s.software_id_parent = software.software_id 
+			)
+			
+			SELECT software_id
+			FROM software s
+			WHERE software_id != ?;
+		";
+
+		return $this->execQuery($query, array($software_id, $software_id));
 	}
 
 	/**
@@ -249,5 +280,40 @@ class Software_model extends DB_Model
 				$software_id
 			)
 		);
+	}
+
+	/**
+	 * Get software licenses with expiration within the specified interval.
+	 * @param string | null $interval The time interval to check for license expiration.
+	 * @return mixed The result of the query or an error message if interval is null.
+	 */
+	public function getSoftwareLizenzlaufzeitendeInInterval($interval = null)
+	{
+		if (is_null($interval))
+		{
+			return error('Fehler bei Ermittlung der Zeit vor Lizenzlaufzeitende');
+		}
+
+		$this->addSelect('
+			software_id,
+			swt.bezeichnung[(' . $this->_getLanguageIndex() . ')],
+			software_kurzbz,
+			lizenzlaufzeit'
+		);
+		$this->addJoin('extension.tbl_softwaretyp swt', 'softwaretyp_kurzbz');
+
+		return $this->loadWhere(
+			'lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE'
+		);
+	}
+
+	private function _getLanguageIndex()
+	{
+		$this->load->model('system/Sprache_model', 'SpracheModel');
+		$this->SpracheModel->addSelect('index');
+		$result = $this->SpracheModel->loadWhere(array('sprache' => getUserLanguage()));
+
+		// Return language index
+		return hasData($result) ? getData($result)[0]->index : 1;
 	}
 }

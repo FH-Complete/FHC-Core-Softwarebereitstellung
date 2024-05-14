@@ -2,35 +2,30 @@ import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import LizenzserverModal from "../../Modals/LizenzserverModal.js";
 
-export const Lizenzserververwaltung = {
+export default {
 	components: {
 		CoreFilterCmpt,
 		LizenzserverModal
 	},
-	emits: [
-		'newFilterEntry',
-	],
 	data: function() {
 		return {
 			lizenzserverTabulatorOptions: { // tabulator options which can be modified after first render
-				maxHeight: "100%",
 				layout: 'fitColumns',
 				index: 'lizenzserver_kurzbz',
-				columnDefaults:{
-					tooltip:true,
-				},
 				columns: [
-					{title: 'Kurzbezeichung', field: 'lizenzserver_kurzbz', headerFilter: true, frozen: true},
-					{title: 'Bezeichnung', field: 'bezeichnung', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
 					{title: 'Mac-Adresse', field: 'macadresse', headerFilter: true},
 					{title: 'IP-Adresse', field: 'ipadresse', headerFilter: true},
-					{title: 'Anpsprechpartner', field: 'ansprechpartner', headerFilter: true},
+					{title: this.$p.t('global/ansprechpartner'), field: 'ansprechpartner', headerFilter: true},
 					{title: 'Location', field: 'location', headerFilter: true, hozAlign: 'right'},
-					{title: 'Anmerkung', field: 'anmerkung', headerFilter: true, hozAlign: 'right'},
+					{title: this.$p.t('global/anmerkung'), field: 'anmerkung', headerFilter: true, hozAlign: 'right'},
 					{
-						title: 'Aktionen',
+						title: this.$p.t('global/aktionen'),
 						field: 'actions',
-						hozAlign: 'center',
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
@@ -48,7 +43,8 @@ export const Lizenzserververwaltung = {
 							container.append(button);
 
 							return container;
-						}
+						},
+						frozen: true
 					}
 				]
 			}
@@ -76,35 +72,38 @@ export const Lizenzserververwaltung = {
 				}
 			).then(
 				result => {
-					this.$fhcAlert.alertSuccess('Gelöscht!');
+					this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
 					this.$refs.lizenzserverTable.reloadTable();
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
-		},
-		emitNewFilterEntry: function(payload) {
-			this.$emit('newFilterEntry', payload);
 		}
 	},
 	template: `
-	<!-- Lizenzserververwaltung Tabelle -->
-	<core-filter-cmpt
-		ref="lizenzserverTable"
-		filter-type="LizenzserverVerwaltung"
-		:tabulator-options="lizenzserverTabulatorOptions"
-		new-btn-label="Lizenzserver"
-		new-btn-show="true"
-		@nw-new-entry="emitNewFilterEntry"
-		@click:new="openModal">	
-	</core-filter-cmpt>
-	
-	<!-- Lizenzserver modal component -->
-	<lizenzserver-modal
-		class="fade"
-		ref="lizenzserverModal"
-		dialog-class="modal-lg"
-		@on-saved="onLizenzserverSaved">
-	</lizenzserver-modal>	
+	<div class="row">
+		<div class="col">
+			<!-- Lizenzserververwaltung Tabelle -->
+			<core-filter-cmpt
+				ref="lizenzserverTable"
+				filter-type="LizenzserverVerwaltung"
+				uniqueId="lizenzserverTable"
+				:tabulator-options="lizenzserverTabulatorOptions"
+				:side-menu="false"
+				:new-btn-label="$p.t('global/lizenzserver')"
+				new-btn-show
+				:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
+				@click:new="openModal">	
+			</core-filter-cmpt>
+			
+			<!-- Lizenzserver modal component -->
+			<lizenzserver-modal
+				class="fade"
+				ref="lizenzserverModal"
+				dialog-class="modal-lg"
+				@on-saved="onLizenzserverSaved">
+			</lizenzserver-modal>	
+		</div>
+	</div>
 	`
 };

@@ -17,7 +17,8 @@
 		'customJSModules' => array('public/extensions/FHC-Core-Softwarebereitstellung/js/apps/SoftwareManagement.js'),
 		'customCSSs' => array(
 			'vendor/vuejs/vuedatepicker_css/main.css',
-			'public/extensions/FHC-Core-Softwarebereitstellung/css/SoftwareManagement.css'
+			'public/extensions/FHC-Core-Softwarebereitstellung/css/SoftwareManagement.css',
+			'public/css/Fhc.css'
 		)
 	);
 

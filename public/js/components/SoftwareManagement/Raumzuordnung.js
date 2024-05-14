@@ -13,16 +13,12 @@ export const Raumzuordnung = {
 	data() {
 		return {
 			softwareimageId: Vue.inject('softwareimageId'),
+			softwareimage_bezeichnung: Vue.inject('softwareimage_bezeichnung'),
 			softwareTitel: null,
 			orte: [],
 			orteTabulatorOptions: {
-				maxHeight: "100%",
-				minHeight: 30,
 				layout: 'fitColumns',
 				index: 'softwareimageort_id',
-				columnDefaults:{
-					tooltip:true,
-				},
 				columns: [
 					{title: 'Img-Ort-ID', field: 'softwareimageort_id', headerFilter: true, visible: false},
 					{title: 'Image', field: 'image', headerFilter: true},
@@ -38,24 +34,127 @@ export const Raumzuordnung = {
 			}
 		}
 	},
-	mounted(){
-		this.$refs.raumTable.tabulator.on("tableBuilt", (e, row) => {
+	computed: {
+		showBtn() { return Number.isInteger(this.softwareimageId) ? true : false },
+		raumTableTitle() {
+			if (this.$parent.$options.componentName === 'Imageverwaltung')
+			{
+				return this.softwareimage_bezeichnung ? this.softwareimage_bezeichnung : '[ ' + this.$p.t('global/imageAuswaehlen') + ' ]';
+			}
+			else
+			{
+				return this.softwareTitel ? this.softwareTitel : '[ ' + this.$p.t('global/softwareAuswaehlen') + ' ]';
+			}
+		}
+	},
+	methods: {
+		openModal(softwareimageort_id) {
+			this.$refs.raumModal.open(softwareimageort_id);
+		},
+		editOrt(softwareimageort_id){
+			this.openModal(softwareimageort_id);
+		},
+		async deleteOrt(softwareimageort_id){
 
+			if (await this.$fhcAlert.confirmDelete() === false) return;
+
+			CoreRESTClient.post(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/deleteImageort',
+				{
+					softwareimageort_id: softwareimageort_id
+				})
+				.then(result => result.data)
+				.then(result => {
+					if (CoreRESTClient.isError(result))
+					{
+						this.$fhcAlert.alertSystemMessage(Object.values(result.retval).join('; '));  // TODO backend result anpassen
+					}
+					else
+					{
+						this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
+
+						// Refresh data in Raumzuordnungstabelle
+						this.getOrteByImage(this.softwareimageId);
+
+						// Emit deleted Raumanzahl to be updated in Imagetabelle
+						this.$emit('onSaved', -1);
+					}
+				}
+			).catch(
+				error => { this.$fhcAlert.handleSystemError(error); }
+			);
+		},
+		getOrteBySoftware(software_id, software_titel) {
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteBySoftware',
+				{
+					software_id: software_id
+				})
+				.then(result => result.data)
+				.then(result => {
+					this.orte = [];
+					this.softwareTitel = software_titel
+					if (CoreRESTClient.hasData(result)) {
+						this.orte = CoreRESTClient.getData(result);
+					}
+					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result));
+				}
+			).catch(
+				error => { this.$fhcAlert.handleSystemError(error); }
+			);
+		},
+		getOrteByImage(softwareimage_id) {
+			CoreRESTClient.get(
+				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
+				{
+					softwareimage_id: softwareimage_id
+				})
+				.then(result => result.data)
+				.then(result => {
+					this.orte = [];
+					if (CoreRESTClient.hasData(result)) {
+						this.orte = CoreRESTClient.getData(result);
+					}
+					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result));
+				}
+			).catch(
+				error => { this.$fhcAlert.handleSystemError(error); }
+			);
+		},
+		onRaumzuordnungSaved(raumanzahlDifferenz) {
+			this.$refs.raumModal.hide();
+
+			// Refresh data in Raumzuordnungstabelle
+			this.getOrteByImage(this.softwareimageId);
+
+			// Emit added Raumanzahl to be updated in Imagetabelle
+			this.$emit('onSaved', raumanzahlDifferenz);
+		},
+		onVerfuegbarkeitAendernClick(){
+			let selectedData = this.$refs.raumTable.tabulator.getSelectedData();
+
+			if (selectedData.length == 0)
+			{
+				this.$fhcAlert.handleSystemMessage(this.$p.t('global/zeilenAuswaehlen'));
+				return;
+			}
+
+			this.$refs.raumModal.openVerfuebarkeitAendernModal(selectedData);
+		},
+		onTableBuilt(e, row){
 			// Raumzuordnung can be readonly or editable. If editable...
 			if (this.$parent.$options.componentName === 'Imageverwaltung')
 			{
 				// ...add column with checkboxes as front column
 				this.$refs.raumTable.tabulator.addColumn(
 					{
-						field: 'select',
-						title: 'rowSelection',
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
 						titleFormatterParams: {
 							rowRange: "active"
 						},
-						hozAlign: 'left',
 						width: 50,
+						frozen: true
 					}, true // front column
 				);
 
@@ -64,6 +163,9 @@ export const Raumzuordnung = {
 					{
 						title: 'Aktionen',
 						field: 'actions',
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
@@ -85,130 +187,26 @@ export const Raumzuordnung = {
 							container.append(button);
 
 							return container;
-						}
+						},
+						frozen: true
 					}, false // append to end
 				);
 			}
-		});
-	},
-	computed: {
-		showBtn() { return Number.isInteger(this.softwareimageId) ? true : false }
-	},
-	methods: {
-		openModal(softwareimageort_id) {
-			this.$refs.raumModal.open(softwareimageort_id);
-		},
-		editOrt(softwareimageort_id){
-			this.openModal(softwareimageort_id);
-		},
-		async deleteOrt(softwareimageort_id){
-
-			if (await this.$fhcAlert.confirmDelete() === false) return;
-
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/deleteImageort',
-				{
-					softwareimageort_id: softwareimageort_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					if (CoreRESTClient.isError(result.data))
-					{
-						this.$fhcAlert.alertSystemMessage(Object.values(result.data.retval).join('; '));  // TODO backend result anpassen
-					}
-					else
-					{
-						this.$fhcAlert.alertSuccess('Gelöscht!');
-
-						// Refresh data in Raumzuordnungstabelle
-						this.getOrteByImage(this.softwareimageId);
-
-						// Emit deleted Raumanzahl to be updated in Imagetabelle
-						this.$emit('onSaved', -1);
-					}
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
-		},
-		getOrteBySoftware(software_id, software_titel) {
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteBySoftware',
-				{
-					software_id: software_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					this.orte = [];
-					this.softwareTitel = software_titel
-					if (CoreRESTClient.hasData(result.data)) {
-						this.orte = CoreRESTClient.getData(result.data);
-					}
-					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result.data));
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
-		},
-		getOrteByImage(softwareimage_id) {
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
-				{
-					softwareimage_id: softwareimage_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
-					this.orte = [];
-					if (CoreRESTClient.hasData(result.data)) {
-						this.orte = CoreRESTClient.getData(result.data);
-					}
-					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result.data));
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
-		},
-		onRaumzuordnungSaved(raumanzahlDifferenz) {
-			this.$refs.raumModal.hide();
-
-			// Refresh data in Raumzuordnungstabelle
-			this.getOrteByImage(this.softwareimageId);
-
-			// Emit added Raumanzahl to be updated in Imagetabelle
-			this.$emit('onSaved', raumanzahlDifferenz);
-		},
-		onVerfuegbarkeitAendernClick(){
-			let selectedData = this.$refs.raumTable.tabulator.getSelectedData();
-
-			if (selectedData.length == 0)
-			{
-				this.$fhcAlert.handleSystemMessage('Bitte erst Zeilen auswählen');
-				return;
-			}
-
-			this.$refs.raumModal.openVerfuebarkeitAendernModal(selectedData);
-		},
+		}
 	},
 	template: `
-	<div class="col-md-6">
+	<div class="raumzuordnung">
 		<div class="card">
-			<h3 class="h5 card-header">Raumzuordnung<span class="fhc-subtitle">Zuordnung über Image</span></h3>
+			<h3 class="h5 card-header">{{ $p.t('global/raumzuordnung') }}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberImage') }}</span></h3>
 			<div class="card-body">
 				<core-filter-cmpt
 					ref="raumTable"
 					:side-menu="false"
-					:table-only=true
+					:title="raumTableTitle"
+					table-only
 					:tabulator-options="orteTabulatorOptions"
-					:new-btn-label="'Raum'"
+					:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
+					:new-btn-label="$p.t('global/raum')"
 					:new-btn-show="showBtn" 
 					@click:new="openModal()">	
 					<template v-if="showBtn" v-slot:actions>
@@ -217,14 +215,13 @@ export const Raumzuordnung = {
 				</core-filter-cmpt>
 			</div>
 		</div>
-	</div>	
-	
-	<!-- Raumzuordnung modal component -->
-	<raum-modal
-		class="fade"
-		ref="raumModal"
-		dialog-class="modal-lg"
-		@on-saved="onRaumzuordnungSaved">
-	</raum-modal>	
+		<!-- Raumzuordnung modal component -->
+		<raum-modal
+			class="fade"
+			ref="raumModal"
+			dialog-class="modal-lg"
+			@on-saved="onRaumzuordnungSaved">
+		</raum-modal>	
+	</div>
 	`
 };

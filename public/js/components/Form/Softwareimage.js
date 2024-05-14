@@ -1,9 +1,15 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import CoreForm from '../../../../../js/components/Form/Form.js';
+import CoreFormInput from '../../../../../js/components/Form/Input.js';
+import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
 
 export const Softwareimage = {
 	components: {
 		AutoComplete: primevue.autocomplete,
-		"datepicker": VueDatePicker
+		"datepicker": VueDatePicker,
+		CoreForm,
+		CoreFormInput,
+		CoreFormValidation
 	},
 	emits: [
 		'onSaved'
@@ -45,7 +51,6 @@ export const Softwareimage = {
 			}
 		},
 		save(){
-
 			// Decide if copy, create or update image
 			if (this.copy === true) {
 				var method = 'copyImageAndOrte';
@@ -54,28 +59,31 @@ export const Softwareimage = {
 				var method = Number.isInteger(this.softwareimageId) ? 'updateImage' : 'createImage';
 			}
 
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/' + method,
-				{
-					softwareimage: this.softwareimage,
-				}
-			).then(
-				result => {
-					if (CoreRESTClient.isError(result.data))
-					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
-					}
-					else
-					{
-						this.$fhcAlert.alertSuccess('Gespeichert!');
+			if (this.$refs.softwareimageForm)
+				this.$refs.softwareimageForm
+					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Image/' + method, {
+						softwareimage: this.softwareimage}
+					)
+					.then(result => {
+						if (method == 'copyImageAndOrte')
+						{
+							this.$fhcAlert.alertDefault(
+								'success',
+								this.$p.t('global/gespeichert'),
+								this.$p.t('global/imageverwaltungImageCopySuccessText'),
+								true
+							);
+						}
+						else
+						{
+							this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+						}
 						this.$emit('onSaved');
-					}
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+					})
+					.catch(this.$fhcAlert.handleSystemError);
 		},
 		reset(){
+			this.$refs.softwareimageForm.clearValidation();
 			this.softwareimageId = null;
 			this.softwareimage = {};
 			this.copy = false;
@@ -83,52 +91,67 @@ export const Softwareimage = {
 	},
 	template: `
 	<div>
-		<form ref="softwareimageForm" class="row gy-3">
+		<core-form ref="softwareimageForm" class="row gy-3">
+			<core-form-validation></core-form-validation>
 			<div class="col-sm-6">
-				<label class="form-label">Bezeichnung *</label>
-				<input type="text" class="form-control" name="bezeichnung" v-model="softwareimage.bezeichnung" required >
+				<core-form-input
+					v-model="softwareimage.bezeichnung"
+					name="bezeichnung"
+					:label="$p.t('global/bezeichnung')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Betriebssystem</label>
-				<input type="text" class="form-control" v-model="softwareimage.betriebssystem">
+			<core-form-input
+					v-model="softwareimage.betriebssystem"
+					name="betriebssystem"
+					:label="$p.t('global/betriebssystem')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-3">
-				<label class="form-label">Verfügbarkeit Start</label>
-				<datepicker
+				<core-form-input
+					type="datepicker"
 					v-model="softwareimage.verfuegbarkeit_start"
-					v-bind:enable-time-picker="false"
-					v-bind:placeholder="'TT.MM.YY'"
-					v-bind:text-input="true"
-					v-bind:auto-apply="true"
+					name="verfuegbarkeit_start"
+					:label="$p.t('global/verfuegbarkeitStart')"
 					locale="de"
 					format="dd.MM.yyyy"
-					name="verfuegbarkeit_start"
-					model-type="yyyy-MM-dd">
-				</datepicker>
+					model-type="yyyy-MM-dd"
+					:enable-time-picker="false"
+					:placeholder="'TT.MM.YY'"
+					:text-input="true"
+					:auto-apply="true"
+					>
+				</core-form-input>
 			</div>
 			<div class="col-sm-3">
-				<label class="form-label">Verfügbarkeit Ende</label>
-				<datepicker
+				<core-form-input
+					type="datepicker"
 					v-model="softwareimage.verfuegbarkeit_ende"
-					v-bind:enable-time-picker="false"
-					v-bind:placeholder="'TT.MM.YY'"
-					v-bind:text-input="true"
-					v-bind:auto-apply="true"
 					name="verfuegbarkeit_ende"
+					:label="$p.t('global/verfuegbarkeitEnde')"
 					locale="de"
 					format="dd.MM.yyyy"
-					model-type="yyyy-MM-dd">
-				</datepicker>
+					model-type="yyyy-MM-dd"
+					:enable-time-picker="false"
+					:placeholder="'TT.MM.YY'"
+					:text-input="true"
+					:auto-apply="true"
+					>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Anmerkung</label>
-				<textarea
-					class="form-control"
+				<core-form-input
+					type="textarea"
 					v-model="softwareimage.anmerkung"
-					rows="5">
-				</textarea>
+					name="anmerkung"
+					:label="$p.t('global/anmerkung')"
+					rows="5"
+				>
+				</core-form-input>
 			</div>
-		</form>
+		</core-form>
 	</div>
 	`
 }

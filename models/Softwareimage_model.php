@@ -57,7 +57,7 @@ class Softwareimage_model extends DB_Model
 		if ($this->db->trans_status() === false)
 		{
 			$this->db->trans_rollback();
-			return error('Fehler beim Kopieren des Softwareimages', EXIT_ERROR);
+			return error($this->db->error(), EXIT_DATABASE);
 		}
 
 		return success($lastInsert_id);

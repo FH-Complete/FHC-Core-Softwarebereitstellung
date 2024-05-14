@@ -10,18 +10,14 @@ export const Softwarezuordnung = {
 		return {
 			softwareimageId: Vue.inject('softwareimageId'),
 			softwareTitel: null,
+			softwareimage_bezeichnung: null,
 			softwarezuordnung: [],
 			softwarezuordnungTabulatorOptions: {
-				maxHeight: "100%",
-				minHeight: 30,
 				layout: 'fitColumns',
 				index: 'software_id',
-				columnDefaults:{
-					tooltip:true,
-				},
 				columns: [
 					{title: 'Software-ID', field: 'software_id', visible: false, headerFilter: true, frozen: true},
-					{title: 'Softwaretyp', field: 'softwaretyp_kurzbz', headerFilter: true},
+					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_kurzbz', headerFilter: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true},
 					{title: 'Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
@@ -29,23 +25,35 @@ export const Softwarezuordnung = {
 			}
 		}
 	},
+	computed: {
+		softwarezuordnungTableTitle() {
+			if (this.$parent.$options.componentName === 'Imageverwaltung')
+			{
+				return this.softwareimage_bezeichnung ? this.softwareimage_bezeichnung : '[ ' + this.$p.t('global/imageAuswaehlen') + ' ]';
+			}
+			else
+			{
+				return this.softwareTitel ? this.softwareTitel : '[ ' + this.$p.t('global/softwareAuswaehlen') + ' ]';
+			}
+		}
+	},
 	methods: {
-		getSoftwareByImage(softwareimage_id) {
+		getSoftwareByImage(softwareimage_id, softwareimage_bezeichnung = null) {
+
+			this.softwareimage_bezeichnung = softwareimage_bezeichnung;
+
 			CoreRESTClient.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByImage',
 				{
 					softwareimage_id: softwareimage_id
-				},
-				{
-					timeout: 2000
-				}
-			).then(
-				result => {
+				})
+				.then(result => result.data)
+				.then(result => {
 					this.softwarezuordnung = [];
-					if (CoreRESTClient.hasData(result.data)) {
-						this.softwarezuordnung = CoreRESTClient.getData(result.data);
+					if (CoreRESTClient.hasData(result)) {
+						this.softwarezuordnung = CoreRESTClient.getData(result);
 					}
-					this.$refs.zuordnungTable.tabulator.setData(CoreRESTClient.getData(result.data));
+					this.$refs.zuordnungTable.tabulator.setData(CoreRESTClient.getData(result));
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
@@ -53,14 +61,15 @@ export const Softwarezuordnung = {
 		}
 	},
 	template: `
-	<div class="col-md-6">
+	<div class="softwarezuordnung">
 		<div class="card">
-			<h3 class="h5 card-header">Softwarezuordnung<span class="fhc-subtitle">Zuordnung über Software</span></h3>
+			<h3 class="h5 card-header">{{ $p.t('global/softwareZuordnung')}}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberSoftware')}}</span></h3>
 			<div class="card-body">
 				<core-filter-cmpt
 					ref="zuordnungTable"
+					:title="softwarezuordnungTableTitle"
 					:side-menu="false"
-					:table-only="true"
+					table-only
 					:tabulator-options="softwarezuordnungTabulatorOptions">
 				</core-filter-cmpt>
 			</div>

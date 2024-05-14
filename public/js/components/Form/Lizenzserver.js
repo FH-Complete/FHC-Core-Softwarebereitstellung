@@ -1,6 +1,14 @@
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import CoreForm from '../../../../../js/components/Form/Form.js';
+import CoreFormInput from '../../../../../js/components/Form/Input.js';
+import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
 
 export const Lizenzserver = {
+	components: {
+		CoreForm,
+		CoreFormInput,
+		CoreFormValidation
+	},
 	emits: [
 		'onSaved'
 	],
@@ -8,7 +16,6 @@ export const Lizenzserver = {
 		return {
 			lizenzserver_kurzbz: null,
 			lizenzserver: {},
-			errors: []
 		}
 	},
 	methods: {
@@ -45,79 +52,87 @@ export const Lizenzserver = {
 			// Decide if create or update lizenzserver
 			let method = this.lizenzserver_kurzbz === null ? 'createLizenzserver' : 'updateLizenzserver';
 
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/' + method,
-				{
-					lizenzserver: this.lizenzserver,
-				}
-			).then(
-				result => {
-					// On error
-					if (CoreRESTClient.isError(result.data))
-					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
-					}
-					else
-					{
-						// On success
-						this.$fhcAlert.alertSuccess('Gespeichert');
+			if (this.$refs.lizenzserverForm)
+				this.$refs.lizenzserverForm
+					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Lizenzserver/' + method, {
+						lizenzserver: this.lizenzserver,
+					})
+					.then(result => {
 						this.$emit('onSaved');
-					}
-				}
-			).catch(
-				error => {
-					this.$fhcAlert.handleSystemError(error);
-				}
-			);
+						this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+					})
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		reset(){
+			this.$refs.lizenzserverForm.clearValidation();
 			this.lizenzserver_kurzbz = null;
 			this.lizenzserver = {};
-			this.errors = [];
 		}
 	},
 	template: `
 	<div>
-		<form ref="lizenzserverForm" class="row gy-3">
+		<core-form ref="lizenzserverForm" class="row gy-3">
+			<core-form-validation></core-form-validation>
 			<div class="col-sm-4">
-				<label class="form-label">Kurzbezeichnung *</label>
-				<input type="text" class="form-control" 
-					name="lizenzserver_kurzbz"
+				<core-form-input
 					v-model="lizenzserver.lizenzserver_kurzbz"
+					name="lizenzserver_kurzbz"
+					:label="$p.t('global/lizenzserverKurzbz')"
 					:disabled="lizenzserver_kurzbz !== null"
-					required >
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-8">
-				<label class="form-label">Bezeichnung</label>
-				<input type="text" class="form-control" name="bezeichnung" v-model="lizenzserver.bezeichnung">	
+				<core-form-input
+					v-model="lizenzserver.bezeichnung"
+					name="bezeichnung"
+					:label="$p.t('global/bezeichnung')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-4">
-				<label class="form-label">Mac-Adresse</label>
-				<input type="text" class="form-control" name="macadresse" v-model="lizenzserver.macadresse">
+				<core-form-input
+					v-model="lizenzserver.macadresse"
+					name="macadresse"
+					label="Mac-Adresse"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-4">
-				<label class="form-label">IP-Adresse</label>
-				<input type="text" class="form-control" name="ipadresse" v-model="lizenzserver.ipadresse">
+				<core-form-input
+					v-model="lizenzserver.ipadresse"
+					name="ipadresse"
+					label="IP-Adresse"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-4">
-				<label class="form-label">Location</label>
-				<input type="text" class="form-control" name="location" v-model="lizenzserver.location">
+				<core-form-input
+					v-model="lizenzserver.location"
+					name="location"
+					label="Location"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Ansprechpartner</label>
-				<input type="text" class="form-control" name="ansprechpartner" v-model="lizenzserver.ansprechpartner">
+				<core-form-input
+					v-model="lizenzserver.ansprechpartner"
+					name="ansprechpartner"
+					:label="$p.t('global/ansprechpartner')"
+				>
+				</core-form-input>
 			</div>
 			<div class="col-sm-6">
-				<label class="form-label">Anmerkung</label>
-				<textarea
-					class="form-control"
-					name="anmerkung"
+				<core-form-input
+					type="textarea"
 					v-model="lizenzserver.anmerkung"
-					rows="5">
-				</textarea>
+					name="anmerkung"
+					:label="$p.t('global/anmerkung')"
+					rows="5"
+				>
+				</core-form-input>
 			</div>
-		</form>
+		</core-form>
 	</div>
-	<div v-for="error in errors" class="alert alert-danger" role="alert" v-html="error"></div>
 	`
 }

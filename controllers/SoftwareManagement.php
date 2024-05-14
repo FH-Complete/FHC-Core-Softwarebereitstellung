@@ -14,18 +14,9 @@ class SoftwareManagement extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'basis/mitarbeiter:r'
+				'index' => 'admin:rw'
 			)
 		);
-
-		// Loads phrases system
-		//~ $this->loadPhrases(
-			//~ array(
-				//~ 'global',
-				//~ 'ui',
-				//~ 'filter'
-			//~ )
-		//~ );
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------

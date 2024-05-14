@@ -16,17 +16,20 @@ class Image extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'getImage' => 'basis/mitarbeiter:r',
-				'createImage' => 'basis/mitarbeiter:rw',
-				'updateImage' => 'basis/mitarbeiter:rw',
-				'deleteImage' => 'basis/mitarbeiter:rw',
-				'copyImageAndOrte' => 'basis/mitarbeiter:rw',
-				'getImagesBySoftware' => 'basis/mitarbeiter:r',
-				'getImagesByBezeichnung' => 'basis/mitarbeiter:r'
+				'getImage' => 'admin:rw',
+				'deleteImage' => 'admin:rw',
+				'getImagesBySoftware' => 'admin:rw',
+				'getImagesByBezeichnung' => 'admin:rw'
 			)
 		);
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwareimage_model', 'SoftwareimageModel');
+
+		// Load language phrases
+		$this->loadPhrases([
+				'ui',
+				'global'
+		]);
 
 		$this->_setAuthUID(); // sets property uid
 	}
@@ -45,70 +48,10 @@ class Image extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen des Softwareimages');
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result)[0] : []);
-	}
-
-	/**
-	 * Insert new Softwareimage.
-	 */
-	public function createImage()
-	{
-		$data = json_decode($this->input->raw_input_stream, true);
-
-		// Validate data
-		$result = $this->_validate($data);
-
-		if (isError($result))
-		{
-			$this->terminateWithJsonError(getError($result));
-		}
-
-		// prepare image for save by modifying data
-		$this->_prepare($data['softwareimage']);
-
-		// Insert image
-		$result = $this->SoftwareimageModel->insert(
-			$data['softwareimage']
-		);
-
-		return $this->outputJson($result);
-	}
-
-	/**
-	 * Update Softwareimage.
-	 */
-	public function updateImage()
-	{
-		$data = json_decode($this->input->raw_input_stream, true);
-
-		if (!isset($data['softwareimage']['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage fehlt');
-
-		// Validate data
-		$result = $this->_validate($data, $data['softwareimage']['softwareimage_id']);
-
-		if (isError($result))
-		{
-			$this->terminateWithJsonError(getError($result));
-		}
-
-		$softwareimage_id = $data['softwareimage']['softwareimage_id'];
-
-		// prepare image for save by modifying data
-		$this->_prepare($data['softwareimage']);
-
-		// unset softwareimage_id
-		unset($data['softwareimage']['softwareimage_id']);
-
-		// Update image
-		$result = $this->SoftwareimageModel->update(
-			$softwareimage_id,
-			$data['softwareimage']
-		);
-
-		return $this->outputJson($result);
 	}
 
 	/**
@@ -118,37 +61,21 @@ class Image extends Auth_Controller
 	{
 		$data = json_decode($this->input->raw_input_stream, true);
 
-		if (!isset($data['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage fehlt');
+		if (!isset($data['softwareimage_id'])) $this->terminateWithJsonError($this->p->t('ui', 'errorFelderFehlen'));
+
+		// Exit if Image has zugeordnete Software
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareimageSoftware_model', 'SoftwareimageSoftwareModel');
+
+		$result = $this->SoftwareimageSoftwareModel->loadWhere(['softwareimage_id' => $data['softwareimage_id']]);
+
+		if (hasData($result))
+		{
+			$this->terminateWithJsonError($this->p->t('global', 'loeschenNichtMoeglichSoftwareBereitsZugeordnet'));
+		}
+
 
 		// Delete Softwareimage
 		$result = $this->SoftwareimageModel->delete($data['softwareimage_id']);
-
-		return $this->outputJson($result);
-	}
-
-
-	/**
-	 * Copy exixting Softwareimage and Orte, that are assigend to that image.
-	 * Check for different Bezeichnung.
-	 *
-	 * @return mixed
-	 */
-	public function copyImageAndOrte()
-	{
-		$data = json_decode($this->input->raw_input_stream, true);
-
-		if (!isset($data['softwareimage']['softwareimage_id'])) $this->terminateWithJsonError('Softwareimage fehlt');
-
-		// Validate data
-		$result = $this->_validate($data);
-
-		if (isError($result)) $this->terminateWithJsonError(getError($result));
-
-		// prepare image for save by modifying data
-		$this->_prepare($data['softwareimage']);
-
-		// Insert image
-		$result = $this->SoftwareimageModel->copyImageAndOrteOf($data['softwareimage']);
 
 		return $this->outputJson($result);
 	}
@@ -167,7 +94,7 @@ class Image extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Images: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -187,7 +114,7 @@ class Image extends Auth_Controller
 
 		if (isError($result))
 		{
-			$this->terminateWithJsonError('Fehler beim Holen der Images: '.getError($result));
+			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
@@ -204,115 +131,5 @@ class Image extends Auth_Controller
 		$this->_uid = getAuthUID();
 
 		if (!$this->_uid) show_error('User authentification failed');
-	}
-
-	/**
-	 * Prepares softwareimage for save by modifying data.
-	 * @param sofwareimage
-	 */
-	private function _prepare(&$softwareimage)
-	{
-		// replace empty string by null for dates
-		if (isset($softwareimage['verfuegbarkeit_start']) && isEmptyString($softwareimage['verfuegbarkeit_start']))
-			$softwareimage['verfuegbarkeit_start'] = null;
-
-		if (isset($softwareimage['verfuegbarkeit_ende']) && isEmptyString($softwareimage['verfuegbarkeit_ende']))
-			$softwareimage['verfuegbarkeit_ende'] = null;
-	}
-
-	/**
-	 * Performs validation checks.
-	 * @return object error if invalid, success otherwise
-	 */
-	private function _validate($data, $current_softwareimage_id = null)
-	{
-		// Validate form data
-		if (isset($data['softwareimage']))
-		{
-			$softwareimage = $data['softwareimage'];
-			$verfuegbarkeit_start = isset($softwareimage['verfuegbarkeit_start']) ? $softwareimage['verfuegbarkeit_start'] : null;
-			$this->load->library('form_validation');
-
-			$this->form_validation->set_data($softwareimage);
-			$this->form_validation->set_rules(
-				'bezeichnung',
-				'Softwareimage Bezeichnung',
-				array(
-					'required',
-					array(
-						'imageVerwendet',
-						function($bezeichnung) use ($current_softwareimage_id)
-						{
-							return $this->_checkImageBezeichnungVerwendet($bezeichnung, $current_softwareimage_id);
-						}
-					)
-				),
-				array(
-					'required' => 'Pflichtfeld',
-					'imageVerwendet' => 'Existiert bereits'
-				)
-			);
-			$this->form_validation->set_rules(
-				'verfuegbarkeit_ende',
-				'Verfügbarkeit Ende',
-				array(
-					array(
-						'imageVerfuegbarkeit',
-						function($verfuegbarkeit_ende) use ($verfuegbarkeit_start)
-						{
-							return $this->_checkImageVerfuegbarkeit($verfuegbarkeit_start, $verfuegbarkeit_ende);
-						}
-					)
-				),
-				array('imageVerfuegbarkeit' => 'Datumende vor Datumstart')
-			);
-
-			// On error
-			if ($this->form_validation->run() == false)
-			{
-				return error($this->form_validation->error_array());
-			}
-		}
-		else
-			return error('Softwareimage nicht übergeben');
-
-		// On success
-		return success();
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// Validation methods
-
-	/**
-	 * Check if Verfügbarkeit is valid.
-	 * @param verfuegbarkeit_start
-	 * @param verfuegbarkeit_ende
-	 * @return bool valid or not
-	 */
-	private function _checkImageVerfuegbarkeit($verfuegbarkeit_start, $verfuegbarkeit_ende)
-	{
-		if (isEmptyString($verfuegbarkeit_start) || isEmptyString($verfuegbarkeit_ende)) return true;
-
-		$start = strtotime($verfuegbarkeit_start);
-		$ende = strtotime($verfuegbarkeit_ende);
-
-		return $start && $ende && $start <= $ende;
-	}
-
-	/**
-	 * Check if Image Bezeichnung is already used.
-	 * @param bezeichnung
-	 * @param current_softwareimage_id id of currently edited software (will be excluded)
-	 * @return bool valid or not
-	 */
-	private function _checkImageBezeichnungVerwendet($bezeichnung, $current_softwareimage_id = null)
-	{
-		$params = array('bezeichnung' => $bezeichnung);
-		if (!isEmptyString($current_softwareimage_id)) $params['softwareimage_id !='] = $current_softwareimage_id;
-
-		// Return if Imagebezeichnung already exixts
-		$result = $this->SoftwareimageModel->loadWhere($params);
-
-		return !hasData($result);
 	}
 }
