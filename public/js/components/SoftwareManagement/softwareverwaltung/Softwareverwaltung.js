@@ -51,7 +51,7 @@ export default {
 					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
 					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true},
-					{title: this.$p.t('global/lizenzArt'), field: 'lizenzart', headerFilter: true},
+					{title: this.$p.t('global/lizenzart'), field: 'lizenzart', headerFilter: true},
 					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
 					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true},
 					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
