@@ -14,6 +14,32 @@ class SoftwareLib
 	}
 
 	/**
+	 * Check softwareIds, if they have child software, and change their status.
+	 *
+	 * @param $softwareIds
+	 * @param $softwarestatusKurzbz
+	 * @return mixed	success object with result array, where key is the parent softwareId, and value the child softwareId.
+	 */
+	public function changeChildrenSoftwarestatus($softwareIds, $softwarestatusKurzbz){
+
+		$result = $this->getParentChildMap($softwareIds);
+
+		if (hasData($result))
+		{
+			$childrenArray = array_merge(...array_values(getData($result)));
+
+			$res = $this->_ci->SoftwareSoftwarestatusModel->changeSoftwarestatus(
+				$childrenArray,
+				$softwarestatusKurzbz
+			);
+
+			if (isError($res)) return error($res);
+		}
+
+		return success(getData($result));
+	}
+
+	/**
 	 * Checks given softwareIds if they are parent and, if so, retrieves their children.
 	 * @param $softwareIds Array | Number
 	 * @return mixed success object with result array, where key is the parent softwareId, and value the child softwareId.

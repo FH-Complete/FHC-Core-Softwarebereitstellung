@@ -77,26 +77,24 @@ class Software extends FHCAPI_Controller
 		// On error
 		if (isError($result)) $this->TerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
-		// For certain status, transfer status also to any child software, if it exists
+		// For certain status...
 		$parentArray = [];
 
 		if ($this->input->post('softwarestatus')['softwarestatus_kurzbz'] === 'endoflife' ||
 			$this->input->post('softwarestatus')['softwarestatus_kurzbz'] === 'nichtverfuegbar')
 		{
-			$result = $this->softwarelib->getParentChildMap($this->input->post('softwarestatus')['software_id']);
+			//...transfer status also to any child software, if it exists
+			$result = $this->softwarelib->changeChildrenSoftwarestatus(
+				$this->input->post('softwarestatus')['software_id'],
+				$this->input->post('softwarestatus')['softwarestatus_kurzbz']
+			);
 
 			if (hasData($result))
 			{
 				$parentArray = array_keys(getData($result));
-				$childrenArray = array_merge(...array_values(getData($result)));
-
-				$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus(
-					$childrenArray,
-					$this->input->post('softwarestatus')['softwarestatus_kurzbz']
-				);
-
-				if (isError($result)) $this->TerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 			}
+
+			if (isError($result)) $this->TerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 		}
 
 		// On success

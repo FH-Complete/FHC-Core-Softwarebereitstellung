@@ -261,30 +261,26 @@ class Software extends Auth_Controller
 	{
 		$data = $this->getPostJson();
 
+		// Change status of given software ids
 		$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus($data->software_ids, $data->softwarestatus_kurzbz);
 
 		// On error
 		if (isError($result)) $this->terminateWithJsonError(getError($result));
 
-		// For certain status, transfer status also to any child software, if it exists
+		// For certain status...
 		$parentArray = [];
 
 		if ($data->softwarestatus_kurzbz === 'endoflife' || $data->softwarestatus_kurzbz === 'nichtverfuegbar')
 		{
-			$result = $this->softwarelib->getParentChildMap($data->software_ids);
+			//...transfer status also to any child software, if it exists
+			$result = $this->softwarelib->changeChildrenSoftwarestatus($data->software_ids, $data->softwarestatus_kurzbz);
 
 			if (hasData($result))
 			{
 				$parentArray = array_keys(getData($result));
-				$childrenArray = array_merge(...array_values(getData($result)));
-
-				$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus(
-					$childrenArray,
-					$data->softwarestatus_kurzbz
-				);
-
-				if (isError($result)) $this->terminateWithJsonError(getError($result));
 			}
+
+			if (isError($result)) $this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(['parentArray' => $parentArray]);
