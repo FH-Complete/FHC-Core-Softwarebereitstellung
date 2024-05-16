@@ -40,6 +40,9 @@ class Software extends Auth_Controller
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwaretyp_model', 'SoftwaretypModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
+
+		// Load libraries
+		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -257,39 +260,31 @@ class Software extends Auth_Controller
 	public function changeSoftwarestatus()
 	{
 		$data = $this->getPostJson();
+
+		$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus($data->software_ids, $data->softwarestatus_kurzbz);
+
+		// On error
+		if (isError($result)) $this->terminateWithJsonError(getError($result));
+
+		// For certain status, transfer status also to any child software, if it exists
 		$parentArray = [];
 
 		if ($data->softwarestatus_kurzbz === 'endoflife' || $data->softwarestatus_kurzbz === 'nichtverfuegbar')
 		{
-			$childrenArray = [];
+			$result = $this->softwarelib->getParentChildMap($data->software_ids);
 
-			foreach ($data->software_ids as $software_id)
+			if (hasData($result))
 			{
-				$result = $this->SoftwareModel->getChildren($software_id);
+				$parentArray = array_keys(getData($result));
+				$childrenArray = array_merge(...array_values(getData($result)));
 
-				if (hasData($result))
-				{
-					$parentArray[]= $software_id; // Store parent software ids
-					$childrenArray = array_merge(array_column(getData($result), 'software_id'), $childrenArray);
-				}
+				$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus(
+					$childrenArray,
+					$data->softwarestatus_kurzbz
+				);
+
+				if (isError($result)) $this->terminateWithJsonError(getError($result));
 			}
-
-			// Merge posted software ids with eventually found children software ids
-			$mergedArray = array_merge($data->software_ids, $childrenArray);
-
-			// Make array unique
-			$uniqueIds = array_unique($mergedArray);
-
-			$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus($uniqueIds, $data->softwarestatus_kurzbz);
-		}
-		else
-		{
-			$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus($data->software_ids, $data->softwarestatus_kurzbz);
-		}
-
-		if (isError($result))
-		{
-			$this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(['parentArray' => $parentArray]);

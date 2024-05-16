@@ -77,7 +77,7 @@ class Software extends FHCAPI_Controller
 		// On error
 		if (isError($result)) $this->TerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
-		// If status is 'End of Life' or 'Nicht verfügbar', transfer status also to any child software, if it exists
+		// For certain status, transfer status also to any child software, if it exists
 		$parentArray = [];
 
 		if ($this->input->post('softwarestatus')['softwarestatus_kurzbz'] === 'endoflife' ||
