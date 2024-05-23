@@ -16,19 +16,19 @@ class Software extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'admin:rw',
-				'getSoftwareMetadata' => 'admin:rw',
-				'getSoftware' => 'admin:rw',
-				'getSoftwareByKurzbz' => 'admin:rw',
-				'getSoftwareByImage' => 'admin:rw',
-				'getSoftwareByOrt' => 'admin:rw',
-				'getOeSuggestions' => 'admin:rw',
-				'getStatus' => 'admin:rw',
-				'getLanguageIndex' => 'admin:rw',
-				'getLastSoftwarestatus' => 'admin:rw',
-				'changeSoftwarestatus' => 'admin:rw',
-				'deleteSoftware' => 'admin:rw',
-				'getSoftwarelizenztypen' => 'admin:rw'
+				'index' => 'extension/software_verwalten:rw',
+				'getSoftwareMetadata' => 'extension/software_verwalten:rw',
+				'getSoftware' => 'extension/software_verwalten:rw',
+				'getSoftwareByKurzbz' => 'extension/software_verwalten:rw',
+				'getSoftwareByImage' => 'extension/software_verwalten:rw',
+				'getSoftwareByOrt' => 'extension/software_verwalten:rw',
+				'getOeSuggestions' => 'extension/software_verwalten:rw',
+				'getStatus' => 'extension/software_verwalten:rw',
+				'getLanguageIndex' => 'extension/software_verwalten:rw',
+				'getLastSoftwarestatus' => 'extension/software_verwalten:rw',
+				'changeSoftwarestatus' => 'extension/software_verwalten:rw',
+				'deleteSoftware' => 'extension/software_verwalten:rw',
+				'getSoftwarelizenztypen' => 'extension/software_verwalten:rw'
 			)
 		);
 
@@ -47,6 +47,15 @@ class Software extends Auth_Controller
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Public methods
+	public function getSoftwarelistData(){
+		$result = $this->SoftwareModel->getSoftwarelistData();
+
+		// On error
+		if (isError($result)) $this->terminateWithJsonError(getError($result));
+
+		// On success
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
 
 	/**
 	 *

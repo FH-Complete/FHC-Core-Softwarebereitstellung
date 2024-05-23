@@ -35,5 +35,5 @@
 			ORDER BY
 				 bezeichnung
 		',
-		'requiredPermissions' => 'admin'
+		'requiredPermissions' => 'extension/software_verwalten'
 	);

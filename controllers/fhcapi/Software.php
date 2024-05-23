@@ -16,8 +16,8 @@ class Software extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
-				'createSoftware' => 'admin:rw',
-				'updateSoftware' => 'admin:rw'
+				'createSoftware' => 'extension/software_verwalten:rw',
+				'updateSoftware' => 'extension/software_verwalten:rw'
 			)
 		);
 

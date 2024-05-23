@@ -13,8 +13,8 @@ class Ort extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
-				'insertImageort' => 'admin:rw',
-				'updateImageort' => 'admin:rw',
+				'insertImageort' => 'extension/software_verwalten:rw',
+				'updateImageort' => 'extension/software_verwalten:rw',
 			)
 		);
 

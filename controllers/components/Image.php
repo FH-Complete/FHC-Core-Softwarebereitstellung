@@ -16,10 +16,10 @@ class Image extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'getImage' => 'admin:rw',
-				'deleteImage' => 'admin:rw',
-				'getImagesBySoftware' => 'admin:rw',
-				'getImagesByBezeichnung' => 'admin:rw'
+				'getImage' => 'extension/software_verwalten:rw',
+				'deleteImage' => 'extension/software_verwalten:rw',
+				'getImagesBySoftware' => 'extension/software_verwalten:rw',
+				'getImagesByBezeichnung' => 'extension/software_verwalten:rw'
 			)
 		);
 

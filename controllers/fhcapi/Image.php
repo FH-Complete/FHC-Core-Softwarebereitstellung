@@ -16,9 +16,9 @@ class Image extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
-				'createImage' => 'admin:rw',
-				'updateImage' => 'admin:rw',
-				'copyImageAndOrte' => 'admin:rw',
+				'createImage' => 'extension/software_verwalten:rw',
+				'updateImage' => 'extension/software_verwalten:rw',
+				'copyImageAndOrte' => 'extension/software_verwalten:rw',
 			)
 		);
 

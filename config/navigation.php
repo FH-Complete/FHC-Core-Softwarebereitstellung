@@ -5,7 +5,7 @@ $config['navigation_header']['*']['Administration']['children']['SoftwareManagem
 	'sort' => 30,
 	'description' => 'Software Management',
 	'expand' => false,
-	'requiredPermissions' => 'admin:r'
+	'requiredPermissions' => 'extension/software_verwalten:rw'
 );
 
 // Add Side-Menu-Entry to Main Page
@@ -13,6 +13,6 @@ $config['navigation_menu']['extensions/FHC-Core-Softwarebereitstellung/*'] = arr
 	'Lizenzmanagement' => array(
 		'link' => site_url('extensions/FHC-Core-Softwarebereitstellung/SoftwareManagement'),
 		'description' => 'Software-Lizenzmanagement',
-		'requiredPermissions' => 'admin:r'
+		'requiredPermissions' => 'extension/software_verwalten:rw'
 	)
 );
