@@ -191,8 +191,30 @@ export const SoftwareForm = {
 							softwareImageIds: [...new Set(this.softwareImages.map(softwareImage => softwareImage.softwareimage_id))]
 						})
 						.then(result => {
+							if (result.data.parentArray !== undefined)
+							{
+								if (result.data.parentArray.length > 0)
+								{
+									// Sticky success msg
+									this.$fhcAlert.alertDefault('success', 'Info', this.$p.t('global/gespeichert'), true);
+
+									// Sticky info msg
+									this.$fhcAlert.alertDefault(
+										'info',
+										this.$p.t('global/statusErfolgreichUebertragen'),
+										this.$p.t('global/statusUebertragenMsg', {
+											status: this.softwarestatus.softwarestatus_kurzbz,
+											parentSoftware: result.data.parentArray.join(', ')
+										}),
+										true
+									);
+								}
+							}
+							else
+							{
+								this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
+							}
 							this.$emit("softwareFormSaved");
-							this.$fhcAlert.alertSuccess(this.$p.t('global/gespeichert'));
 						})
 						.catch(error => this.$fhcAlert.handleSystemError(error));
 			}

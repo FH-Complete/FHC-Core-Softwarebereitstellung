@@ -16,5 +16,5 @@
 			ORDER BY
 				 lizenzserver_kurzbz
 		',
-		'requiredPermissions' => 'admin'
+		'requiredPermissions' => 'extension/software_verwalten'
 	);

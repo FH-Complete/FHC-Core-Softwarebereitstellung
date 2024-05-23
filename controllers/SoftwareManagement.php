@@ -14,7 +14,7 @@ class SoftwareManagement extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'admin:rw'
+				'index' => 'extension/software_verwalten:rw'
 			)
 		);
 	}

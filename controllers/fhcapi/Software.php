@@ -16,8 +16,8 @@ class Software extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
-				'createSoftware' => 'admin:rw',
-				'updateSoftware' => 'admin:rw'
+				'createSoftware' => 'extension/software_verwalten:rw',
+				'updateSoftware' => 'extension/software_verwalten:rw'
 			)
 		);
 
@@ -25,6 +25,10 @@ class Software extends FHCAPI_Controller
 
 		// load models
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
+
+		// Load libraries
+		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
+
 
 		// Load language phrases
 		$this->loadPhrases([
@@ -71,10 +75,30 @@ class Software extends FHCAPI_Controller
 		);
 
 		// On error
-		$result = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		if (isError($result)) $this->TerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+
+		// For certain status...
+		$parentArray = [];
+
+		if ($this->input->post('softwarestatus')['softwarestatus_kurzbz'] === 'endoflife' ||
+			$this->input->post('softwarestatus')['softwarestatus_kurzbz'] === 'nichtverfuegbar')
+		{
+			//...transfer status also to any child software, if it exists
+			$result = $this->softwarelib->changeChildrenSoftwarestatus(
+				$this->input->post('softwarestatus')['software_id'],
+				$this->input->post('softwarestatus')['softwarestatus_kurzbz']
+			);
+
+			if (hasData($result))
+			{
+				$parentArray = array_keys(getData($result));
+			}
+
+			if (isError($result)) $this->TerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		}
 
 		// On success
-		$this->terminateWithSuccess($result);
+		$this->terminateWithSuccess(['parentArray' => $parentArray]);
 	}
 
 

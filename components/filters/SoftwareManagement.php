@@ -58,5 +58,5 @@
 			) software
 			ORDER BY software_kurzbz, version DESC NULLS LAST, software_id DESC
 		',
-		'requiredPermissions' => 'admin'
+		'requiredPermissions' => 'extension/software_verwalten'
 	);

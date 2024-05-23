@@ -16,8 +16,8 @@ class Lizenzserver extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
-				'createLizenzserver' => 'admin:rw',
-				'updateLizenzserver' => 'admin:rw'
+				'createLizenzserver' => 'extension/software_verwalten:rw',
+				'updateLizenzserver' => 'extension/software_verwalten:rw'
 			)
 		);
 

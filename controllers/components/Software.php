@@ -16,19 +16,19 @@ class Software extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'admin:rw',
-				'getSoftwareMetadata' => 'admin:rw',
-				'getSoftware' => 'admin:rw',
-				'getSoftwareByKurzbz' => 'admin:rw',
-				'getSoftwareByImage' => 'admin:rw',
-				'getSoftwareByOrt' => 'admin:rw',
-				'getOeSuggestions' => 'admin:rw',
-				'getStatus' => 'admin:rw',
-				'getLanguageIndex' => 'admin:rw',
-				'getLastSoftwarestatus' => 'admin:rw',
-				'changeSoftwarestatus' => 'admin:rw',
-				'deleteSoftware' => 'admin:rw',
-				'getSoftwarelizenztypen' => 'admin:rw'
+				'index' => 'extension/software_verwalten:rw',
+				'getSoftwareMetadata' => 'extension/software_verwalten:rw',
+				'getSoftware' => 'extension/software_verwalten:rw',
+				'getSoftwareByKurzbz' => 'extension/software_verwalten:rw',
+				'getSoftwareByImage' => 'extension/software_verwalten:rw',
+				'getSoftwareByOrt' => 'extension/software_verwalten:rw',
+				'getOeSuggestions' => 'extension/software_verwalten:rw',
+				'getStatus' => 'extension/software_verwalten:rw',
+				'getLanguageIndex' => 'extension/software_verwalten:rw',
+				'getLastSoftwarestatus' => 'extension/software_verwalten:rw',
+				'changeSoftwarestatus' => 'extension/software_verwalten:rw',
+				'deleteSoftware' => 'extension/software_verwalten:rw',
+				'getSoftwarelizenztypen' => 'extension/software_verwalten:rw'
 			)
 		);
 
@@ -40,10 +40,22 @@ class Software extends Auth_Controller
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwaretyp_model', 'SoftwaretypModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
+
+		// Load libraries
+		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Public methods
+	public function getSoftwarelistData(){
+		$result = $this->SoftwareModel->getSoftwarelistData();
+
+		// On error
+		if (isError($result)) $this->terminateWithJsonError(getError($result));
+
+		// On success
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
 
 	/**
 	 *
@@ -257,39 +269,27 @@ class Software extends Auth_Controller
 	public function changeSoftwarestatus()
 	{
 		$data = $this->getPostJson();
+
+		// Change status of given software ids
+		$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus($data->software_ids, $data->softwarestatus_kurzbz);
+
+		// On error
+		if (isError($result)) $this->terminateWithJsonError(getError($result));
+
+		// For certain status...
 		$parentArray = [];
 
 		if ($data->softwarestatus_kurzbz === 'endoflife' || $data->softwarestatus_kurzbz === 'nichtverfuegbar')
 		{
-			$childrenArray = [];
+			//...transfer status also to any child software, if it exists
+			$result = $this->softwarelib->changeChildrenSoftwarestatus($data->software_ids, $data->softwarestatus_kurzbz);
 
-			foreach ($data->software_ids as $software_id)
+			if (hasData($result))
 			{
-				$result = $this->SoftwareModel->getChildren($software_id);
-
-				if (hasData($result))
-				{
-					$parentArray[]= $software_id; // Store parent software ids
-					$childrenArray = array_merge(array_column(getData($result), 'software_id'), $childrenArray);
-				}
+				$parentArray = array_keys(getData($result));
 			}
 
-			// Merge posted software ids with eventually found children software ids
-			$mergedArray = array_merge($data->software_ids, $childrenArray);
-
-			// Make array unique
-			$uniqueIds = array_unique($mergedArray);
-
-			$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus($uniqueIds, $data->softwarestatus_kurzbz);
-		}
-		else
-		{
-			$result = $this->SoftwareSoftwarestatusModel->changeSoftwarestatus($data->software_ids, $data->softwarestatus_kurzbz);
-		}
-
-		if (isError($result))
-		{
-			$this->terminateWithJsonError(getError($result));
+			if (isError($result)) $this->terminateWithJsonError(getError($result));
 		}
 
 		$this->outputJsonSuccess(['parentArray' => $parentArray]);
