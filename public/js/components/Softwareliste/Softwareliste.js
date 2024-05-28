@@ -48,10 +48,10 @@ export default {
 						}
 					},
 					{title: this.$p.t('global/softwaretypKurzbz'), field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
-					{title: this.$p.t('global/beschreibung'), field: 'beschreibung', headerFilter: true},
 					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
-					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true},
+					{title: this.$p.t('global/beschreibung'), field: 'beschreibung', headerFilter: true, visible: false},
+					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true, visible: false},
 					{
 						title: 'Software-Status',
 						field: 'softwarestatus_kurzbz',
