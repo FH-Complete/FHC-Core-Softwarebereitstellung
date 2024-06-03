@@ -198,7 +198,7 @@ export const Raumzuordnung = {
 	template: `
 	<div class="raumzuordnung">
 		<div class="card">
-			<h3 class="h5 card-header">{{ $p.t('global/raumzuordnung') }}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberImage') }}</span></h3>
+			<h3 class="h5 card-header">{{ $p.t('global/raumverfuegbarkeit') }}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberImage') }}</span></h3>
 			<div class="card-body">
 				<core-filter-cmpt
 					ref="raumTable"
