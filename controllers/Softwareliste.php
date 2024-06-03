@@ -14,7 +14,8 @@ class Softwareliste extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'extension/softwareliste:r'
+				'index' => 'extension/softwareliste:r',
+				'softwareSuche' => 'extension/softwareliste:r'
 			)
 		);
 	}
@@ -28,6 +29,14 @@ class Softwareliste extends Auth_Controller
 	public function index()
 	{
 		$this->load->view('extensions/FHC-Core-Softwarebereitstellung/softwareliste.php');
+	}
+
+	public function softwareSuche($ort_kurzbz)
+	{
+		$this->load->view(
+			'extensions/FHC-Core-Softwarebereitstellung/softwareliste.php',
+			['ort_kurzbz' => $ort_kurzbz]
+		);
 	}
 }
 

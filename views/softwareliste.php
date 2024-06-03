@@ -20,7 +20,9 @@
 ?>
 
 	<div id="main">
-		<softwareliste-layout></softwareliste-layout>
+		<softwareliste-layout
+                :ort-kurzbz="'<?php echo isset($ort_kurzbz) && !is_null($ort_kurzbz) ? $ort_kurzbz : ''; ?>'">
+        </softwareliste-layout>
 	</div>
 
 <?php $this->load->view('templates/FHC-Footer', $includesArray); ?>

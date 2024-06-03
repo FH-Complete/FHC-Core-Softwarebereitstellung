@@ -23,18 +23,33 @@ export default {
 		CoreBaseLayout,
 		CoreTabs
 	},
+	props: {
+		ortKurzbz: {
+			type: String,
+			required: false
+		}
+	},
 	data() {
 		return {
 			tabs: {
-				tab1: { title: Vue.computed(() => this.$p.t('global/softwareliste')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareliste/Softwareliste.js' },
-				tab2: { title: Vue.computed(() => this.$p.t('global/sucheNachRaum')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js' }
+				softwareliste: {
+					title: Vue.computed(() => this.$p.t('global/softwareliste')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareliste/Softwareliste.js'
+				},
+				softwaresuche: {
+					title: Vue.computed(() => this.$p.t('global/sucheNachRaum')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche'
+				}
 			}
 		}
+	},
+	computed:{
+		defaultTab() { return this.ortKurzbz ? 'softwaresuche' : 'softwareliste'},
 	},
 	template: `
 	<core-base-layout :title="$p.t('global/softwareliste')">
 		<template #main>
-			<core-tabs :config="tabs"></core-tabs>									
+			<core-tabs :config="tabs" :default="defaultTab" :modelValue="{ortKurzbz: ortKurzbz}"></core-tabs>									
 		</template>
 	</core-base-layout>
 	`

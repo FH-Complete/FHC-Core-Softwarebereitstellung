@@ -6,6 +6,12 @@ export default {
 		CoreFilterCmpt,
 		AutoComplete: primevue.autocomplete
 	},
+	props: {
+		modelValue: {
+			type: Object,
+			required: false
+		}
+	},
 	data: function() {
 		return {
 			softwaresucheTabulatorOptions: {
@@ -41,6 +47,12 @@ export default {
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
 		},
+		onTableBuilt() {
+			if (this.modelValue.ortKurzbz) {
+				this.selOrt = {ort_kurzbz: this.modelValue.ortKurzbz};
+				this.getSoftwareByOrt(this.modelValue.ortKurzbz);
+			}
+		},
 		onComplete(event) {
 			CoreRESTClient.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
@@ -55,24 +67,6 @@ export default {
 					else
 					{
 						this.ortSuggestions = CoreRESTClient.getData(result.data);
-					}
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
-		},
-		selectAllOrte(){
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrte',
-				null
-			).then(result => {
-					if (CoreRESTClient.isError(result.data))
-					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
-					}
-					else
-					{
-						this.selOrt = CoreRESTClient.getData(result.data);
 					}
 				}
 			).catch(
@@ -99,6 +93,7 @@ export default {
 				:side-menu="false"
 				table-only
 				:tabulator-options="softwaresucheTabulatorOptions"
+				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
 				@click:new="openModal">
 				<template v-slot:search>
 						<auto-complete
