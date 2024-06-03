@@ -159,6 +159,7 @@ export default {
 					:side-menu="false"
 					new-btn-label="Image"
 					new-btn-show
+					reload
 					:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
 					@click:new="openModal">
 				</core-filter-cmpt>
