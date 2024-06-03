@@ -12,6 +12,7 @@ export default {
 			lizenzserverTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
 				index: 'lizenzserver_kurzbz',
+				selectable: false,
 				columns: [
 					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true, frozen: true},
 					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},

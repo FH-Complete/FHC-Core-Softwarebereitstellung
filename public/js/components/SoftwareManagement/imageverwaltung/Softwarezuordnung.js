@@ -15,6 +15,7 @@ export const Softwarezuordnung = {
 			softwarezuordnungTabulatorOptions: {
 				layout: 'fitColumns',
 				index: 'software_id',
+				selectable: false,
 				columns: [
 					{title: 'Software-ID', field: 'software_id', visible: false, headerFilter: true, frozen: true},
 					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_kurzbz', headerFilter: true},

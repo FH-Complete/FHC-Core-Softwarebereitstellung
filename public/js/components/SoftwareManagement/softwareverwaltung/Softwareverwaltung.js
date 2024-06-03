@@ -28,6 +28,7 @@ export default {
 				layout: 'fitColumns',
 				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
+				// NOTE: dataTreeSelectPropagate funktioniert nicht mit option selectable: false
 				columns: [
 					{
 						formatter: 'rowSelection',
@@ -79,14 +80,20 @@ export default {
 					{
 						title: this.$p.t('global/aktionen'),
 						field: 'actions',
-						width: 105,
-						minWidth: 105,
-						maxWidth: 105,
+						width: 220,
+						minWidth: 220,
+						maxWidth: 220,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
 
 							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = this.$p.t('global/raumverfuegbarkeit');
+							button.addEventListener('click', (event) => this.openRaumzuordnung(event, cell.getRow()));
+							container.append(button);
+
+							button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-edit"></i>';
 							button.addEventListener('click', (event) => this.editSoftware(event, cell.getRow().getIndex()));
@@ -267,10 +274,7 @@ export default {
 		onTableCellEdited(cell){
 			this.changeStatus(cell.getValue(), cell.getRow().getIndex());
 		},
-		onTableRowClick(e, row){
-			// exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
+		openRaumzuordnung(e, row){
 			// save currently clicked row
 			this.selectedTabulatorRow = row;
 

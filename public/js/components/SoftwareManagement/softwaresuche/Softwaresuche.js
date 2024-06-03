@@ -11,6 +11,7 @@ export default {
 			softwaresucheTabulatorOptions: {
 				index: 'software_id',
 				layout: 'fitColumns',
+				selectable: false,
 				columns: [
 					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true, frozen: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
@@ -20,7 +21,7 @@ export default {
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
 					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
-					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150}
+					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150, frozen: true}
 				]
 			},
 			selOrt: null,

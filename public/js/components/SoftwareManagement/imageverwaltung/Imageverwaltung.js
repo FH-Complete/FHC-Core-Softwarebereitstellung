@@ -23,6 +23,7 @@ export default {
 			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
 				index: 'softwareimage_id',
+				selectable: false,
 				columns: [
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
 					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
@@ -35,14 +36,20 @@ export default {
 					{
 						title: this.$p.t('global/aktionen'),
 						field: 'actions',
-						width: 105,
-						minWidth: 105,
-						maxWidth: 105,
+						width: 180,
+						minWidth: 180,
+						maxWidth: 180,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
 
 							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = 'Details';
+							button.addEventListener('click', (event) => this.openDetail(event, cell.getRow()));
+							container.append(button);
+
+							button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-copy"></i>';
 							button.addEventListener('click', (event) => this.copySoftwareimage(event, cell.getRow().getIndex()));
@@ -121,10 +128,7 @@ export default {
 			let oldRaumanzahl = row.getData().ort_count;
 			row.update({ort_count: oldRaumanzahl + raumanzahlDifferenz})
 		},
-		onTableRowClick(e, row){
-			// Exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
+		openDetail(e, row){
 			// Get Orte
 			this.$refs.raumzuordnung.getOrteByImage(row.getIndex(), row.getData().bezeichnung);
 

@@ -35,6 +35,7 @@ export default {
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: self.cbDataTreeStartExpanded,
 				index: 'software_id',
+				selectable: false,
 				columns: [
 					{title: 'ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
@@ -68,6 +69,28 @@ export default {
 					{title: this.$p.t('global/insertvon'), field: 'insertvon', headerFilter: true, visible: false},
 					{title: this.$p.t('global/updateamum'), field: 'updateamum', hozAlign:"center", headerFilter: true, visible: false},
 					{title: this.$p.t('global/updatevon'), field: 'updatevon', headerFilter: true, visible: false},
+					{
+						title: this.$p.t('global/aktionen'),
+						field: 'actions',
+						width: 180,
+						minWidth: 180,
+						maxWidth: 180,
+						formatter: (cell, formatterParams, onRendered) => {
+							let container = document.createElement('div');
+							container.className = "d-flex gap-2";
+
+							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = this.$p.t('global/raumverfuegbarkeit');
+							button.addEventListener(
+								'click', (event) => this.openRaumzuordnung(event, cell.getRow())
+							);
+							container.append(button);
+
+							return container;
+						},
+						frozen: true
+					}
 				]
 			}
 		},
@@ -110,10 +133,7 @@ export default {
 				this.$refs.softwarelisteTable.reloadTable();
 			}
 		},
-		onTableRowClick(e, row){
-			// exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
+		openRaumzuordnung(e, row){
 			// save currently clicked row
 			this.selectedTabulatorRow = row;
 
