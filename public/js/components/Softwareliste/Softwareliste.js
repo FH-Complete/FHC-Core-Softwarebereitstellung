@@ -219,11 +219,10 @@ export default {
 	</div>
 	<!-- Software Details -->
 	<div class="offcanvas offcanvas-start w-50" tabindex="-1" id="softwarelisteOffcanvas">
-			<div class="offcanvas-header">
-				<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-			</div>
-			<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+		<div class="offcanvas-header">
+			<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 		</div>
+		<raumzuordnung ref="raumzuordnung"></raumzuordnung>
 	</div>
 </div>
 `
