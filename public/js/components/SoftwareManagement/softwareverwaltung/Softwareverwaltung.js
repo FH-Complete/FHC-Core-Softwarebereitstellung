@@ -26,9 +26,10 @@ export default {
 			return {// tabulator options which can be modified after first render
 				index: 'software_id',
 				layout: 'fitColumns',
+				selectable: true,
+				selectableRangeMode: 'click',
 				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
-				// NOTE: dataTreeSelectPropagate funktioniert nicht mit option selectable: false
 				columns: [
 					{
 						formatter: 'rowSelection',

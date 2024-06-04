@@ -19,7 +19,8 @@ export const Raumzuordnung = {
 			orteTabulatorOptions: {
 				layout: 'fitColumns',
 				index: 'softwareimageort_id',
-				selectable: false,
+				selectable: true,
+				selectableRangeMode: 'click',
 				columns: [
 					{title: 'Img-Ort-ID', field: 'softwareimageort_id', headerFilter: true, visible: false},
 					{title: 'Image', field: 'image', headerFilter: true},
