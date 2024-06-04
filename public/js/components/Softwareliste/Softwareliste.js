@@ -182,7 +182,7 @@ export default {
 		},
 	},
 	template: `
-<div class="softwareliste">
+<div class="softwareliste overflow-hidden">
 	<div class="row mb-5">
 		<div class="col">
 			<core-filter-cmpt

@@ -322,7 +322,7 @@ export default {
 		}
 	},
 	template: `
-	<div class="softwareVerwaltung">
+	<div class="softwareVerwaltung overflow-hidden">
 		<!-- Software Verwaltung Table -->
 		<div class="row mb-5">
 			<div class="col">

@@ -98,28 +98,30 @@ export default {
 		}
 	},
 	template: `
-	<div class="row">
-		<div class="col">
-			<!-- Lizenzserververwaltung Tabelle -->
-			<core-filter-cmpt
-				ref="lizenzserverTable"
-				filter-type="LizenzserverVerwaltung"
-				uniqueId="lizenzserverTable"
-				:tabulator-options="lizenzserverTabulatorOptions"
-				:side-menu="false"
-				:new-btn-label="$p.t('global/lizenzserver')"
-				new-btn-show
-				:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
-				@click:new="openModal">	
-			</core-filter-cmpt>
-			
-			<!-- Lizenzserver modal component -->
-			<lizenzserver-modal
-				class="fade"
-				ref="lizenzserverModal"
-				dialog-class="modal-lg"
-				@on-saved="onLizenzserverSaved">
-			</lizenzserver-modal>	
+	<div class="lizenzserververwaltung overflow-hidden">
+		<div class="row">
+			<div class="col">
+				<!-- Lizenzserververwaltung Tabelle -->
+				<core-filter-cmpt
+					ref="lizenzserverTable"
+					filter-type="LizenzserverVerwaltung"
+					uniqueId="lizenzserverTable"
+					:tabulator-options="lizenzserverTabulatorOptions"
+					:side-menu="false"
+					:new-btn-label="$p.t('global/lizenzserver')"
+					new-btn-show
+					:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
+					@click:new="openModal">	
+				</core-filter-cmpt>
+				
+				<!-- Lizenzserver modal component -->
+				<lizenzserver-modal
+					class="fade"
+					ref="lizenzserverModal"
+					dialog-class="modal-lg"
+					@on-saved="onLizenzserverSaved">
+				</lizenzserver-modal>	
+			</div>
 		</div>
 	</div>
 	`

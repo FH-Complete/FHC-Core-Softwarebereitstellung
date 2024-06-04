@@ -148,7 +148,7 @@ export default {
 		}
 	},
 	template: `
-	<div class="imageVerwaltung">
+	<div class="imageVerwaltung overflow-hidden">
 		<!-- Softwareimage Table -->
 		<div class="row mb-5">
 			<div class="col">

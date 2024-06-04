@@ -100,30 +100,32 @@ export default {
 		}
 	},
 	template: `
-	<div class="row">
-		<div class="col">
-			<!-- Softwaresuche Tabelle -->
-			<core-filter-cmpt
-				ref="softwaresucheTable"
-				:side-menu="false"
-				table-only
-				:tabulator-options="softwaresucheTabulatorOptions"
-				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
-				@click:new="openModal">
-				<template v-slot:search>
-						<auto-complete
-							class="w-100"
-							v-model="selOrt"
-							optionLabel="ort_kurzbz"
-							dropdown
-							dropdown-current
-							forceSelection
-							:suggestions="ortSuggestions"
-							placeholder="Suche nach Raum..."
-							@complete="onComplete">
-						</auto-complete>		
-				</template>	
-			</core-filter-cmpt>
+	<div class="softwaresuche overflow-hidden">
+		<div class="row">
+			<div class="col">
+				<!-- Softwaresuche Tabelle -->
+				<core-filter-cmpt
+					ref="softwaresucheTable"
+					:side-menu="false"
+					table-only
+					:tabulator-options="softwaresucheTabulatorOptions"
+					:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
+					@click:new="openModal">
+					<template v-slot:search>
+							<auto-complete
+								class="w-100"
+								v-model="selOrt"
+								optionLabel="ort_kurzbz"
+								dropdown
+								dropdown-current
+								forceSelection
+								:suggestions="ortSuggestions"
+								placeholder="Suche nach Raum..."
+								@complete="onComplete">
+							</auto-complete>		
+					</template>	
+				</core-filter-cmpt>
+			</div>
 		</div>
 	</div>
 	`

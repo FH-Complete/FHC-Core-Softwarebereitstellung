@@ -196,7 +196,7 @@ export const Raumzuordnung = {
 		}
 	},
 	template: `
-	<div class="raumzuordnung">
+	<div class="raumzuordnung overflow-hidden">
 		<div class="card">
 			<h3 class="h5 card-header">{{ $p.t('global/raumverfuegbarkeit') }}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberImage') }}</span></h3>
 			<div class="card-body">

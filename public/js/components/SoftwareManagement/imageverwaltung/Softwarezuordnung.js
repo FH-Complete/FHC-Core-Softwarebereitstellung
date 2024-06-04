@@ -62,7 +62,7 @@ export const Softwarezuordnung = {
 		}
 	},
 	template: `
-	<div class="softwarezuordnung">
+	<div class="softwarezuordnung overflow-hidden">
 		<div class="card">
 			<h3 class="h5 card-header">{{ $p.t('global/softwareZuordnung')}}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberSoftware')}}</span></h3>
 			<div class="card-body">
