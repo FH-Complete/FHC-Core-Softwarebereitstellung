@@ -14,8 +14,18 @@ export default {
 				index: 'lizenzserver_kurzbz',
 				selectable: false,
 				columns: [
-					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true, frozen: true},
-					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true,
+						width: 150,
+						minWidth: 100,
+						maxWidth: 200,
+						frozen: true
+					},
+					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
+						width: 150,
+						minWidth: 100,
+						maxWidth: 200,
+						frozen: true
+					},
 					{title: 'Mac-Adresse', field: 'macadresse', headerFilter: true},
 					{title: 'IP-Adresse', field: 'ipadresse', headerFilter: true},
 					{title: this.$p.t('global/ansprechpartner'), field: 'ansprechpartner', headerFilter: true},

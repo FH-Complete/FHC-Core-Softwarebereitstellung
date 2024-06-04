@@ -26,16 +26,19 @@ export default {
 				selectable: false,
 				columns: [
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
-					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
+						frozen: true
+					},
 					{title: this.$p.t('global/betriebssystem'), field: 'betriebssystem', headerFilter: true},
 					{title: this.$p.t('global/verfuegbarkeitStart'), field: 'verfuegbarkeit_start', headerFilter: true, hozAlign: 'center'},
 					{title: this.$p.t('global/verfuegbarkeitEnde'), field: 'verfuegbarkeit_ende', headerFilter: true, hozAlign: 'center'},
 					{title: 'Anzahl Räume', field: 'ort_count', headerFilter: true, hozAlign: 'right'},
 					{title: 'Anzahl Software', field: 'software_count', headerFilter: true, hozAlign: 'right'},
 					{title: this.$p.t('global/anmerkung'), field: 'anmerkung', headerFilter: true},
-					{
-						title: this.$p.t('global/aktionen'),
-						field: 'actions',
+					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 180,
 						minWidth: 180,
 						maxWidth: 180,

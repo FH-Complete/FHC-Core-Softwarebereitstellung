@@ -19,15 +19,30 @@ export default {
 				layout: 'fitColumns',
 				selectable: false,
 				columns: [
-					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true, frozen: true},
-					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true,
+						minWidth: 100,
+						maxWidth: 100,
+						width: 100,
+						frozen: true
+					},
+					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
+						minWidth: 200,
+						maxWidth: 200,
+						width: 200,
+						frozen: true
+					},
 					{title: 'Software-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_bezeichnung', headerFilter: true},
 					{title: 'Image', field: 'image_bezeichnung', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
 					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
-					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150, frozen: true}
+					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
+						minWidth: 150,
+						maxWidth: 150,
+						width: 150,
+						frozen: true
+					}
 				]
 			},
 			selOrt: null,

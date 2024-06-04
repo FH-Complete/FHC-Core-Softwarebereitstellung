@@ -37,13 +37,14 @@ export default {
 				index: 'software_id',
 				selectable: false,
 				columns: [
-					{title: 'ID', field: 'software_id', headerFilter: true, visible: false},
-					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
+					{title: 'ID', field: 'software_id', headerFilter: true, visible: false, frozen: true},
+					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
+						frozen: true,
+						width: 200,
+						minWidth: 200,
+						maxWidth: 200,},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
-					{
-						title: this.$p.t('global/softwaretyp'),
-						field: 'softwaretyp_bezeichnung',
-						headerFilter: true,
+					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_bezeichnung', headerFilter: true,
 						formatter: (cell) => {
 							return cell.getValue();
 						}
@@ -53,15 +54,6 @@ export default {
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
 					{title: this.$p.t('global/beschreibung'), field: 'beschreibung', headerFilter: true, visible: false},
 					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true, visible: false},
-					{
-						title: 'Software-Status',
-						field: 'softwarestatus_kurzbz',
-						headerFilter: true,
-						formatter: (cell) => this.softwarestatus
-								? this.softwarestatus[cell.getValue()]
-								: cell.getData().softwarestatus_bezeichnung,
-						frozen: true
-					},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true, visible: false},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true, visible: false},
 					{title: this.$p.t('global/uebergeordneteSoftware'), field: 'software_kurzbz_parent', headerFilter: true, visible: false},
@@ -69,9 +61,16 @@ export default {
 					{title: this.$p.t('global/insertvon'), field: 'insertvon', headerFilter: true, visible: false},
 					{title: this.$p.t('global/updateamum'), field: 'updateamum', hozAlign:"center", headerFilter: true, visible: false},
 					{title: this.$p.t('global/updatevon'), field: 'updatevon', headerFilter: true, visible: false},
-					{
-						title: this.$p.t('global/aktionen'),
-						field: 'actions',
+					{title: 'Software-Status', field: 'softwarestatus_kurzbz', headerFilter: true,
+						formatter: (cell) => this.softwarestatus
+							? this.softwarestatus[cell.getValue()]
+							: cell.getData().softwarestatus_bezeichnung,
+						width: 150,
+						minWidth: 150,
+						maxWidth: 150,
+						frozen: true
+					},
+					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 180,
 						minWidth: 180,
 						maxWidth: 180,
