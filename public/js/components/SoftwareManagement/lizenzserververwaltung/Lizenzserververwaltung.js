@@ -73,8 +73,14 @@ export default {
 				}
 			).then(
 				result => {
-					this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
-					this.$refs.lizenzserverTable.reloadTable();
+					if (CoreRESTClient.isError(result.data)) {
+						this.$fhcAlert.alertWarning(result.data.retval);
+					}
+					else
+					{
+						this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
+						this.$refs.lizenzserverTable.reloadTable();
+					}
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
