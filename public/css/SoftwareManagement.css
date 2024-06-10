@@ -1,0 +1,79 @@
+/* Navtab cursor as pointer */
+a.nav-link {
+    cursor: pointer;
+}
+
+/* Fix transparent background of edit list */
+.tabulator-edit-list .tabulator-edit-list-item {
+    background-color: white;
+}
+
+/* Fix transparent background of edit list */
+.tabulator-edit-list .tabulator-edit-list-item:hover,
+.tabulator-edit-list .tabulator-edit-list-item.active {
+    color: white;
+}
+
+/* Fix transparent background of tooltip */
+.tabulator-tooltip {
+    background-color: black;
+    color: white;
+}
+
+/* Horizontal line */
+.fhc-hr {
+    padding: 25px 0px 20px 0px;
+    margin-bottom: 30px;
+    border-bottom: solid 1px #eee;
+}
+
+/* Subtitle. Use it in span within main title. */
+.fhc-subtitle {
+    --bs-text-opacity: 1;
+    color: #6c757d!important;
+    font-size: .65em;
+    font-weight: normal;
+    padding-left: 20px;
+}
+
+/* Fix disorder of datepicker icons when a field-validation-message is shown below the datepicker field */
+.dp__input_wrap svg.dp__input_icons {
+    transform: unset;
+    top: 5%;
+}
+
+/* Fix error message running out from content-div */
+.p-toast-message-content {
+    overflow: hidden;
+}
+.p-toast-message-text {
+    overflow-y: auto;
+    word-wrap: break-word;
+}
+
+/* Override confirm dialog buttons with bootstrap style colors (as long primevues unstyle true is not working correctly) */
+.p-confirm-dialog-reject {
+    color: #6c757d;
+    border-color: #6c757d;
+    background-color: white;
+}
+.p-confirm-dialog-accept {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+.p-confirm-dialog-reject:hover {
+    color: white !important;
+    border-color: #6c757d !important;
+    background-color: #6c757d !important;
+}
+.p-confirm-dialog-accept:hover {
+    background-color: #bb2d3b !important;
+    border-color: #b02a37 !important;
+}
+.p-confirm-dialog-accept:focus {
+    outline: none !important;
+}
+.p-dialog-header {
+    padding: 0.5rem !important;
+}
+
