@@ -39,16 +39,16 @@ export default {
 					{title: 'Anzahl Software', field: 'software_count', headerFilter: true, hozAlign: 'right'},
 					{title: this.$p.t('global/anmerkung'), field: 'anmerkung', headerFilter: true},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
-						width: 180,
-						minWidth: 180,
-						maxWidth: 180,
+						width: 280,
+						minWidth: 280,
+						maxWidth: 280,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
 
 							let button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
-							button.innerHTML = 'Details';
+							button.innerHTML = this.$p.t('global/raumSwZuordnung');
 							button.addEventListener('click', (event) => this.openDetail(event, cell.getRow()));
 							container.append(button);
 
