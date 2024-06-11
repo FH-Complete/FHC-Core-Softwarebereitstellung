@@ -26,8 +26,6 @@ export default {
 			return {// tabulator options which can be modified after first render
 				index: 'software_id',
 				layout: 'fitColumns',
-				selectable: true,
-				selectableRangeMode: 'click',
 				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 				columns: [
@@ -60,6 +58,7 @@ export default {
 					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true},
 					{title: this.$p.t('global/lizenzart'), field: 'lizenzart', headerFilter: true},
 					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
+					{title: this.$p.t('global/lizenzserverPort'), field: 'lizenzserver_port', headerFilter: true},
 					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true},
 					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
 					{title: this.$p.t('global/lizenzKosten'), field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
