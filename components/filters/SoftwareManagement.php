@@ -17,6 +17,7 @@
 					sw.verantwortliche,
 					sw.lizenzart,
 					sw.lizenzserver_kurzbz,
+					sw.lizenzserver_port,
 					sw.anzahl_lizenzen,
 					sw.lizenzlaufzeit,
 					sw.lizenzkosten,

@@ -498,7 +498,7 @@ export const SoftwareForm = {
 				</option>
 				</core-form-input>
 			</div>
-			<div class="col-sm-8">
+			<div class="col-sm-6">
 				<core-form-input
 					type="autocomplete"
 					v-model="selLizenzserver"
@@ -511,6 +511,14 @@ export const SoftwareForm = {
 					:suggestions="lizenzserverSuggestions"
 					@complete="getLizenzserverByKurzbz"
 				>
+				</core-form-input>
+			</div>
+			<div class="col-sm-2">
+				<core-form-input
+					v-model="software.lizenzserver_port"
+					name="lizenzserver_port"
+					:label="$p.t('global/lizenzserverPort')"
+					>
 				</core-form-input>
 			</div>
 			<div class="col-sm-2">
