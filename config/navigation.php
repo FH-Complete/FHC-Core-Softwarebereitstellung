@@ -1,6 +1,6 @@
 <?php
 // Add Header-Menu-Entry to Main Page
-$config['navigation_header']['*']['Administration']['children']['SoftwareManagement'] = array(
+$config['navigation_header']['*']['Lehre']['children']['SoftwareManagement'] = array(
 	'link' => site_url('extensions/FHC-Core-Softwarebereitstellung/SoftwareManagement'),
 	'sort' => 30,
 	'description' => 'Software Management',

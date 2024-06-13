@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS extension.tbl_software (
 	lizenzart text,
 	anzahl_lizenzen integer,
 	lizenzserver_kurzbz varchar(128),
+    lizenzserver_port varchar(32),
 	lizenzlaufzeit date,
 	lizenzkosten numeric(8,2),
 	interne_kosten numeric(8,2),
@@ -64,3 +65,9 @@ END $$;
 
 COMMENT ON TABLE extension.tbl_software IS 'List of Software';
 COMMENT ON COLUMN extension.tbl_software.verantwortliche IS 'App Packager / Client Installer';
+
+DO $$
+BEGIN
+ALTER TABLE extension.tbl_software ADD COLUMN IF NOT EXISTS lizenzserver_port VARCHAR(32);
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;

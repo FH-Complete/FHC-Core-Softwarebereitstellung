@@ -133,6 +133,24 @@ class Lizenzserver extends FHCAPI_Controller
 				array('valid_ip' => 'Ungültig')
 			);
 
+			$this->form_validation->set_rules(
+				'macadresse',
+				'MAC-Adresse',
+				array(
+					array(
+						'hexadecimal_check',
+						function($macadresse){
+							return ctype_xdigit($macadresse);
+						}
+					),
+					'exact_length[12]'
+				),
+				array(
+					'hexadecimal_check' => 'Nur hexadezimale Zeichen erlaubt',
+					'exact_length' => 'Muss genau 12 Zeichen lang sein'
+				)
+			);
+
 			// On error
 			if ($this->form_validation->run() == false)
 			{
