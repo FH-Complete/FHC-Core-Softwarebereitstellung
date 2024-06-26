@@ -17,6 +17,7 @@
 
 import SoftwareManagement from '../components/SoftwareManagement/SoftwareManagement.js';
 import SoftwarelisteLayout from '../components/Softwareliste/SoftwarelisteLayout.js';
+import SoftwareanforderungLayout from '../components/Softwareanforderung/SoftwareanforderungLayout.js';
 import FhcAlert from '../../../../js/plugin/FhcAlert.js';
 import FhcApi from "../../../../js/plugin/FhcApi.js";
 import Phrasen from "../../../../js/plugin/Phrasen.js";
@@ -24,7 +25,8 @@ import Phrasen from "../../../../js/plugin/Phrasen.js";
 const softwareManagementApp = Vue.createApp({
 	components: {
 		SoftwareManagement,
-		SoftwarelisteLayout
+		SoftwarelisteLayout,
+		SoftwareanforderungLayout
 	}
 });
 
