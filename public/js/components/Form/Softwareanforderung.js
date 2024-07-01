@@ -240,12 +240,6 @@ export default {
 				}
 			}
 
-			// Sort formData
-			this.formData.sort((a, b) =>
-				a.lv_oe_bezeichnung.localeCompare(b.lv_oe_bezeichnung) ||
-				a.lv_bezeichnung.localeCompare(b.lv_bezeichnung)
-			);
-
 			// Flag if selection already exists
 			this.flagExistingSwLvZuordnungen(this.formData);
 
