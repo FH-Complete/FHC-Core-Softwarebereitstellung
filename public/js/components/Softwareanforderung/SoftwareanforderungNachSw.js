@@ -15,7 +15,6 @@ export default {
 	},
 	data: function() {
 		return {
-			data: {},
 			cbDataTree: true, // checkbox display dataTree or not
 			cbDataTreeStartExpanded: false,	// checkbox expand dataTree or not
 		}

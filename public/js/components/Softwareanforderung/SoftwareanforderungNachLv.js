@@ -11,7 +11,6 @@ export default {
 	},
 	data: function() {
 		return {
-			data: {},
 			studiensemester: [],
 			selectedStudiensemester: ''
 		}
