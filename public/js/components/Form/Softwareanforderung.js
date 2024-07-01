@@ -106,21 +106,22 @@ export default {
 				}));
 			}
 
-			// Set modal title
-			this.modalTitel = this.$p.t('global', 'swFuerLvAnfordern');
+			// Load studiensemester to populate dropdown
+			this.loadStudiensemester();
 
-			// Load studiensemester dropdown
-			this.loadStudiensemesterDropdown();
+			// Set selected Studiensemester in dropdown
+			this.selectedStudiensemester = this.studiensemester.length > 0
+				? this.studiensemester[0].studiensemester_kurzbz	// Default is actual Studiensemester
+				: '';
 
 			// Open modal
 			this.$refs.modalContainer.show();
 		},
-		loadStudiensemesterDropdown(){
+		loadStudiensemester(){
 			this.$fhcApi
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAktAndFutureSemester')
 				.then( result => {
 					this.studiensemester = result.data;
-					this.selectedStudiensemester = this.studiensemester.length > 0 ? this.studiensemester[0].studiensemester_kurzbz : '';
 				})
 				.catch( this.$fhcAlert.handleSystemError );
 		},
