@@ -27,10 +27,10 @@ export default {
 	data() {
 		return {
 			tabs: {
-				// softwareanforderungNachLv: {
-				// 	title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
-				// 	component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
-				// },
+				softwareanforderungNachLv: {
+					title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
+				},
 				softwareanforderungNachSw: {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachSw')),
 					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachSw.js'
