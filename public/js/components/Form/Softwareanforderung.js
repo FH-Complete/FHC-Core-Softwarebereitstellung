@@ -12,7 +12,7 @@ export default {
 	},
 	data() {
 		return {
-			modalTitel: '',
+			modalTitel: this.$p.t('global', 'swFuerLvAnfordern'),
 			autocompleteAbortController: null,
 			lvSuggestions: [],
 			swSuggestions: [],
@@ -65,6 +65,32 @@ export default {
 						this.requestModus == 'sw' ? this.resetFormButKeepSelectedSw() : this.resetFormButKeepSelectedLv();
 					})
 					.catch(this.$fhcAlert.handleSystemError);
+		},
+		openModalLvToSw(selectedData, selectedStudiensemester) {
+			this.requestModus = 'lv';
+
+			// Reset form
+			this.resetForm();
+
+			// Prefill software select with data of table selection
+			if (Array.isArray(selectedData)) {
+				this.selectedLvs = selectedData.map(data => ({
+					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
+					'lehrveranstaltung_id': data.lehrveranstaltung_id,
+					'lv_bezeichnung': data.lv_bezeichnung
+				}));
+			}
+
+			// Load Studiensemester to populate dropdown
+			this.loadStudiensemester();
+
+			// Set selected Studiensemester in dropdown
+			this.selectedStudiensemester = typeof selectedStudiensemester === 'string'
+				? selectedStudiensemester
+				: '';
+
+			// Open modal
+			this.$refs.modalContainer.show();
 		},
 		openModalSwToLv(selectedData) {
 			this.requestModus = 'sw';
@@ -265,6 +291,7 @@ export default {
 								v-model="selectedStudiensemester"
 								name="studiensemester"
 								:label="$p.t('lehre', 'studiensemester')"
+								:disabled="requestModus === 'lv'"
 								@change="onStudiensemesterChange">
 								<option 
 								v-for="(studSem, index) in studiensemester"
