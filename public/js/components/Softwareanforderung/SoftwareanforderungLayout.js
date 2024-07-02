@@ -27,6 +27,10 @@ export default {
 	data() {
 		return {
 			tabs: {
+				softwareanforderung: {
+					title: Vue.computed(() => this.$p.t('global/swAnforderungenUndLizenen')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Softwareanforderung.js'
+				},
 				softwareanforderungNachLv: {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
 					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
