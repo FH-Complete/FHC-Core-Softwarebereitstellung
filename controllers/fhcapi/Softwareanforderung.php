@@ -18,6 +18,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
+				'getSoftwareLvZuordnungen' => 'extension/software_bestellen:rw',
 				'saveSoftwareLv' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvZuordnungen' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
@@ -38,6 +39,23 @@ class Softwareanforderung extends FHCAPI_Controller
 	// -----------------------------------------------------------------------------------------------------------------
 	// Public methods
 
+	// Get all Software-Lehrveranstaltung-Zuordnungen of selected Studiensemester and Organisationseinheiten
+	// the user has permission to view.
+	public function getSoftwareLvZuordnungen(){
+		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
+		$oe_permissions = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
+		if(!$oe_permissions) $oe_permissions = [];
+
+		// Get all Software-Lehrveranstaltung-Zuordnungen
+		$result = $this->SoftwareLvModel->getAllSwLvsByOesAndStudiensemester(
+			$this->input->get('studiensemester_kurzbz'),
+			$oe_permissions
+		);
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
 	/**
 	 * Save one or more Software-Lehrveranstaltung-Zuordnungen
 	 */
