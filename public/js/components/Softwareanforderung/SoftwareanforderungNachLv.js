@@ -18,9 +18,19 @@ export default {
 	created() {
 		this.loadStudiensemester();
 	},
+	watch: {
+		selectedStudiensemester(newVal){
+			// Set data of selected Studiensemester
+			this.$refs.softwareanforderungNachLvTable.tabulator.setData(
+				CoreRESTClient._generateRouterURI(
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLehrveranstaltungen' +
+					'?studiensemester_kurzbz=' + newVal
+				),
+			);
+		}
+	},
 	computed: {
 		tabulatorOptions() {
-			const self = this;
 			return {
 				ajaxURL: CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLehrveranstaltungen' +
@@ -69,15 +79,6 @@ export default {
 				})
 				.catch( this.$fhcAlert.handleSystemError );
 		},
-		onStudiensemesterChange(event){
-			// Update table with Lehrveranstaltungen of selected Studiensemester
-			this.$refs.softwareanforderungNachLvTable.tabulator.setData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLehrveranstaltungen' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			);
-		},
 		openSoftwareanforderungForm(){
 			let selectedData = this.$refs.softwareanforderungNachLvTable.tabulator.getSelectedData();
 
@@ -112,8 +113,7 @@ export default {
 			<core-form-input
 				type="select"
 				v-model="selectedStudiensemester"
-				name="studiensemester"
-				@change="onStudiensemesterChange">
+				name="studiensemester">
 				<option 
 				v-for="(studSem, index) in studiensemester"
 				:key="index" 
