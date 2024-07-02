@@ -162,14 +162,12 @@ class Softwareanforderung extends FHCAPI_Controller
 		$this->terminateWithSuccess($data);
 	}
 
-
 	/**
 	 * Get all Lehrveranstaltungen of a given Studiensemester limited to
 	 * the OEs for which the user has the necessary permissions
 	 */
 	public function getLehrveranstaltungen()
 	{
-		$this->addMeta('input get', $this->input->get());
 		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
 		$oe_permissions = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
 		if(!$oe_permissions) $oe_permissions = [];
@@ -182,10 +180,8 @@ class Softwareanforderung extends FHCAPI_Controller
 			$oe_permissions
 		);
 
-
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
-		$this->addMeta('data', $data);
 		$this->terminateWithSuccess($data);
 	}
 
