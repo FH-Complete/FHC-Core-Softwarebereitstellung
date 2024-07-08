@@ -169,6 +169,7 @@ export default {
 				:side-menu="false"
 				:tabulator-options="tabulatorOptions"
 				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
+				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">	
 			</core-filter-cmpt>		
 		
 		</div>
