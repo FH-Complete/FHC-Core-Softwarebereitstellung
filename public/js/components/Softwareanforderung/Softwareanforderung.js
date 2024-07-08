@@ -11,21 +11,15 @@ export default {
 		return {
 			table: null,	// tabulator instance
 			studiensemester: [],
-			selectedStudiensemester: ''
+			selectedStudiensemester: '',
+			totalLizenzanzahl: 0,
+			cbGroupStartOpen: true,	// checkbox group organisationseinheit start open
 		}
 	},
-	created() {
-		this.loadStudiensemester();
-	},
 	watch: {
-		selectedStudiensemester(newVal){
-			// Set data of selected Studiensemester
-			this.$refs.softwareanforderungTable.tabulator.setData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSoftwareLvZuordnungen' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			);
+		cbGroupStartOpen(newVal){
+			this.table.setGroupStartOpen(newVal);
+			this.table.setData();
 		}
 	},
 	computed: {
@@ -39,6 +33,13 @@ export default {
 				},
 				layout: 'fitColumns',
 				index: 'software_lv_id',
+				groupBy: "lv_oe_bezeichnung",
+				groupToggleElement:"header", //toggle group on click anywhere in the group header
+				groupClosedShowCalcs:true, //show column calculations when a group is closed
+				groupStartOpen: self.cbGroupStartOpen,
+				groupHeader: (value, count, data, group) => {
+					return self.calculateByGroupHeader(value, count, data, group);
+				},
 				columns: [
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
@@ -169,7 +170,16 @@ export default {
 				:side-menu="false"
 				:tabulator-options="tabulatorOptions"
 				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
-				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">	
+				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
+				<template v-slot:actions>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="checkbox"
+							v-model="cbGroupStartOpen">
+						<label class="form-check-label">{{ $p.t('global/aufgeklappt') }}</label>
+					</div>
+				</template>		
 			</core-filter-cmpt>		
 		
 		</div>
