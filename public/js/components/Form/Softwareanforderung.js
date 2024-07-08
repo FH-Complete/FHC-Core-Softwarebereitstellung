@@ -203,13 +203,11 @@ export default {
 		},
 		resetFormButKeepSelectedSw(){
 			this.formData = [];
-			this.selectedStudiensemester = this.studiensemester.length > 0 ? this.studiensemester[0].studiensemester_kurzbz : '';
 			this.selectedLvs = [];
 			this.isLvSwRowsVisible = false;
 		},
 		resetFormButKeepSelectedLv(){
 			this.formData = [];
-			this.selectedStudiensemester = this.studiensemester.length > 0 ? this.studiensemester[0].studiensemester_kurzbz : '';
 			this.selectedSw = [];
 			this.isLvSwRowsVisible = false;
 		},
