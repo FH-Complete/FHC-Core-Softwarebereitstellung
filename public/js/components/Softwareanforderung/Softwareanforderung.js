@@ -145,8 +145,9 @@ export default {
 	},
 	template: `
 <div class="softwareanforderung overflow-hidden">
-	<div class="row d-flex">
-		<div class="col-2 mb-3 ms-auto">
+	<div class="row d-flex my-3">
+		<div class="col-10 h4">{{ $p.t('global/swAnforderungenUndLizenen') }}</div>
+		<div class="col-2 ms-auto">
 			<core-form-input
 				type="select"
 				v-model="selectedStudiensemester"

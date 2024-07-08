@@ -191,7 +191,9 @@ export default {
 	},
 	template: `
 <div class="softwareanforderungNachSw overflow-hidden">
-	<div class="row-col d-flex ms-auto">
+	<div class="row d-flex my-3 align-items-center">
+		<div class="col-10 h4">{{ $p.t('global/swAnforderungUeberAuswahlVonSw') }}</div>
+		<div class="col-2 d-flex justify-content-end">
 		<!-- TODO phrase exists, but not breaking line properly -->
 		<!--<button class="btn btn-secondary text-start ms-auto" @click="">{{ $p.t('global/swNichtGefundenHierBestellen') }}</button>--> 
 		<button class="btn btn-secondary text-start ms-auto" @click="">Software nicht gefunden?<br>Hier bei IT-Services bestellen</button>
