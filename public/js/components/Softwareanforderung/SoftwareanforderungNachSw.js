@@ -48,15 +48,16 @@ export default {
 						width: 200,
 						minWidth: 200,
 						maxWidth: 200,},
-					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
+					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', minWidth: 70},
 					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_bezeichnung', headerFilter: true,
+						minWidth: 150,
 						formatter: (cell) => {
 							return cell.getValue();
 						}
 					},
 					{title: this.$p.t('global/softwaretypKurzbz'), field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
-					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
-					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
+					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true, minWidth: 200},
+					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true, minWidth: 150},
 					{title: this.$p.t('global/beschreibung'), field: 'beschreibung', headerFilter: true, visible: false},
 					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true, visible: false},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true, visible: false},
@@ -70,9 +71,9 @@ export default {
 						formatter: (cell) => this.softwarestatus
 							? this.softwarestatus[cell.getValue()]
 							: cell.getData().softwarestatus_bezeichnung,
-						width: 150,
-						minWidth: 150,
-						maxWidth: 150,
+						width: 200,
+						minWidth: 200,
+						maxWidth: 200,
 						frozen: true
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
