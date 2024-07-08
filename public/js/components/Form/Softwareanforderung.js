@@ -37,7 +37,6 @@ export default {
 				: this.isLvSwRowsVisible = false;
 		}
 	},
-	emit: ['formClosed'],
 	methods: {
 		sendForm() {
 			// Reduce postData for backend-needs
@@ -82,12 +81,7 @@ export default {
 			}
 
 			// Load Studiensemester to populate dropdown
-			this.loadStudiensemester();
-
-			// Set selected Studiensemester in dropdown
-			this.selectedStudiensemester = typeof selectedStudiensemester === 'string'
-				? selectedStudiensemester
-				: '';
+			this.loadAndSetStudiensemester(selectedStudiensemester);
 
 			// Open modal
 			this.$refs.modalContainer.show();
@@ -107,21 +101,20 @@ export default {
 			}
 
 			// Load studiensemester to populate dropdown
-			this.loadStudiensemester();
-
-			// Set selected Studiensemester in dropdown
-			this.selectedStudiensemester = this.studiensemester.length > 0
-				? this.studiensemester[0].studiensemester_kurzbz	// Default is actual Studiensemester
-				: '';
+			this.loadAndSetStudiensemester();
 
 			// Open modal
 			this.$refs.modalContainer.show();
 		},
-		loadStudiensemester(){
+		loadAndSetStudiensemester(selectedStudiensemester = null){
 			this.$fhcApi
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAktAndFutureSemester')
 				.then( result => {
 					this.studiensemester = result.data;
+
+					this.selectedStudiensemester = selectedStudiensemester !== null
+						? selectedStudiensemester
+						: this.studiensemester[0].studiensemester_kurzbz
 				})
 				.catch( this.$fhcAlert.handleSystemError );
 		},
@@ -325,6 +318,11 @@ export default {
 								@complete="searchSw"
 								:suggestions="swSuggestions">
 							</core-form-input>
+							<div class="form-text" v-show="requestModus === 'lv'">
+								<a class="link link-secondary"  @click="onClickChangeTab('softwareanforderungNachSw')">
+									<small>SW nicht gefunden? Über 'Anforderung nach Software' suchen</small>
+								</a>
+							</div>
 						</div>
 					</div>
 					<div class="fhc-hr mt-n-3" v-if="isLvSwRowsVisible"></div>
