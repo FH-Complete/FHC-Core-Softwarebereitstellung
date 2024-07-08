@@ -24,6 +24,13 @@ export default {
 		CoreBaseLayout,
 		CoreTabs
 	},
+	provide() {
+		return {
+			changeTab: tab => {
+				this.$refs.tabs.change(tab);
+			}
+		};
+	},
 	data() {
 		return {
 			tabs: {
@@ -52,7 +59,7 @@ export default {
 	
 	<core-base-layout :title="$p.t('global/softwareanforderung')" :subtitle="$p.t('global/softwareanforderungSubtitle')">
 		<template #main>
-			<core-tabs :config="tabs"></core-tabs>									
+			<core-tabs ref="tabs" :config="tabs"></core-tabs>									
 		</template>
 	</core-base-layout>
 	`

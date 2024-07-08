@@ -10,6 +10,9 @@ export default {
 		CoreFormValidation,
 		CoreBsModal
 	},
+	inject: [
+		'changeTab'
+	],
 	data() {
 		return {
 			modalTitel: this.$p.t('global', 'swFuerLvAnfordern'),
@@ -260,6 +263,10 @@ export default {
 					}
 				})
 				.catch( this.$fhcAlert.handleSystemError );
+		},
+		onClickChangeTab(tab){
+			this.$refs.modalContainer.hide();
+			this.changeTab(tab);
 		}
 	},
 	template: `
