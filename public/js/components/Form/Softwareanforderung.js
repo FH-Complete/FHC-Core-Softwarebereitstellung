@@ -13,6 +13,9 @@ export default {
 	inject: [
 		'changeTab'
 	],
+	emit: [
+		'formClosed'
+	],
 	data() {
 		return {
 			modalTitel: this.$p.t('global', 'swFuerLvAnfordern'),
