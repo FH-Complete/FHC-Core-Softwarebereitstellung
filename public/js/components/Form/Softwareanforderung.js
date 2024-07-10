@@ -67,7 +67,20 @@ export default {
 					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSoftwareLv', postData)
 					.then(result => {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
-						this.requestModus == 'sw' ? this.resetFormButKeepSelectedSw() : this.resetFormButKeepSelectedLv();
+
+						let updatedFields = {};
+						postData.forEach(pd => {
+							const name = 'lizenzanzahl_' + pd.lehrveranstaltung_id + pd.software_id;
+							updatedFields[name] = '';
+
+							// Disable updated Lizenzanzahl field
+							const formElement = this.$refs.form.$el.querySelector(`[name="${name}"]`);
+							if (formElement) {
+								formElement.disabled = true;
+							}
+						});
+						this.$refs.form.setFeedback(true, updatedFields);
+
 					})
 					.catch(this.$fhcAlert.handleSystemError);
 		},
@@ -207,16 +220,6 @@ export default {
 			this.selectedSw = [];
 			this.isLvSwRowsVisible = false;
 		},
-		resetFormButKeepSelectedSw(){
-			this.formData = [];
-			this.selectedLvs = [];
-			this.isLvSwRowsVisible = false;
-		},
-		resetFormButKeepSelectedLv(){
-			this.formData = [];
-			this.selectedSw = [];
-			this.isLvSwRowsVisible = false;
-		},
 		generateSwLvRows(){
 			// Reset formData
 			this.formData = [];
@@ -275,7 +278,7 @@ export default {
 	template: `
 	<div class="app-example-form-1">
 		<core-form ref="form" @submit.prevent="sendForm">
-			<core-bs-modal ref="modalContainer" class="bootstrap-prompt" dialog-class="modal-xl" @hidden-bs-modal="$emit('formClosed')">
+			<core-bs-modal ref="modalContainer" class="bootstrap-prompt" dialog-class="modal-fullscreen" @hidden-bs-modal="$emit('formClosed')">
 				<template #title>{{ modalTitel }}</template>
 				<template #default>
 					<!-- Formular -->
