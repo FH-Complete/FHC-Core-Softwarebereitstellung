@@ -124,6 +124,40 @@ class SoftwareLv_model extends DB_Model
 		}
 	}
 
+	/**
+	 * Updates multiple Software-Lehrveranstaltungs-Zuordnungen
+	 *
+	 * @param array $batch The batch of data to be updated.
+	 * @return array An array containing success or error message.
+	 */
+
+	public function updateBatch($batch)
+	{
+		// Check class properties
+		if (is_null($this->dbTable)) return error('The given database table name is not valid', EXIT_MODEL);
+
+		// Get the user UID
+		$uid = getAuthUid();
+
+		// Add 'updatevon' to each entry in the batch
+		foreach ($batch as &$item) {
+			$item['updatevon'] = $uid;
+			$item['updateamum'] = date('Y-m-d H:i:s');
+		}
+
+		// Update data
+		$updatedRows = $this->db->update_batch($this->dbTable, $batch, 'software_lv_id');
+
+		if ($updatedRows)
+		{
+			return success($updatedRows);
+		}
+		else
+		{
+			return error($this->db->error(), EXIT_DATABASE);
+		}
+	}
+
 	private function _getLanguageIndex()
 	{
 		$this->load->model('system/Sprache_model', 'SpracheModel');
