@@ -1,11 +1,13 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
+import SoftwarelizenzanforderungForm from "../Form/Softwarelizenzanforderung.js";
 
 export default {
 	components: {
 		CoreFilterCmpt,
-		CoreFormInput
+		CoreFormInput,
+		SoftwarelizenzanforderungForm
 	},
 	data: function() {
 		return {
@@ -41,6 +43,12 @@ export default {
 					return self.calculateByGroupHeader(value, count, data, group);
 				},
 				columns: [
+					{
+						formatter: 'rowSelection',
+						titleFormatter: 'rowSelection',
+						titleFormatterParams: { rowRange: "active"},
+						width: 70
+					},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
@@ -116,6 +124,21 @@ export default {
 				),
 			);
 		},
+		openSoftwarelizenzanforderungForm(){
+			let selectedData = this.table.getSelectedData();
+
+			if (selectedData.length == 0)
+			{
+				this.$fhcAlert.alertWarning( this.$p.t('global/zeilenAuswaehlen'));
+				return;
+			}
+
+			this.$refs.softwarelizenzanforderungForm.openModalChangeLicense(selectedData, this.selectedStudiensemester);
+		},
+		onFormClosed(){
+			// Deselect all rows
+			this.table.deselectRow();
+		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungTable.tabulator;
 
@@ -145,6 +168,7 @@ export default {
 	},
 	template: `
 <div class="softwareanforderung overflow-hidden">
+	<!-- Title and Studiensemester Dropdown-->
 	<div class="row d-flex my-3">
 		<div class="col-10 h4">{{ $p.t('global/swAnforderungenUndLizenen') }}</div>
 		<div class="col-2 ms-auto">
@@ -162,6 +186,7 @@ export default {
 			</core-form-input>
 		</div>
 	</div>
+	<!-- Table-->
 	<div class="row mb-5">
 		<div class="col">
 			<core-filter-cmpt
@@ -173,7 +198,8 @@ export default {
 				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
 				<template v-slot:actions>
-					<div class="form-check form-check-inline">
+					<button class="btn btn-primary" @click="openSoftwarelizenzanforderungForm">{{ $p.t('global/lizenzanzahlAendern') }}</button>
+					<div class="form-check form-check-inline ms-3">
 						<input
 							class="form-check-input"
 							type="checkbox"
@@ -185,6 +211,9 @@ export default {
 		
 		</div>
 	</div>
+	
+	<!-- Form -->
+	<softwarelizenzanforderung-form ref="softwarelizenzanforderungForm" @form-closed="onFormClosed"></softwarelizenzanforderung-form>
 </div>
 `
 };
