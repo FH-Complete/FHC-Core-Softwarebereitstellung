@@ -241,13 +241,13 @@ export default {
 			}
 
 			// Flag if selection already exists
-			this.flagExistingSwLvZuordnungen(this.formData);
+			this.flagAndSortExistingSwLvZuordnungen(this.formData);
 
 			// Display formData as rows
 			this.isLvSwRowsVisible = true;
 
 		},
-		flagExistingSwLvZuordnungen(){
+		flagAndSortExistingSwLvZuordnungen(){
 			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvZuordnungen', this.formData)
 				.then( result => {
@@ -266,6 +266,12 @@ export default {
 								}
 							});
 						});
+
+						// Sort first where SW-LV Zuordnung does not exist
+						this.formData.sort((a, b) => a.zuordnungExists === b.zuordnungExists
+							? 0
+							: a.zuordnungExists ? 1 : -1
+						);
 					}
 				})
 				.catch( this.$fhcAlert.handleSystemError );
@@ -342,7 +348,7 @@ export default {
 								<core-form-input
 									v-model="fd.lv_oe_bezeichnung"
 									name="lv_oe_bezeichnung"
-									:label="$p.t('lehre', 'organisationseinheit')"
+									:label="index === 0 ? $p.t('lehre', 'organisationseinheit') : ''"
 									class="form-control-sm"
 									readonly>
 								</core-form-input>
@@ -351,7 +357,7 @@ export default {
 								<core-form-input
 									v-model="fd.lv_bezeichnung"
 									name="lv_bezeichnung"
-									:label="$p.t('lehre', 'lehrveranstaltung')"
+									:label="index === 0 ? $p.t('lehre', 'lehrveranstaltung') : ''"
 									class="form-control-sm"
 									readonly>
 								</core-form-input>
@@ -360,7 +366,7 @@ export default {
 								<core-form-input
 									v-model="fd.software_kurzbz"
 									name="software_kurzbz"
-									label="Software"
+									:label="index === 0 ? 'Software' : ''"
 									class="form-control-sm"
 									readonly>
 								</core-form-input>
@@ -369,10 +375,11 @@ export default {
 							<core-form-input
 								type="number"
 								v-model="fd.lizenzanzahl"
-								name="lizenzanzahl"
+								:name="'lizenzanzahl_' + fd.lehrveranstaltung_id + fd.software_id"
 								class="form-control-sm"
-								:label="$p.t('global', 'lizenzAnzahl')"
-								:disabled="fd.zuordnungExists">
+								:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
+								:disabled="fd.zuordnungExists"
+								:tabindex="index + 1">
 							</core-form-input>
 							<div class="form-text text-danger" v-if="fd.zuordnungExists">{{ $p.t('global/bereitsAngefordert') }}</div>
 						</div>
