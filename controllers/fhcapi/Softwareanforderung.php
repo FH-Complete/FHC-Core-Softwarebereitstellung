@@ -20,6 +20,7 @@ class Softwareanforderung extends FHCAPI_Controller
 			array(
 				'getSoftwareLvZuordnungen' => 'extension/software_bestellen:rw',
 				'saveSoftwareLv' => 'extension/software_bestellen:rw',
+				'updateSoftwareLv' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvZuordnungen' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
 				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
@@ -78,6 +79,21 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// On success
 		$this->terminateWithSuccess($data);
+	}
+
+	/**
+	 * Update one or more Software-Lehrveranstaltung-Zuordnungen
+	 */
+	public function updateSoftwareLv()
+	{
+		// Update batch
+		$result = $this->SoftwareLvModel->updateBatch($this->input->post());
+
+		// On error
+		$this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+
+		// On success
+		$this->terminateWithSuccess();
 	}
 
 	/**
