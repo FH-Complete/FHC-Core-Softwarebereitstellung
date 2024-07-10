@@ -195,6 +195,7 @@ export default {
 				ref="softwareanforderungTable"
 				uniqueId="softwareanforderungTable"
 				table-only
+				reload
 				:side-menu="false"
 				:tabulator-options="tabulatorOptions"
 				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
