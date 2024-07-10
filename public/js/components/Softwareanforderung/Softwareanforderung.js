@@ -42,6 +42,8 @@ export default {
 				groupHeader: (value, count, data, group) => {
 					return self.calculateByGroupHeader(value, count, data, group);
 				},
+				selectable: true,
+				selectableRangeMode: 'click',
 				columns: [
 					{
 						formatter: 'rowSelection',

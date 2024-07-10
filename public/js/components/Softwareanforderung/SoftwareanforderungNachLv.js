@@ -23,6 +23,8 @@ export default {
 				ajaxResponse(url, params, response){ return response.data },
 				layout: 'fitColumns',
 				index: 'lehrveranstaltung_id',
+				selectable: true,
+				selectableRangeMode: 'click',
 				columns: [
 					{
 						formatter: 'rowSelection',

@@ -32,6 +32,8 @@ export default {
 				},
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: self.cbDataTreeStartExpanded,
+				selectable: true,
+				selectableRangeMode: 'click',
 				layout: 'fitColumns',
 				index: 'software_id',
 				columns: [
