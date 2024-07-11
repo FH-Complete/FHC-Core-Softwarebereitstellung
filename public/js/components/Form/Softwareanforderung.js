@@ -349,9 +349,9 @@ export default {
 					<div class="row" v-if="isLvSwRowsVisible" v-for="(fd, index) in formData" :key="index">
 							<div class="col-2 mb-2">
 								<core-form-input
-									v-model="fd.lv_oe_bezeichnung"
-									name="lv_oe_bezeichnung"
-									:label="index === 0 ? $p.t('lehre', 'organisationseinheit') : ''"
+									v-model="fd.stg_bezeichnung"
+									name="stg_bezeichnung"
+									:label="index === 0 ? $p.t('lehre', 'studiengang') : ''"
 									class="form-control-sm"
 									readonly>
 								</core-form-input>

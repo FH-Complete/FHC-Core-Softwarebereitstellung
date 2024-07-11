@@ -95,6 +95,7 @@ export default {
 					'software_lv_id': data.software_lv_id,
 					'software_id': data.software_id,
 					'software_kurzbz': data.software_kurzbz,
+					'stg_bezeichnung': data.stg_bezeichnung,
 					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
 					'lv_bezeichnung': data.lv_bezeichnung,
@@ -156,9 +157,9 @@ export default {
 					<div class="row mb-4" v-for="(fd, index) in formData" :key="index">
 						<div class="col-3">
 							<core-form-input
-								v-model="fd.lv_oe_bezeichnung"
-								name="lv_oe_bezeichnung"
-								:label="index === 0 ? $p.t('lehre', 'organisationseinheit') : ''"
+								v-model="fd.stg_bezeichnung"
+								name="stg_bezeichnung"
+								:label="index === 0 ? $p.t('lehre', 'studiengang') : ''"
 								class="form-control-sm"
 								readonly>
 							</core-form-input>
