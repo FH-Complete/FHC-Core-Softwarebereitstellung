@@ -95,7 +95,8 @@ export default {
 				this.selectedLvs = selectedData.map(data => ({
 					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
-					'lv_bezeichnung': data.lv_bezeichnung
+					'lv_bezeichnung': data.lv_bezeichnung + '[ ' + data.orgform_kurzbz + ' ]',
+					'stg_bezeichnung': data.stg_bezeichnung
 				}));
 			}
 
@@ -181,7 +182,7 @@ export default {
 						let data = result.data;
 						let groupedData = {};
 						data.forEach(item => {
-							const key = item.lv_oe_bezeichnung;
+							const key = item.stg_bezeichnung;
 
 							if (!groupedData[key]) {
 								groupedData[key] = {
@@ -192,9 +193,10 @@ export default {
 
 							const lv = {
 								lehrveranstaltung_id: item.lehrveranstaltung_id,
-								lv_bezeichnung: item.lv_bezeichnung,
+								lv_bezeichnung: item.lv_bezeichnung + ' [ ' + item.orgform_kurzbz + ' ]',
 								lv_oe_kurzbz: item.lv_oe_kurzbz,
-								lv_oe_bezeichnung: item.lv_oe_bezeichnung
+								lv_oe_bezeichnung: item.lv_oe_bezeichnung,
+								stg_bezeichnung: item.stg_bezeichnung
 							};
 
 							groupedData[key].lvs.push(lv);
@@ -232,6 +234,7 @@ export default {
 						lv_oe_bezeichnung: lv.lv_oe_bezeichnung,
 						lehrveranstaltung_id: lv.lehrveranstaltung_id,
 						lv_bezeichnung: lv.lv_bezeichnung,
+						stg_bezeichnung: lv.stg_bezeichnung,
 						software_id: sw.software_id,
 						software_kurzbz: sw.software_kurzbz,
 						lizenzanzahl: 0,  // Default
