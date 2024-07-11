@@ -23,7 +23,7 @@ class SoftwareLv_model extends DB_Model
 	{
 		$params = [];
 		$qry = '
-			SELECT DISTINCT ON (lv_oe_kurzbz, stg_bezeichnung, lehrveranstaltung_id)
+			SELECT DISTINCT ON (swlv.software_lv_id)
 			    le.studiensemester_kurzbz,
                 lv.oe_kurzbz AS "lv_oe_kurzbz",
                 lv.orgform_kurzbz,
