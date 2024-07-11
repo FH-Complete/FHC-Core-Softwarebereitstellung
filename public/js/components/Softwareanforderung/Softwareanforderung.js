@@ -62,6 +62,7 @@ export default {
 					{title: 'SW-Typ Kurzbz', field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
 					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, visible: false, },
 					{title: 'Studiengang', field: 'stg_bezeichnung', headerFilter: true},
+					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 100},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true},
 					{title: 'Semester', field: 'semester', headerFilter: true, hozAlign: 'right', width: 70},
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true},
@@ -162,6 +163,7 @@ export default {
 
 			// Replace column titles with phrasen
 			this.table.updateColumnDefinition('lv_bezeichnung', {title: this.$p.t('lehre', 'lehrveranstaltung')});
+			this.table.updateColumnDefinition('orgform_kurzbz', {title: this.$p.t('lehre', 'organisationsform')});
 			this.table.updateColumnDefinition('stg_bezeichnung', {title: this.$p.t('lehre', 'studiengang')});
 			this.table.updateColumnDefinition('softwaretyp_kurzbz', {title: this.$p.t('global', 'softwaretypKurzbz')});
 			this.table.updateColumnDefinition('studiensemester_kurzbz', {title: this.$p.t('lehre', 'studiensemester')});

@@ -26,6 +26,7 @@ class SoftwareLv_model extends DB_Model
 			SELECT DISTINCT ON (lv_oe_kurzbz, stg_bezeichnung, lehrveranstaltung_id)
 			    le.studiensemester_kurzbz,
                 lv.oe_kurzbz AS "lv_oe_kurzbz",
+                lv.orgform_kurzbz,
                 CASE
                     WHEN oe.organisationseinheittyp_kurzbz = \'Kompetenzfeld\' THEN (\'KF \' || oe.bezeichnung)
                     WHEN oe.organisationseinheittyp_kurzbz = \'Department\' THEN (\'DEP \' || oe.bezeichnung)
