@@ -22,6 +22,8 @@ export default {
 				// NOTE: data is set on table built to await preselected actual Studiensemester
 				ajaxResponse(url, params, response){ return response.data },
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'lehrveranstaltung_id',
 				selectable: true,
 				selectableRangeMode: 'click',

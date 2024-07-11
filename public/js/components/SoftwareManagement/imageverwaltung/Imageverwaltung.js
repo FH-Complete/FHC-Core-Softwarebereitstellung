@@ -22,6 +22,8 @@ export default {
 		return {
 			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'softwareimage_id',
 				selectable: false,
 				columns: [

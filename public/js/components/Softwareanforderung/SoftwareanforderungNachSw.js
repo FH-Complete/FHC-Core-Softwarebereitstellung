@@ -35,6 +35,8 @@ export default {
 				selectable: true,
 				selectableRangeMode: 'click',
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_id',
 				columns: [
 					{

@@ -14,6 +14,8 @@ export const Softwarezuordnung = {
 			softwarezuordnung: [],
 			softwarezuordnungTabulatorOptions: {
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_id',
 				selectable: false,
 				columns: [

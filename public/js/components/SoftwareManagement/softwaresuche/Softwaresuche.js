@@ -17,6 +17,8 @@ export default {
 			softwaresucheTabulatorOptions: {
 				index: 'software_id',
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				selectable: false,
 				columns: [
 					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true,

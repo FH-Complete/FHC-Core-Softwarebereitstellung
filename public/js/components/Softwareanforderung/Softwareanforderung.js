@@ -34,6 +34,8 @@ export default {
 					return response.data
 				},
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_lv_id',
 				groupBy: "lv_oe_bezeichnung",
 				groupToggleElement:"header", //toggle group on click anywhere in the group header
