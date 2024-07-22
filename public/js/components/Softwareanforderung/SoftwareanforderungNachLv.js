@@ -27,6 +27,9 @@ export default {
 				index: 'lehrveranstaltung_id',
 				selectable: true,
 				selectableRangeMode: 'click',
+				persistence:{
+					filter: false, //persist filter sorting
+				},
 				columns: [
 					{
 						formatter: 'rowSelection',

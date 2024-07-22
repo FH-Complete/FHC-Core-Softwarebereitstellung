@@ -38,6 +38,9 @@ export default {
 				autoResize:false, // prevent auto resizing of table
 				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_id',
+				persistence:{
+					filter: false, //persist filter sorting
+				},
 				columns: [
 					{
 						formatter: 'rowSelection',
