@@ -26,6 +26,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getAllSemester' => 'extension/software_bestellen:rw',
+				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
 				'getLehrveranstaltungen' => 'extension/software_bestellen:rw'
 			)
 		);
@@ -185,6 +186,20 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
 		$this->terminateWithSuccess($data);
+	}
+
+	/**
+	 * Get Studiensemester one year next to selected Studiensemester (e.g. SS2024 -> get SS2025)
+	 */
+	public function getVorrueckStudiensemester(){
+		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+
+		$result = $this->StudiensemesterModel->getNextFrom($this->input->get('studiensemester_kurzbz'));
+		$result = $this->StudiensemesterModel->getNextFrom(hasData($result) ? getData($result)[0]->studiensemester_kurzbz : '');
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data[0]->studiensemester_kurzbz);
 	}
 
 	/**
