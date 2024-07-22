@@ -70,7 +70,7 @@ export default {
 
 						let updatedFields = {};
 						postData.forEach(pd => {
-							const name = 'lizenzanzahl_' + pd.lehrveranstaltung_id + pd.software_id;
+							const name = 'lizenzanzahl' + pd.lehrveranstaltung_id + pd.software_id;
 							updatedFields[name] = '';
 
 							// Disable updated Lizenzanzahl field
@@ -378,7 +378,7 @@ export default {
 							<core-form-input
 								type="number"
 								v-model="fd.lizenzanzahl"
-								:name="'lizenzanzahl_' + fd.lehrveranstaltung_id + fd.software_id"
+								:name="'lizenzanzahl' + fd.lehrveranstaltung_id + fd.software_id"
 								class="form-control-sm"
 								:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
 								:disabled="fd.zuordnungExists"
