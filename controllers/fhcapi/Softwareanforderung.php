@@ -61,6 +61,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * Save one or more Software-Lehrveranstaltung-Zuordnungen
 	 */
 	public function saveSoftwareLv(){
+		// Store input post, because validate needs to restructure the post variable
+		$post = $this->input->post();
+
+		$this->_validate();
 
 		// Check if posted SW LV Zuordnungen already exists
 		$result = $this->_checkAndGetExistingSwLvZuordnungen();
@@ -71,8 +75,13 @@ class Softwareanforderung extends FHCAPI_Controller
 			$this->terminateWithValidationErrors(['swLvExistCheck' => $this->p->t('global', 'mindEineZuorndungExistiertSchon')]);
 		}
 
+		// Unset the software_lv_id we needed only for _validate
+		foreach($post as &$item){
+			if (isset($item['software_lv_id'])) unset($item['software_lv_id']);
+		}
+
 		// Ohterwise insert batch
-		$result = $this->SoftwareLvModel->insertBatch($this->input->post());
+		$result = $this->SoftwareLvModel->insertBatch($post);
 
 		// Terminate on error
 		$data = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
@@ -238,5 +247,39 @@ class Softwareanforderung extends FHCAPI_Controller
 		}
 
 		return $existingZuordnungen;
+	}
+
+	/**
+	 * Performs software validation checks.
+	 * @return object success if software data valid, error otherwise
+	 */
+	private function _validate()
+	{
+		// load ci validation lib
+		$this->load->library('form_validation');
+
+		foreach ($this->input->post() as $post)
+		{
+			if (isset($post['software_lv_id']))
+			{
+				$_POST['lizenzanzahl'. $post['software_lv_id']] = $post['lizenzanzahl'];
+
+				// Set up the validation rules
+				$this->form_validation->set_rules('lizenzanzahl'. $post['software_lv_id'], 'Lizenz-Anzahl', 'required');
+			}
+			else
+			{
+				$_POST['lizenzanzahl'. $post['lehrveranstaltung_id']. $post['software_id']] = $post['lizenzanzahl'];
+
+				// Set up the validation rules
+				$this->form_validation->set_rules('lizenzanzahl'. $post['lehrveranstaltung_id']. $post['software_id'], 'Lizenz-Anzahl', 'required');
+			}
+		}
+
+		// Return error array if there were errors
+		if ($this->form_validation->run() == false)
+		{
+			$this->terminateWithValidationErrors($this->form_validation->error_array());
+		}
 	}
 }
