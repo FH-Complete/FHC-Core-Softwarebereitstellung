@@ -39,7 +39,7 @@ export default {
 			}));
 
 			// Return if nothing to update
-			if (postData.length === 0){
+			if (postData.length !== this.formData.length){
 				let emptyFields = {};
 				this.formData.forEach(fd => {
 					if (fd.lizenzanzahl === '')
@@ -262,6 +262,7 @@ export default {
 		},
 		removeSelection(software_lv_id){
 			this.formData = this.formData.filter(selectedSwLv => selectedSwLv.software_lv_id !== software_lv_id);
+			this.$refs.form.clearValidation();
 		},
 		onChangeCbCopyLizenzanzahl(event){
 			this.formData.map(fd => fd.lizenzanzahl = event.target.checked && !fd.zuordnungExists ? 0: fd.currLizenzanzahl);
