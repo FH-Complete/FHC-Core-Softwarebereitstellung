@@ -49,7 +49,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		if(!$oe_permissions) $oe_permissions = [];
 
 		// Get all Software-Lehrveranstaltung-Zuordnungen
-		$result = $this->SoftwareLvModel->getAllSwLvsByOesAndStudiensemester(
+		$result = $this->SoftwareLvModel->getSwLvZuordnungen(
 			$this->input->get('studiensemester_kurzbz'),
 			$oe_permissions
 		);
