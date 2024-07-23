@@ -29,37 +29,10 @@ export default {
 		updateLicenses() {
 			// Adapt postData for backend-needs
 			const postData = this.formData
-				.filter(fd => fd.lizenzanzahl !== '' && (fd.lizenzanzahl !== fd.currLizenzanzahl)) // filter out empty and where new value is same like old value
-				.map(({ software_lv_id, software_id, studiensemester_kurzbz, lehrveranstaltung_id, currLizenzanzahl, lizenzanzahl }) => ({
+				.map(({ software_lv_id, lizenzanzahl }) => ({
 					software_lv_id,
-					software_id,
-					lehrveranstaltung_id,
-					studiensemester_kurzbz,
 					lizenzanzahl: lizenzanzahl
 			}));
-
-			// Return if nothing to update
-			if (postData.length !== this.formData.length){
-				let emptyFields = {};
-				this.formData.forEach(fd => {
-					if (fd.lizenzanzahl === '')
-						emptyFields['lizenzanzahl' + fd.software_lv_id] = this.$p.t('global', 'eingabeFehlt');
-				});
-				if (Object.keys(emptyFields).length > 0) {
-					this.$refs.form.setFeedback(false, emptyFields);
-				}
-
-				let equalFields = {};
-				this.formData.forEach(fd => {
-					if (fd.lizenzanzahl === fd.currLizenzanzahl)
-						equalFields['lizenzanzahl' + fd.software_lv_id] = this.$p.t('global', 'unveraendert');
-				});
-				if (Object.keys(equalFields).length > 0) {
-					this.$refs.form.setFeedback(false, equalFields);
-				}
-
-				return;
-			}
 
 			// Update SW-LV-Zuordnungen
 			if (this.$refs.form)
@@ -71,24 +44,16 @@ export default {
 
 						// Set form feedback for updated fields
 						let updatedFields = {};
-						postData.forEach(pd => { updatedFields['lizenzanzahl' + pd.software_lv_id] = ''; });
+						postData.forEach((pd, index) => { updatedFields['lizenzanzahl' + index] = ''; });
 						this.$refs.form.setFeedback(true, updatedFields);
 
 						// Set form feedback where neue Lizenzanzahl is equal to Lizenzanzahl
 						let equalFields = {};
-						this.formData.forEach(fd => {
-							if (fd.lizenzanzahl_neu === fd.lizenzanzahl)
-								equalFields['lizenzanzahl_neu' + fd.software_lv_id] = this.$p.t('global', 'unveraendert');
+						this.formData.forEach((fd, index) => {
+							if (fd.lizenzanzahl === fd.currLizenzanzahl)
+								equalFields['lizenzanzahl' + index] = this.$p.t('global', 'unveraendert');
 						});
 						this.$refs.form.setFeedback(false, equalFields);
-
-						// Set form feedback for where neue Lizenzanzahl is empty
-						let emptyFields = {};
-						this.formData.forEach(fd => {
-							if (fd.lizenzanzahl === '')
-								emptyFields['lizenzanzahl' + fd.software_lv_id] = this.$p.t('global', 'eingabeFehlt');
-						});
-						this.$refs.form.setFeedback(false, emptyFields);
 
 					})
 					.catch(this.$fhcAlert.handleSystemError);
@@ -98,9 +63,8 @@ export default {
 			// Reduce postData for backend-needs
 			const postData = this.formData
 				.filter(item => !item.zuordnungExists)
-				.map(({software_lv_id,lehrveranstaltung_id, lizenzanzahl, software_id }) =>
+				.map(({software_lv_id, lehrveranstaltung_id, lizenzanzahl, software_id }) =>
 				({
-					software_lv_id: software_lv_id,
 					lehrveranstaltung_id: lehrveranstaltung_id,
 					lizenzanzahl: lizenzanzahl,
 					software_id: software_id,
@@ -115,8 +79,8 @@ export default {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
 
 						let updatedFields = {};
-						this.formData.forEach(fd => {
-							const name = 'lizenzanzahl' + fd.software_lv_id;
+						postData.forEach((fd, index) => {
+							const name = 'lizenzanzahl' + index;
 							updatedFields[name] = '';
 
 							// Disable updated Lizenzanzahl field
@@ -363,7 +327,7 @@ export default {
 								<core-form-input
 									type="number"
 									v-model="fd.lizenzanzahl"
-									:name="'lizenzanzahl' + fd.software_lv_id"
+									:name="'lizenzanzahl' + index"
 									class="form-control-sm flex-fill"
 									:label="index === 0 ? $p.t('global', 'lizenzAnzahl') + ' ' + vorrueckStudiensemester : ''"
 									:tabindex="index + 1"

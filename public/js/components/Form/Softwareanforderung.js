@@ -69,8 +69,8 @@ export default {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
 
 						let updatedFields = {};
-						postData.forEach(pd => {
-							const name = 'lizenzanzahl' + pd.lehrveranstaltung_id + pd.software_id;
+						postData.forEach((pd, index) => {
+							const name = 'lizenzanzahl' + index;
 							updatedFields[name] = '';
 
 							// Disable updated Lizenzanzahl field
@@ -378,7 +378,7 @@ export default {
 							<core-form-input
 								type="number"
 								v-model="fd.lizenzanzahl"
-								:name="'lizenzanzahl' + fd.lehrveranstaltung_id + fd.software_id"
+								:name="'lizenzanzahl' + index"
 								class="form-control-sm"
 								:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
 								:disabled="fd.zuordnungExists"
