@@ -132,7 +132,7 @@ export default {
 				),
 			);
 		},
-		openSoftwarelizenzanforderungForm(){
+		openModalChangeLicense(){
 			let selectedData = this.table.getSelectedData();
 
 			if (selectedData.length == 0)
@@ -143,9 +143,23 @@ export default {
 
 			this.$refs.softwarelizenzanforderungForm.openModalChangeLicense(selectedData, this.selectedStudiensemester);
 		},
+		openModalAnforderungenVorruecken(){
+			let selectedData = this.table.getSelectedData();
+
+			if (selectedData.length == 0)
+			{
+				this.$fhcAlert.alertWarning( this.$p.t('global/zeilenAuswaehlen'));
+				return;
+			}
+
+			this.$refs.softwarelizenzanforderungForm.openModalAnforderungenVorruecken(selectedData, this.selectedStudiensemester);
+		},
 		onFormClosed(){
 			// Deselect all rows
 			this.table.deselectRow();
+
+			// Reset data
+			this.table.setData();
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungTable.tabulator;
@@ -207,7 +221,18 @@ export default {
 				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
 				<template v-slot:actions>
-					<button class="btn btn-primary" @click="openSoftwarelizenzanforderungForm">{{ $p.t('global/lizenzanzahlAendern') }}</button>
+					<button class="btn btn-primary" @click="openModalChangeLicense">{{ $p.t('global/lizenzanzahlAendern') }}</button>
+					<button class="btn btn-outline-secondary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+						{{ $p.t('ui/aktion') }}
+					</button>
+					<ul class="dropdown-menu" aria-labelledby="statusDropdown">
+						<li>
+							<a class="dropdown-item" href="#"
+								@click="openModalAnforderungenVorruecken">
+								{{ $p.t('global/anforderungenVorruecken') }}
+							</a>
+						</li>
+					</ul>
 					<div class="form-check form-check-inline ms-3">
 						<input
 							class="form-check-input"
