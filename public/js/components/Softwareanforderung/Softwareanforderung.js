@@ -37,7 +37,7 @@ export default {
 				autoResize:false, // prevent auto resizing of table
 				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_lv_id',
-				groupBy: "lv_oe_bezeichnung",
+				groupBy: "stg_bezeichnung",
 				groupToggleElement:"header", //toggle group on click anywhere in the group header
 				groupClosedShowCalcs:true, //show column calculations when a group is closed
 				groupStartOpen: self.cbGroupStartOpen,
@@ -61,10 +61,10 @@ export default {
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
 					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:false},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
-					{title: 'STG Kurzbz', field: 'studiengang_kurzbz', headerFilter: true, visible:false},
+					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
+					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:false},
 					{title: 'SW-Typ Kurzbz', field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
 					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, visible: false, },
-					{title: 'Studiengang', field: 'stg_bezeichnung', headerFilter: true},
 					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 100},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true},
 					{title: 'Semester', field: 'semester', headerFilter: true, hozAlign: 'right', width: 70},
@@ -167,7 +167,6 @@ export default {
 			// Replace column titles with phrasen
 			this.table.updateColumnDefinition('lv_bezeichnung', {title: this.$p.t('lehre', 'lehrveranstaltung')});
 			this.table.updateColumnDefinition('orgform_kurzbz', {title: this.$p.t('lehre', 'organisationsform')});
-			this.table.updateColumnDefinition('stg_bezeichnung', {title: this.$p.t('lehre', 'studiengang')});
 			this.table.updateColumnDefinition('softwaretyp_kurzbz', {title: this.$p.t('global', 'softwaretypKurzbz')});
 			this.table.updateColumnDefinition('studiensemester_kurzbz', {title: this.$p.t('lehre', 'studiensemester')});
 			this.table.updateColumnDefinition('softwaretyp_bezeichnung', {title: this.$p.t('global', 'softwaretyp')});
