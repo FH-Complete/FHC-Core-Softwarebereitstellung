@@ -95,7 +95,7 @@ export default {
 				this.selectedLvs = selectedData.map(data => ({
 					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
-					'lv_bezeichnung': data.lv_bezeichnung + '[ ' + data.orgform_kurzbz + ' ]',
+					'lv_bezeichnung': data.lv_bezeichnung,
 					'stg_bezeichnung': data.stg_bezeichnung
 				}));
 			}

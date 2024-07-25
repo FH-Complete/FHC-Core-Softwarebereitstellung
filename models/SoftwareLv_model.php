@@ -32,7 +32,6 @@ class SoftwareLv_model extends DB_Model
 				swlv.insertamum::date,
 				swlv.updatevon,
 				swlv.updateamum::date,  
-                lv.orgform_kurzbz,
 				lv.semester,   
                 lv.bezeichnung AS "lv_bezeichnung",   
 				lv.oe_kurzbz AS "lv_oe_kurzbz",  
