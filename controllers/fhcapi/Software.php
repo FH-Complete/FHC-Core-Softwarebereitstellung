@@ -17,7 +17,10 @@ class Software extends FHCAPI_Controller
 		parent::__construct(
 			array(
 				'createSoftware' => 'extension/software_verwalten:rw',
-				'updateSoftware' => 'extension/software_verwalten:rw'
+				'updateSoftware' => 'extension/software_verwalten:rw',
+				'getStudienjahre' => 'extension/software_verwalten:rw',
+				'getCurrStudienjahr' => 'extension/software_verwalten:rw',
+				'getSwLizenzenSumAndPercentageShareByOeAndStudienjahr' => 'extension/software_verwalten:rw'
 			)
 		);
 
@@ -25,6 +28,7 @@ class Software extends FHCAPI_Controller
 
 		// load models
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
 
 		// Load libraries
 		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
@@ -101,6 +105,57 @@ class Software extends FHCAPI_Controller
 		$this->terminateWithSuccess(['parentArray' => $parentArray]);
 	}
 
+	// Get current Studienjahr
+	public function getCurrStudienjahr(){
+		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
+		$result = $this->StudienjahrModel->getCurrStudienjahr();
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data[0]);
+	}
+
+	// Get all Studienjahre
+	public function getStudienjahre(){
+		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
+		$this->StudienjahrModel->addOrder('studienjahr_kurzbz');
+		$result = $this->StudienjahrModel->loadWhere(array(
+			'studienjahr_kurzbz >= ' => self::STUDIENJAHR_DROPDOWN_STARTDATE,
+		));
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
+
+	public function getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(){
+
+		// Get SS and WS Studiensemester of given Studienjahr
+		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$this->StudiensemesterModel->addOrder('start');
+		$result = $this->StudiensemesterModel->loadWhere(array(
+			'studienjahr_kurzbz' => $this->input->post('studienjahr_kurzbz')
+		));
+
+		// Return if no Studiensemester are assigend to Studienjahr yet
+		if (!hasData($result))
+		{
+			$this->terminateWithSuccess([]);
+		}
+
+		// SS and WS of given Studienjahr
+		$data = $this->getDataOrTerminateWithError($result);
+
+		// Get Lizenzanzahl sum and percetage share by OE for both studiensemester
+		$result = $this->SoftwareLvModel->getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(
+			$this->input->post('software_id'),
+			array_column($data, 'studiensemester_kurzbz')
+		);
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Private methods
