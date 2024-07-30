@@ -147,6 +147,55 @@ class SoftwareLv_model extends DB_Model
 		}
 	}
 
+	public function getSwLizenzenSumAndPercentageShareByOeAndStudienjahr($software_id, $studiensemester_kurzbz_arr)
+	{
+		$qry = '
+			-- Query data and sum lizenzanzahl by oe
+			WITH groupedLizenzen AS (
+				SELECT 
+					lv.oe_kurzbz,
+					swlv.studiensemester_kurzbz,
+					CASE
+						WHEN oe.organisationseinheittyp_kurzbz = \'Kompetenzfeld\' THEN (\'KF \' || oe.bezeichnung)
+						WHEN oe.organisationseinheittyp_kurzbz = \'Department\' THEN (\'DEP \' || oe.bezeichnung)
+						ELSE (oe.organisationseinheittyp_kurzbz || \' \' || oe.bezeichnung)
+					END AS "lv_oe_bezeichnung",
+					SUM(swlv.lizenzanzahl) AS sum_lizenzen
+				FROM
+					extension.tbl_software_lv               swlv
+					JOIN lehre.tbl_lehrveranstaltung 	lv USING(lehrveranstaltung_id)
+					JOIN extension.tbl_software 		sw USING (software_id)
+					JOIN extension.tbl_softwaretyp 		sw_typ USING (softwaretyp_kurzbz)
+					JOIN public.tbl_organisationseinheit 	oe USING (oe_kurzbz)
+					JOIN public.tbl_studiengang          	stg ON stg.studiengang_kz = lv.studiengang_kz
+				WHERE 
+					swlv.software_id = ?
+					AND swlv.studiensemester_kurzbz IN ?
+				GROUP BY 
+					lv.oe_kurzbz, swlv.studiensemester_kurzbz, oe.organisationseinheittyp_kurzbz, oe.bezeichnung
+			),
+			-- Overall sum of all oes, later used to calculate percentage share
+			totalLizenzen AS (
+				SELECT SUM(sum_lizenzen) AS sum_lizenzen FROM groupedLizenzen
+			)
+				
+			SELECT 
+				groupedLizenzen.oe_kurzbz,
+				groupedLizenzen.lv_oe_bezeichnung,
+				groupedLizenzen.studiensemester_kurzbz,
+				-- Sum by oe
+				groupedLizenzen.sum_lizenzen, 
+				-- Percentage share by oe
+				ROUND ((groupedLizenzen.sum_lizenzen/totalLizenzen.sum_lizenzen::decimal) * 100, 2) AS percentage_share
+			FROM 
+				groupedLizenzen, totalLizenzen 
+			ORDER BY
+				studiensemester_kurzbz DESC, lv_oe_bezeichnung
+		';
+
+		return $this->execQuery($qry, [$software_id, $studiensemester_kurzbz_arr]);
+	}
+
 	private function _getLanguageIndex()
 	{
 		$this->load->model('system/Sprache_model', 'SpracheModel');
