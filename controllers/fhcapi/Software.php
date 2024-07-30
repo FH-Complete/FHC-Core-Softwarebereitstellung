@@ -122,6 +122,7 @@ class Software extends FHCAPI_Controller
 
 		// Set up the validation rules
 		$this->form_validation->set_rules('softwaretyp_kurzbz', 'Softwaretyp', 'required');
+		$this->form_validation->set_rules('anzahl_lizenzen', 'Lizenz-Anzahl', 'required');
 		$this->form_validation->set_rules(
 			'software_kurzbz',
 			'Software Kurzbezeichnung',

@@ -75,7 +75,8 @@ export const SoftwareForm = {
 	methods: {
 		getDefaultSoftware() {
 			return {
-				softwaretyp_kurzbz: 'software'
+				softwaretyp_kurzbz: 'software',
+				anzahl_lizenzen: 0
 			}
 		},
 		getDefaultSoftwarestatus() {
