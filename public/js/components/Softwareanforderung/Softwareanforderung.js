@@ -119,7 +119,7 @@ export default {
 			return `
 				<div class="d-flex w-100 justify-content-between align-items-center">
 				  <div>${value}</div>
-				  <div class="ms-auto">Anteil DEP: ${percentageShare}%  |  \u2211 ${oeLizenzanzahl}</div>
+				  <div class="ms-auto">Anteil KF: ${percentageShare}%  |  \u2211 ${oeLizenzanzahl}</div>
 				</div>
 		  	`;
 		},
