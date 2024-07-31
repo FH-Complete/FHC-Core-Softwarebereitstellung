@@ -32,6 +32,7 @@ class SoftwareLv_model extends DB_Model
 				swlv.insertamum::date,
 				swlv.updatevon,
 				swlv.updateamum::date,  
+                lv.orgform_kurzbz,
 				lv.semester,   
                 lv.bezeichnung AS "lv_bezeichnung",   
 				lv.oe_kurzbz AS "lv_oe_kurzbz",  
@@ -61,6 +62,7 @@ class SoftwareLv_model extends DB_Model
 				JOIN extension.tbl_softwaretyp 			sw_typ USING (softwaretyp_kurzbz)
 				JOIN public.tbl_organisationseinheit 	oe USING (oe_kurzbz)
 				JOIN public.tbl_studiengang          	stg ON stg.studiengang_kz = lv.studiengang_kz
+				JOIN public.tbl_studiengangstyp 		stgtyp ON stgtyp.typ = stg.typ
             WHERE 1 = 1 
             ';
 
