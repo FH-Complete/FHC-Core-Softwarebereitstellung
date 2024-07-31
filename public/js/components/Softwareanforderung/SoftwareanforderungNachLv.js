@@ -38,7 +38,7 @@ export default {
 						width: 70
 					},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
-					{title: 'STG Kurzbz', field: 'studiengang_kurzbz', headerFilter: true, visible:false},
+					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 100},
 					{title: 'Studiengang', field: 'stg_bezeichnung', headerFilter: true, width: 250},
 					{title: 'Studiengangtyp', field: 'stg_typ_bezeichnung', headerFilter: true, width: 250},
 					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 100},

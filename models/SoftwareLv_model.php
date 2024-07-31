@@ -44,6 +44,7 @@ class SoftwareLv_model extends DB_Model
                 stg.studiengang_kz,
                 upper(stg.typ || stg.kurzbz) AS "stg_typ_kurzbz",    
                 stg.bezeichnung AS "stg_bezeichnung", 
+                stgtyp.bezeichnung AS "stg_typ_bezeichnung",
 				sw.softwaretyp_kurzbz,
 				sw.software_kurzbz,
 				sw.version,

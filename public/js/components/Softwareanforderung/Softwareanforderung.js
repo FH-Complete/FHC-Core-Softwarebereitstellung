@@ -37,7 +37,7 @@ export default {
 				autoResize:false, // prevent auto resizing of table
 				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_lv_id',
-				groupBy: "stg_bezeichnung",
+				groupBy: ["stg_bezeichnung", "stg_typ_bezeichnung"],
 				groupToggleElement:"header", //toggle group on click anywhere in the group header
 				groupClosedShowCalcs:true, //show column calculations when a group is closed
 				groupStartOpen: self.cbGroupStartOpen,
