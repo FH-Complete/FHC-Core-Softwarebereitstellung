@@ -62,12 +62,12 @@ export default {
 					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:false},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
 					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
-					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:false},
+					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
 					{title: 'SW-Typ Kurzbz', field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
 					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, visible: false, },
-					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 100},
+					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 70},
+					{title: 'Semester', field: 'semester', headerFilter: true, hozAlign: 'right', width: 50},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true},
-					{title: 'Semester', field: 'semester', headerFilter: true, hozAlign: 'right', width: 70},
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 70},
@@ -117,10 +117,8 @@ export default {
 
 			// Return Bootstrap 5 div
 			return `
-				<div class="d-flex w-100 justify-content-between align-items-center">
-				  <div>${value}</div>
-				  <div class="ms-auto">Anteil KF: ${percentageShare}%  |  \u2211 ${oeLizenzanzahl}</div>
-				</div>
+			  <div class="d-inline fw-normal">${value}</div>
+			  <div class="d-inline float-end fw-normal">Anteil KF: ${percentageShare}%  |  \u2211 ${oeLizenzanzahl}</div>
 		  	`;
 		},
 		onChangeStudiensemester(){
