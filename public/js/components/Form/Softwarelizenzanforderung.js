@@ -62,7 +62,8 @@ export default {
 
 			// Reduce postData for backend-needs
 			const postData = this.formData
-				.filter(item => !item.zuordnungExists)
+				.filter(item => !item.zuordnungExists) // ...Zuordnungen that do not already exist
+				.filter(item => item.lvIdExistInVorrueckSemester) // ...and where LV-ID is available in Vorrück-Studiensemester
 				.map(({software_lv_id, lehrveranstaltung_id, lizenzanzahl, software_id }) =>
 				({
 					lehrveranstaltung_id: lehrveranstaltung_id,
@@ -153,9 +154,13 @@ export default {
 					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
 					'currLizenzanzahl': data.anzahl_lizenzen,
 					'lizenzanzahl': data.anzahl_lizenzen,
-					'zuordnungExists': false
+					'zuordnungExists': false,
+					'lvIdExistInVorrueckSemester': true
 				}));
 			}
+
+			// Flag LVs that do not exist in Vorrueck-Studiensemester
+			this.flagLvsNotExistingInVorrueckStudiensemester(this.formData);
 
 			// Flag if selection already exists
 			this.flagAndSortExistingSwLvZuordnungen(this.formData);
@@ -217,6 +222,26 @@ export default {
 				})
 				.catch( this.$fhcAlert.handleSystemError );
 		},
+		flagLvsNotExistingInVorrueckStudiensemester(){
+			let postData = {
+				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id),
+				studiensemester_kurzbz: this.vorrueckStudiensemester
+			}
+
+			this.$fhcApi
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLehrveranstaltungenByLvs', postData)
+				.then( result => result.data)
+				.then (data =>
+				{
+					this.formData.forEach(fd => {
+						// Flag formData where lv_id does not exist in vorrück-Semester yet
+						if (!data.includes(fd.lehrveranstaltung_id)) {
+							fd.lvIdExistInVorrueckSemester = false;
+						}
+					});
+				})
+				.catch( this.$fhcAlert.handleSystemError );
+		},
 		resetForm(){
 			this.$refs.form.clearValidation();
 			this.formData = [];
@@ -238,9 +263,9 @@ export default {
 			<core-bs-modal ref="modalContainer" class="bootstrap-prompt" dialog-class="modal-fullscreen" @hidden-bs-modal="$emit('formClosed')">
 				<template #title>{{ modalTitel }}</template>
 				<template #default>
-					<!-- Formular -->
 					<core-form-validation></core-form-validation>
-					<div class="row">
+					<!-- Modal: Lizenzanzahl ändern -->
+					<div v-if="requestModus === 'changeLicense'" class="row">
 						<div class="col-2">
 							<core-form-input
 								type="select"
@@ -256,7 +281,83 @@ export default {
 								</option>
 							</core-form-input>
 						</div>
-						<div class="col-2" v-show="requestModus === 'anforderungenVorruecken'">
+						<div class="fhc-hr"></div>
+						<!-- LVs und Eingabefeld für neue Lizenzanzahl im neuen Studiensemester -->		
+						<div class="row mb-4" v-for="(fd, index) in formData" :key="index">
+							<div class="col-3">
+								<core-form-input
+									v-model="fd.stg_bezeichnung"
+									name="stg_bezeichnung"
+									:label="index === 0 ? $p.t('lehre', 'studiengang') : ''"
+									class="form-control-sm"
+									readonly>
+								</core-form-input>
+							</div>
+							<div class="col-3">
+								<core-form-input
+									v-model="fd.lv_bezeichnung"
+									name="lv_bezeichnung"
+									:label="index === 0 ? $p.t('lehre', 'lehrveranstaltung') : ''"
+									class="form-control-sm"
+									readonly>
+								</core-form-input>
+							</div>
+							<div class="col-3">
+								<core-form-input
+									v-model="fd.software_kurzbz"
+									name="software_kurzbz"
+									:label="index === 0 ? 'Software' : ''"
+									class="form-control-sm"
+									readonly>
+								</core-form-input>
+							</div>
+							<div class="col-3 d-inline-flex justify-content-evenly">
+								<core-form-input
+									type="number"
+									v-model="fd.currLizenzanzahl"
+									name="currLizenzanzahl"
+									class="form-control-sm"
+									:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
+									disabled>
+								</core-form-input>
+								<span class="mx-3 align-self-center">=></span>
+								<div class="d-flex flex-column">
+									<core-form-input
+										type="number"
+										v-model="fd.lizenzanzahl"
+										:name="'lizenzanzahl' + index"
+										class="form-control-sm flex-fill"
+										:label="index === 0 ? $p.t('global', 'lizenzAnzahlNeu') : ''"
+										:tabindex="index + 1"
+										:disabled="fd.zuordnungExists">
+									</core-form-input>
+									<div class="form-text text-danger" v-if="fd.zuordnungExists">{{ $p.t('global/bereitsAngefordert') }}</div>
+								</div>
+								<button class="btn btn-sm btn-outline-secondary ms-3 align-self-center" 
+									@click.prevent="removeSelection(fd.software_lv_id)">
+									<i class="fa fa-xmark"></i>
+								</button>
+							</div>
+						</div>
+					</div>
+					<!-- Modal: Anforderungen in neues Studiensemester vorrücken -->
+					<div v-if="requestModus === 'anforderungenVorruecken'" class="row">
+						<div class="col-2">
+							<core-form-input
+								type="select"
+								v-model="selectedStudiensemester"
+								name="studiensemester"
+								:label="$p.t('lehre', 'studiensemester')"
+								:disabled>
+								<option 
+								v-for="(studSem, index) in studiensemester"
+								:key="index" 
+								:value="studSem.studiensemester_kurzbz">
+									{{studSem.studiensemester_kurzbz}}
+								</option>
+							</core-form-input>
+						</div>
+						<div class="col-2">
 							<core-form-input
 								type="select"
 								v-model="vorrueckStudiensemester"
@@ -272,7 +373,7 @@ export default {
 								</option>
 							</core-form-input>
 						</div>
-						<div class="col-6 align-self-end" v-show="requestModus === 'anforderungenVorruecken'">
+						<div class="col-6 align-self-end">
 							<div class="form-check form-check-inline ms-3">
 								<input
 									class="form-check-input"
@@ -282,67 +383,112 @@ export default {
 								<label class="form-check-label">Lizenz-Anzahl für alle auf 0 setzen und ggf. nachbearbeiten</label>
 							</div>
 						</div>
-					</div>
-
-					<div class="fhc-hr"></div>
-					<div class="row mb-4" v-for="(fd, index) in formData" :key="index">
-						<div class="col-3">
-							<core-form-input
-								v-model="fd.stg_bezeichnung"
-								name="stg_bezeichnung"
-								:label="index === 0 ? $p.t('lehre', 'studiengang') : ''"
-								class="form-control-sm"
-								readonly>
-							</core-form-input>
-						</div>
-						<div class="col-3">
-							<core-form-input
-								v-model="fd.lv_bezeichnung"
-								name="lv_bezeichnung"
-								:label="index === 0 ? $p.t('lehre', 'lehrveranstaltung') : ''"
-								class="form-control-sm"
-								readonly>
-							</core-form-input>
-						</div>
-						<div class="col-3">
-							<core-form-input
-								v-model="fd.software_kurzbz"
-								name="software_kurzbz"
-								:label="index === 0 ? 'Software' : ''"
-								class="form-control-sm"
-								readonly>
-							</core-form-input>
-						</div>
-						<div class="col-3 d-inline-flex justify-content-evenly">
-							<core-form-input
-								type="number"
-								v-model="fd.currLizenzanzahl"
-								name="currLizenzanzahl"
-								class="form-control-sm"
-								:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
-								disabled>
-							</core-form-input>
-							<span class="mx-3 align-self-center">=></span>
-							<div class="d-flex flex-column">
+						<div class="fhc-hr"></div>
+						<!-- LV-Ids, die im neuen Studiensemester nicht existieren (-> Vorrücken nicht möglich)-->
+						<div v-if="formData.some(fd => !fd.lvIdExistInVorrueckSemester)">
+							<div class="accordion mb-5" id="accordionExample">
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="flush-headingOne">
+										<button class="accordion-button collapsed text-danger bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+											<i class="fa fa-chevron-down me-3"></i>
+											Einige Lehrveranstaltungen können nicht vorgerrückt werden. Sie wurden für {{ vorrueckStudiensemester }} (noch) nicht angelegt oder haben eine neue LV-ID.
+										</button>
+									</h2>
+									<div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionExample">
+										<div class="accordion-body mt-3"> 
+											<template v-for="(fd, index) in formData" :key="index">
+												<div v-if="!fd.lvIdExistInVorrueckSemester" class="row mb-3" >
+													<div class="col-3">
+														<core-form-input
+															v-model="fd.stg_bezeichnung"
+															name="stg_bezeichnung"
+															:label="index === 0 ? $p.t('lehre', 'studiengang') : ''"
+															class="form-control-sm"
+															readonly>
+														</core-form-input>
+													</div>
+													<div class="col-3">
+														<core-form-input
+															v-model="fd.lv_bezeichnung"
+															name="lv_bezeichnung"
+															:label="index === 0 ? $p.t('lehre', 'lehrveranstaltung') : ''"
+															class="form-control-sm"
+															readonly>
+														</core-form-input>
+													</div>
+													<div class="col-3 align-self-end">
+														<span class="text-danger"><small>LV-ID {{ fd.lehrveranstaltung_id }} existiert nicht</small></span>
+													</div>
+												</div>
+											</template>	
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>		
+						<!-- LVs und Eingabefeld für neue Lizenzanzahl im neuen Studiensemester -->		
+						<template v-for="(fd, index) in formData" :key="index">
+							<div v-if="fd.lvIdExistInVorrueckSemester" class="row mb-3">
+								<div class="col-3">
+									<core-form-input
+										v-model="fd.stg_bezeichnung"
+										name="stg_bezeichnung"
+										:label="index === 0 ? $p.t('lehre', 'studiengang') : ''"
+										class="form-control-sm"
+										readonly>
+									</core-form-input>
+								</div>
+								<div class="col-3">
+									<core-form-input
+										v-model="fd.lv_bezeichnung"
+										name="lv_bezeichnung"
+										:label="index === 0 ? $p.t('lehre', 'lehrveranstaltung') : ''"
+										class="form-control-sm"
+										readonly>
+									</core-form-input>
+								</div>
+								<div class="col-3">
+									<core-form-input
+										v-model="fd.software_kurzbz"
+										name="software_kurzbz"
+										:label="index === 0 ? 'Software' : ''"
+										class="form-control-sm"
+										readonly>
+									</core-form-input>
+								</div>
+								<div class="col-3 d-inline-flex justify-content-evenly">
 								<core-form-input
 									type="number"
-									v-model="fd.lizenzanzahl"
-									:name="'lizenzanzahl' + index"
-									class="form-control-sm flex-fill"
-									:label="index === 0 ? $p.t('global', 'lizenzAnzahl') + ' ' + vorrueckStudiensemester : ''"
-									:tabindex="index + 1"
-									:disabled="fd.zuordnungExists">
+									v-model="fd.currLizenzanzahl"
+									name="currLizenzanzahl"
+									class="form-control-sm"
+									:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
+									disabled>
 								</core-form-input>
-								<div class="form-text text-danger" v-if="fd.zuordnungExists">{{ $p.t('global/bereitsAngefordert') }}</div>
+								<span class="mx-3 align-self-center">=></span>
+								<div class="d-flex flex-column">
+									<core-form-input
+										type="number"
+										v-model="fd.lizenzanzahl"
+										:name="'lizenzanzahl' + index"
+										class="form-control-sm flex-fill"
+										:label="index === 0 ? $p.t('global', 'lizenzAnzahl') + ' ' + vorrueckStudiensemester : ''"
+										:tabindex="index + 1"
+										:disabled="fd.zuordnungExists">
+									</core-form-input>
+									<div class="form-text text-danger" v-if="fd.zuordnungExists">{{ $p.t('global/bereitsAngefordert') }}</div>
+								</div>
+								<button class="btn btn-sm btn-outline-secondary ms-3 align-self-center" 
+									@click.prevent="removeSelection(fd.software_lv_id)">
+									<i class="fa fa-xmark"></i>
+								</button>
 							</div>
-							<button class="btn btn-sm btn-outline-secondary ms-3 align-self-center" 
-								@click.prevent="removeSelection(fd.software_lv_id)">
-								<i class="fa fa-xmark"></i>
-							</button>
-						</div>
-			</template>
+							</div>
+						</template>
+					</div>	
+				</template>
 				<template #footer>
-					<div class="form-check form-check-inline ms-3" v-show="requestModus === 'anforderungenVorruecken'">
+					<div class="form-check form-check-inline ms-3" v-if="requestModus === 'anforderungenVorruecken'">
 						<input
 							class="form-check-input"
 							type="checkbox"
