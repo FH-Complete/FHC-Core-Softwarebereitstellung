@@ -54,22 +54,9 @@ export default {
 		async loadAndSetStudiensemester(){
 			const result = await this.$fhcApi
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAllSemester')
-				.then( result => {
-					this.studiensemester = result.data;
-					const now = new Date();
-
-					// Get actual Studiensemester
-					const currentSemester = this.studiensemester.find(semester => {
-						const startDate = new Date(semester.start);
-						const endDate = new Date(semester.ende);
-						return startDate <= now && endDate >= now;
-					});
-
-					// Preselect Studiensemester
-					this.selectedStudiensemester = currentSemester
-						? currentSemester.studiensemester_kurzbz
-						: '';
-				})
+				.then( result => this.studiensemester = result.data )
+				.then( () => this.$fhcApi.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAktOrNextSemester') ) // Get actual Studiensemester
+				.then( result =>  this.selectedStudiensemester = result.data[0].studiensemester_kurzbz ) // Preselect Studiensemester
 				.catch( this.$fhcAlert.handleSystemError );
 		},
 		openSoftwareanforderungForm(){

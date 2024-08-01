@@ -25,6 +25,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
 				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
+				'getAktOrNextSemester' => 'extension/software_bestellen:rw',
 				'getAllSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
 				'getLehrveranstaltungen' => 'extension/software_bestellen:rw'
@@ -162,6 +163,18 @@ class Softwareanforderung extends FHCAPI_Controller
 	public function getAktAndFutureSemester(){
 		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
 		$result = $this->StudiensemesterModel->getAktAndFutureSemester();
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
+
+	/**
+	 * Get actual or - in summertime next -  Studiensemester
+	 */
+	public function getAktOrNextSemester(){
+		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$result = $this->StudiensemesterModel->getAktOrNextSemester();
 
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
