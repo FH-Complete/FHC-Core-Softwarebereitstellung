@@ -116,7 +116,7 @@ export default {
 					'stg_bezeichnung': data.stg_bezeichnung,
 					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
-					'lv_bezeichnung': data.lv_bezeichnung,
+					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
 					'currLizenzanzahl': data.anzahl_lizenzen,
 					'lizenzanzahl': ''
 				}));
@@ -150,7 +150,7 @@ export default {
 					'stg_bezeichnung': data.stg_bezeichnung,
 					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
-					'lv_bezeichnung': data.lv_bezeichnung,
+					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
 					'currLizenzanzahl': data.anzahl_lizenzen,
 					'lizenzanzahl': data.anzahl_lizenzen,
 					'zuordnungExists': false
