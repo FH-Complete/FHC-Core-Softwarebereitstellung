@@ -19,7 +19,7 @@ class Software extends FHCAPI_Controller
 				'createSoftware' => 'extension/software_verwalten:rw',
 				'updateSoftware' => 'extension/software_verwalten:rw',
 				'getStudienjahre' => 'extension/software_verwalten:rw',
-				'getCurrStudienjahr' => 'extension/software_verwalten:rw',
+				'getAktOrNextStudienjahr' => 'extension/software_verwalten:rw',
 				'getSwLizenzenSumAndPercentageShareByOeAndStudienjahr' => 'extension/software_verwalten:rw'
 			)
 		);
@@ -106,9 +106,9 @@ class Software extends FHCAPI_Controller
 	}
 
 	// Get current Studienjahr
-	public function getCurrStudienjahr(){
+	public function getAktOrNextStudienjahr(){
 		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
-		$result = $this->StudienjahrModel->getCurrStudienjahr();
+		$result = $this->StudienjahrModel->getAktOrNextStudienjahr();
 
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
