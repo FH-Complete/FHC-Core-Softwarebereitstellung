@@ -170,11 +170,9 @@ export default {
 		},
 		loadAndSetStudiensemester(selectedStudiensemester){
 			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAktAndFutureSemester')
-				.then( result => {
-					this.studiensemester = result.data;
-					this.selectedStudiensemester = selectedStudiensemester;
-				})
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAllSemester')
+				.then(result => this.studiensemester = result.data)
+				.then(() => this.selectedStudiensemester = selectedStudiensemester)
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		async setVorrueckStudiensemester(selectedStudiensemester){
