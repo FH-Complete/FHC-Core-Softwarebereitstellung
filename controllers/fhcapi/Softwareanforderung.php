@@ -9,7 +9,7 @@ class Softwareanforderung extends FHCAPI_Controller
 {
 	private $_uid;
 	const BERECHTIGUNG_SOFTWAREANFORDERUNG = 'extension/software_bestellen';
-	const STUDIENSEMESTER_DROPDOWN_STARTDATE = '2024-09-01'; // Dropdown starts from this studiensemester up to all future ones
+	const NOT_ZUORDENBARE_STATI = ['endoflife', 'nichtverfuegbar'];
 
 	/**
 	 * Constructor
@@ -120,12 +120,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	public function autocompleteSwSuggestions($query = '')
 	{
-		$query = strtolower(urldecode($query));
-
-		// Get data
-		$this->SoftwareModel->addOrder('software_kurzbz');
-		$result = $this->SoftwareModel->loadWhere("software_kurzbz ILIKE '%".$this->SoftwareModel->escapeLike($query)."%'");
-
+		$result = $this->SoftwareModel->getAutocompleteSuggestions(
+			$query,
+			self::NOT_ZUORDENBARE_STATI
+		);
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
 		$this->terminateWithSuccess($data);

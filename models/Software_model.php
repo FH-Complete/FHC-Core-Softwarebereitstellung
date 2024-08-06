@@ -318,6 +318,33 @@ class Software_model extends DB_Model
 		);
 	}
 
+	public function getAutocompleteSuggestions($eventQuery, $filterSoftwarestatusKurzbzArr = null){
+		$params[] = '%' . $eventQuery . '%';
+
+		$qry = '
+			SELECT DISTINCT on (software_id) *
+			FROM extension.tbl_software sw
+			JOIN extension.tbl_software_softwarestatus swstat using (software_id)
+			WHERE software_kurzbz ILIKE ? ';
+
+		/* filter by input string */
+		if (is_array($filterSoftwarestatusKurzbzArr)) {
+			$qry.= ' AND swstat.software_id NOT IN (
+				  SELECT software_id
+				  FROM extension.tbl_software_softwarestatus
+				  WHERE softwarestatus_kurzbz IN ?
+			  ) ';
+
+			$params[] = $filterSoftwarestatusKurzbzArr;
+		}
+
+		$qry.='	
+			ORDER BY software_id, swstat.software_status_id DESC, software_kurzbz
+		';
+
+		return $this->execQuery($qry, $params);
+	}
+
 	/**
 	 * Gets dependencies of a software (needed e.g. for checks if a software can be deleted).
 	 * @param software_id
