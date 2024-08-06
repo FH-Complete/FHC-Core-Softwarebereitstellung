@@ -82,7 +82,7 @@ export default {
 						this.$refs.form.setFeedback(true, updatedFields);
 
 					})
-					.catch(this.$fhcAlert.handleSystemError);
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		openModalLvToSw(selectedData, selectedStudiensemester) {
 			this.requestModus = 'lv';
@@ -136,7 +136,7 @@ export default {
 						? selectedStudiensemester
 						: this.studiensemester[0].studiensemester_kurzbz
 				})
-				.catch( this.$fhcAlert.handleSystemError );
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		onStudiensemesterChange(event){
 			// Empty lehrveranstaltungen dropdown
@@ -160,7 +160,7 @@ export default {
 						}
 					)
 					.then(result => {this.swSuggestions = result.data})
-					.catch(this.$fhcAlert.handleSystemError);
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		searchLv(event) {
@@ -204,7 +204,7 @@ export default {
 						})
 						this.lvSuggestions = Object.values(groupedData);
 					})
-					.catch(this.$fhcAlert.handleSystemError);
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		isLvSelected(option){
@@ -277,7 +277,7 @@ export default {
 						);
 					}
 				})
-				.catch( this.$fhcAlert.handleSystemError );
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		onClickChangeTab(tab){
 			this.$refs.modalContainer.hide();

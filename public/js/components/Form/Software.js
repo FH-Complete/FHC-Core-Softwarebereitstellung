@@ -58,9 +58,7 @@ export const SoftwareForm = {
 					this.softwareMetadata = CoreRESTClient.getData(result);
 				}
 			}
-		).catch(
-			error => { this.$fhcAlert.handleSystemError(error); }
-		);
+		).catch(error => this.$fhcAlert.handleSystemError(error));
 
 		// Get Softwarelizenztypen
 		CoreRESTClient
@@ -125,9 +123,7 @@ export const SoftwareForm = {
 							}
 						}
 					}
-				).catch(
-					error => { this.$fhcAlert.handleSystemError(error); }
-				);
+				).catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get last softwarestatus data
 				CoreRESTClient.get(
@@ -156,9 +152,7 @@ export const SoftwareForm = {
 							this.softwareImages = CoreRESTClient.getData(result);
 						}
 					}
-				).catch(
-					error => { this.$fhcAlert.handleSystemError(error); }
-				);
+				).catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get Studienjahre for Dropdown
 				this.$fhcApi
@@ -277,9 +271,7 @@ export const SoftwareForm = {
 						this.parentSoftwareSuggestions = softwareList;
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOeSuggestions(event) {
 			CoreRESTClient.get(
@@ -324,9 +316,7 @@ export const SoftwareForm = {
 						}
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getImagesByBezeichnung(event) {
 			CoreRESTClient.get(
@@ -346,9 +336,7 @@ export const SoftwareForm = {
 						this.softwareImageSuggestions = CoreRESTClient.getData(result.data);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getLizenzserverByKurzbz(event) {
 			CoreRESTClient.get(
@@ -368,9 +356,7 @@ export const SoftwareForm = {
 						this.lizenzserverSuggestions = CoreRESTClient.getData(result.data);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onChangeStudienjahr(){
 			this.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(this.softwareId, this.selStudienjahr);

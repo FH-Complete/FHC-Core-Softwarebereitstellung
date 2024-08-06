@@ -94,9 +94,7 @@ export default {
 						this.$refs.lizenzserverTable.reloadTable();
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `

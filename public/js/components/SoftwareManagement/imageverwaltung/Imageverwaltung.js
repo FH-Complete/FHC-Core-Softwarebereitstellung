@@ -122,9 +122,7 @@ export default {
 						this.$refs.softwarezuordnung.getSoftwareByImage(null);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onRaumzuordnungSaved(raumanzahlDifferenz) {
 

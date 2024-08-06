@@ -56,7 +56,7 @@ export default {
 						this.$refs.form.setFeedback(false, equalFields);
 
 					})
-					.catch(this.$fhcAlert.handleSystemError);
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		saveVorgerrueckteSwLvZuordnungen(){
 
@@ -93,7 +93,7 @@ export default {
 						this.$refs.form.setFeedback(true, updatedFields);
 
 					})
-					.catch(this.$fhcAlert.handleSystemError);
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		openModalChangeLicense(selectedData, selectedStudiensemester) {
 			this.requestModus = 'changeLicense';
@@ -175,7 +175,7 @@ export default {
 					this.studiensemester = result.data;
 					this.selectedStudiensemester = selectedStudiensemester;
 				})
-				.catch( this.$fhcAlert.handleSystemError );
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		async setVorrueckStudiensemester(selectedStudiensemester){
 			 const result = await this.$fhcApi
@@ -184,7 +184,7 @@ export default {
 				.then(result => {
 					this.vorrueckStudiensemester = result.data;
 				})
-				.catch( this.$fhcAlert.handleSystemError );
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		flagAndSortExistingSwLvZuordnungen(){
 			let postData = this.formData.map(fd => {
@@ -220,7 +220,7 @@ export default {
 						);
 					}
 				})
-				.catch( this.$fhcAlert.handleSystemError );
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		flagLvsNotExistingInVorrueckStudiensemester(){
 			let postData = {
@@ -240,7 +240,7 @@ export default {
 						}
 					});
 				})
-				.catch( this.$fhcAlert.handleSystemError );
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		resetForm(){
 			this.$refs.form.clearValidation();

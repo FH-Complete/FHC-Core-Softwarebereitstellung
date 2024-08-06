@@ -58,7 +58,7 @@ export default {
 				.then( result => this.studiensemester = result.data )
 				.then( () => this.$fhcApi.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAktOrNextSemester') ) // Get actual Studiensemester
 				.then( result =>  this.selectedStudiensemester = result.data[0].studiensemester_kurzbz ) // Preselect Studiensemester
-				.catch( this.$fhcAlert.handleSystemError );
+				.catch( error => this.$fhcAlert.handleSystemError(error) );
 		},
 		openSoftwareanforderungForm(){
 			let selectedData = this.table.getSelectedData();

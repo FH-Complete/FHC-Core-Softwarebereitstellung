@@ -126,7 +126,7 @@ export default {
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex', null)
 			.then(result => result.data)
 			.then(result => { this.languageIndex = CoreRESTClient.getData(result);})
-			.catch( error => { this.$fhcAlert.handleSystemError(error); } );
+			.catch( error => this.$fhcAlert.handleSystemError(error) );
 	},
 	methods: {
 		handleHierarchyViewChange(showHierarchy) {
@@ -166,9 +166,7 @@ export default {
 						return o;
 					}, {});
 				})
-				.catch(error => {
-					this.$fhcAlert.handleSystemError(error);
-				});
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		changeStatus(softwarestatus_kurzbz, software_id = null) {
 			let software_ids = [];
@@ -224,7 +222,7 @@ export default {
 					}
 
 					this.$refs.softwareTable.reloadTable(); }) // TODO use row update instead of reloadTable after solving datatree issues
-				.catch( error => { this.$fhcAlert.handleSystemError(error); });
+				.catch( error => this.$fhcAlert.handleSystemError(error));
 		},
 		editSoftware(event, software_id){
 			this.openModal(event, software_id);
@@ -250,9 +248,7 @@ export default {
 						this.$refs.softwareTable.reloadTable();
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		promoteChildren(children, resultArr) {
 			for (let child of children) {

@@ -60,9 +60,7 @@ export default {
 				})
 				.then(result => result.data)
 				.then(result => {this.$refs.softwaresucheTable.tabulator.setData(CoreRESTClient.getData(result));})
-				.catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onTableBuilt() {
 			if (this.modelValue.ortKurzbz) {
@@ -86,9 +84,7 @@ export default {
 						this.ortSuggestions = CoreRESTClient.getData(result.data);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	watch: {
