@@ -240,7 +240,7 @@ export default {
 				.then(result => {
 					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.handleSystemMessage(result.retval);
+						this.$fhcAlert.alertDefault('warn', 'Löschen nicht möglich', result.retval[0], true);
 					}
 					else
 					{

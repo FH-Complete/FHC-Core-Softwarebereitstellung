@@ -323,7 +323,7 @@ class Software_model extends DB_Model
 	 * @param software_id
 	 * @return object success or error
 	 */
-	public function getSoftwareDependencies($software_id)
+	public function getSoftwareImageDependencies($software_id)
 	{
 		return $this->execQuery('
 			SELECT
