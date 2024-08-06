@@ -68,6 +68,7 @@ export default {
 					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 70},
 					{title: 'Semester', field: 'semester', headerFilter: true, hozAlign: 'right', width: 50},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true},
+					{title: 'LE-Gruppen', field: 'lehreinheitgruppen_bezeichnung', headerFilter: true, width: 200},
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 70},
