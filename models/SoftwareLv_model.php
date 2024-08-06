@@ -41,6 +41,31 @@ class SoftwareLv_model extends DB_Model
                     WHEN oe.organisationseinheittyp_kurzbz = \'Department\' THEN (\'DEP \' || oe.bezeichnung)
                     ELSE (oe.organisationseinheittyp_kurzbz || \' \' || oe.bezeichnung)
                 END AS "lv_oe_bezeichnung",
+				(
+				    -- comma seperated string of all lehreinheitgruppen
+					SELECT string_agg(bezeichnung, \', \') AS lehreinheitgruppe_bezeichnung
+					FROM(
+					    -- distinct bezeichnung, as may come multiple times from different lehreinheiten
+						SELECT DISTINCT ON (studiengang_kz, bezeichnung) studiengang_kz, bezeichnung FROM
+						(
+							-- distinct lehreinheitgruppe, as may come multiple times from different lehrform
+							SELECT DISTINCT ON (legr.lehreinheitgruppe_id) legr.studiengang_kz,
+								-- get Spezialgruppe or Lehrverbandgruppe 
+								COALESCE(
+									legr.gruppe_kurzbz,
+									CONCAT( UPPER(substg.typ), UPPER(substg.kurzbz), \'-\', legr.semester, legr.verband, legr.gruppe )
+								) as bezeichnung
+							FROM lehre.tbl_lehreinheitgruppe 	legr
+							JOIN lehre.tbl_lehreinheit 			le USING (lehreinheit_id)
+							JOIN lehre.tbl_lehrveranstaltung 	sublv USING (lehrveranstaltung_id)
+							JOIN public.tbl_studiengang 		substg ON substg.studiengang_kz = legr.studiengang_kz
+							WHERE sublv.lehrveranstaltung_id 	= swlv.lehrveranstaltung_id
+							AND le.studiensemester_kurzbz 		= swlv.studiensemester_kurzbz
+						) AS lehreinheitgruppen
+					    GROUP BY studiengang_kz, bezeichnung
+						ORDER BY studiengang_kz DESC
+					) AS uniqueLehreinheitgruppen_bezeichnung
+				) AS lehreinheitgruppen_bezeichnung,
                 stg.studiengang_kz,
                 upper(stg.typ || stg.kurzbz) AS "stg_typ_kurzbz",    
                 stg.bezeichnung AS "stg_bezeichnung", 
