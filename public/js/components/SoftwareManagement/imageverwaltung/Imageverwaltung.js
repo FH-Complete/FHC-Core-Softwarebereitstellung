@@ -142,9 +142,8 @@ export default {
 			this.softwareimageId = row.getData().softwareimage_id;
 			this.softwareimage_bezeichnung = row.getData().bezeichnung;
 
-
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.softwarezuordnung._.vnode.el.offsetTop);
+			let offcanvasElement = new bootstrap.Offcanvas(document.getElementById('imageverwaltungOffcanvas'));
+			offcanvasElement.show();
 		}
 	},
 	template: `
@@ -168,15 +167,21 @@ export default {
 				</core-filter-cmpt>
 			</div>
 		</div>
-		<!-- Softwareimage Details -->			
-		<div class="row mb-5">
-			<div class="col-md-6">
-				<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
-			</div>							
-			<div class="col-md-6">						
-				<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>		
-			</div>							
-		</div>
+		<!-- Softwareimage Details -->	
+		<div class="offcanvas offcanvas-start w-75" tabindex="-1" id="imageverwaltungOffcanvas">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="row">
+				<div class="col-12 mb-3">
+				<!-- TODO hier weitermachen....tabindex? raum zu image funktioniert nicht wegen 2x overlay offset und modal...-->
+					<raumzuordnung ref="raumzuordnung" tabindex="9999" @on-saved="onRaumzuordnungSaved"></raumzuordnung>
+				</div>
+				<div class="col-12">
+					<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>	
+				</div>
+			</div>
+		</div>		
 		<!-- Softwareimage modal component -->
 		<softwareimage-modal
 		class="fade"

@@ -285,8 +285,8 @@ export default {
 			// get row data
 			this.getSoftwareRowDetails();
 
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.raumzuordnung._.vnode.el.offsetTop);
+			let offcanvasElement = new bootstrap.Offcanvas(document.getElementById('softwareverwaltungOffcanvas'));
+			offcanvasElement.show();
 		},
 		onTableDataLoaded(data){
 			// no promoting of children if hierarchy shown
@@ -357,10 +357,11 @@ export default {
 			</div>
 		</div>
 		<!-- Software Details -->
-		<div class="row mb-5">				
-			<div class="col-md-6">
-				<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+		<div class="offcanvas offcanvas-start w-50" tabindex="-1" id="softwareverwaltungOffcanvas">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 			</div>
+			<raumzuordnung ref="raumzuordnung"></raumzuordnung>
 		</div>
 		<!-- Software modal component -->
 		<software-modal
