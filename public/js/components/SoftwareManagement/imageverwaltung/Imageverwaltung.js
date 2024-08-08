@@ -173,11 +173,10 @@ export default {
 				<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 			</div>
 			<div class="row">
-				<div class="col-12 mb-3">
-				<!-- TODO hier weitermachen....tabindex? raum zu image funktioniert nicht wegen 2x overlay offset und modal...-->
-					<raumzuordnung ref="raumzuordnung" tabindex="9999" @on-saved="onRaumzuordnungSaved"></raumzuordnung>
+				<div class="col-6">
+					<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>
 				</div>
-				<div class="col-12">
+				<div class="col-6">
 					<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>	
 				</div>
 			</div>
