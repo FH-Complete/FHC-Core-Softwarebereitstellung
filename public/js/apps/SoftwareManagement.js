@@ -22,11 +22,19 @@ import FhcAlert from '../../../../js/plugin/FhcAlert.js';
 import FhcApi from "../../../../js/plugin/FhcApi.js";
 import Phrasen from "../../../../js/plugin/Phrasen.js";
 
+const STUDIENSEMESTER_DROPDOWN_STARTDATE = '2024-09-01'; // Dropdown starts from this studiensemester up to all future ones
+
+
 const softwareManagementApp = Vue.createApp({
 	components: {
 		SoftwareManagement,
 		SoftwarelisteLayout,
 		SoftwareanforderungLayout
+	},
+	provide() {
+		return {
+			STUDIENSEMESTER_DROPDOWN_STARTDATE
+		};
 	}
 });
 

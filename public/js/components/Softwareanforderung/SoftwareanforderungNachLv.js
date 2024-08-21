@@ -9,6 +9,7 @@ export default {
 		CoreFormInput,
 		SoftwareanforderungForm
 	},
+	inject: ['STUDIENSEMESTER_DROPDOWN_STARTDATE'],
 	data: function() {
 		return {
 			table: null,
@@ -54,9 +55,9 @@ export default {
 	methods: {
 		async loadAndSetStudiensemester(){
 			const result = await this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAllSemester')
+				.get('api/frontend/v1/organisation/Studiensemester/getAll', {start: this.STUDIENSEMESTER_DROPDOWN_STARTDATE})
 				.then( result => this.studiensemester = result.data )
-				.then( () => this.$fhcApi.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAktOrNextSemester') ) // Get actual Studiensemester
+				.then( () => this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getAktNext') ) // Get actual Studiensemester
 				.then( result =>  this.selectedStudiensemester = result.data[0].studiensemester_kurzbz ) // Preselect Studiensemester
 				.catch( error => this.$fhcAlert.handleSystemError(error) );
 		},

@@ -10,6 +10,7 @@ export default {
 		CoreFormValidation,
 		CoreBsModal
 	},
+	inject: ['STUDIENSEMESTER_DROPDOWN_STARTDATE'],
 	emit: [
 		'formClosed'
 	],
@@ -170,7 +171,7 @@ export default {
 		},
 		loadAndSetStudiensemester(selectedStudiensemester){
 			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAllSemester')
+				.get('api/frontend/v1/organisation/Studiensemester/getAll', {start: this.STUDIENSEMESTER_DROPDOWN_STARTDATE})
 				.then(result => this.studiensemester = result.data)
 				.then(() => this.selectedStudiensemester = selectedStudiensemester)
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
