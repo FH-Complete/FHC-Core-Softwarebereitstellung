@@ -12,9 +12,20 @@ export default {
 			lizenzserverTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
 				index: 'lizenzserver_kurzbz',
+				selectable: false,
 				columns: [
-					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true, frozen: true},
-					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true,
+						width: 150,
+						minWidth: 100,
+						maxWidth: 200,
+						frozen: true
+					},
+					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
+						width: 150,
+						minWidth: 100,
+						maxWidth: 200,
+						frozen: true
+					},
 					{title: 'Mac-Adresse', field: 'macadresse', headerFilter: true},
 					{title: 'IP-Adresse', field: 'ipadresse', headerFilter: true},
 					{title: this.$p.t('global/ansprechpartner'), field: 'ansprechpartner', headerFilter: true},
@@ -72,8 +83,14 @@ export default {
 				}
 			).then(
 				result => {
-					this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
-					this.$refs.lizenzserverTable.reloadTable();
+					if (CoreRESTClient.isError(result.data)) {
+						this.$fhcAlert.alertWarning(result.data.retval);
+					}
+					else
+					{
+						this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
+						this.$refs.lizenzserverTable.reloadTable();
+					}
 				}
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
@@ -81,28 +98,30 @@ export default {
 		}
 	},
 	template: `
-	<div class="row">
-		<div class="col">
-			<!-- Lizenzserververwaltung Tabelle -->
-			<core-filter-cmpt
-				ref="lizenzserverTable"
-				filter-type="LizenzserverVerwaltung"
-				uniqueId="lizenzserverTable"
-				:tabulator-options="lizenzserverTabulatorOptions"
-				:side-menu="false"
-				:new-btn-label="$p.t('global/lizenzserver')"
-				new-btn-show
-				:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
-				@click:new="openModal">	
-			</core-filter-cmpt>
-			
-			<!-- Lizenzserver modal component -->
-			<lizenzserver-modal
-				class="fade"
-				ref="lizenzserverModal"
-				dialog-class="modal-lg"
-				@on-saved="onLizenzserverSaved">
-			</lizenzserver-modal>	
+	<div class="lizenzserververwaltung overflow-hidden">
+		<div class="row">
+			<div class="col">
+				<!-- Lizenzserververwaltung Tabelle -->
+				<core-filter-cmpt
+					ref="lizenzserverTable"
+					filter-type="LizenzserverVerwaltung"
+					uniqueId="lizenzserverTable"
+					:tabulator-options="lizenzserverTabulatorOptions"
+					:side-menu="false"
+					:new-btn-label="$p.t('global/lizenzserver')"
+					new-btn-show
+					:download="[{ formatter: 'csv', file: 'lizenzserver.csv', options:{delimiter: ';', bom: true} }]"
+					@click:new="openModal">	
+				</core-filter-cmpt>
+				
+				<!-- Lizenzserver modal component -->
+				<lizenzserver-modal
+					class="fade"
+					ref="lizenzserverModal"
+					dialog-class="modal-lg"
+					@on-saved="onLizenzserverSaved">
+				</lizenzserver-modal>	
+			</div>
 		</div>
 	</div>
 	`

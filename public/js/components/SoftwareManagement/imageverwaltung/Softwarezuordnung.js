@@ -15,6 +15,7 @@ export const Softwarezuordnung = {
 			softwarezuordnungTabulatorOptions: {
 				layout: 'fitColumns',
 				index: 'software_id',
+				selectable: false,
 				columns: [
 					{title: 'Software-ID', field: 'software_id', visible: false, headerFilter: true, frozen: true},
 					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_kurzbz', headerFilter: true},
@@ -61,7 +62,7 @@ export const Softwarezuordnung = {
 		}
 	},
 	template: `
-	<div class="softwarezuordnung">
+	<div class="softwarezuordnung overflow-hidden">
 		<div class="card">
 			<h3 class="h5 card-header">{{ $p.t('global/softwareZuordnung')}}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberSoftware')}}</span></h3>
 			<div class="card-body">

@@ -23,26 +23,36 @@ export default {
 			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
 				index: 'softwareimage_id',
+				selectable: false,
 				columns: [
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
-					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
+						frozen: true
+					},
 					{title: this.$p.t('global/betriebssystem'), field: 'betriebssystem', headerFilter: true},
 					{title: this.$p.t('global/verfuegbarkeitStart'), field: 'verfuegbarkeit_start', headerFilter: true, hozAlign: 'center'},
 					{title: this.$p.t('global/verfuegbarkeitEnde'), field: 'verfuegbarkeit_ende', headerFilter: true, hozAlign: 'center'},
 					{title: 'Anzahl Räume', field: 'ort_count', headerFilter: true, hozAlign: 'right'},
 					{title: 'Anzahl Software', field: 'software_count', headerFilter: true, hozAlign: 'right'},
 					{title: this.$p.t('global/anmerkung'), field: 'anmerkung', headerFilter: true},
-					{
-						title: this.$p.t('global/aktionen'),
-						field: 'actions',
-						width: 105,
-						minWidth: 105,
-						maxWidth: 105,
+					{title: this.$p.t('global/aktionen'), field: 'actions',
+						width: 280,
+						minWidth: 280,
+						maxWidth: 280,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
 
 							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = this.$p.t('global/raumSwZuordnung');
+							button.addEventListener('click', (event) => this.openDetail(event, cell.getRow()));
+							container.append(button);
+
+							button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-copy"></i>';
 							button.addEventListener('click', (event) => this.copySoftwareimage(event, cell.getRow().getIndex()));
@@ -121,10 +131,7 @@ export default {
 			let oldRaumanzahl = row.getData().ort_count;
 			row.update({ort_count: oldRaumanzahl + raumanzahlDifferenz})
 		},
-		onTableRowClick(e, row){
-			// Exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
+		openDetail(e, row){
 			// Get Orte
 			this.$refs.raumzuordnung.getOrteByImage(row.getIndex(), row.getData().bezeichnung);
 
@@ -141,7 +148,7 @@ export default {
 		}
 	},
 	template: `
-	<div class="imageVerwaltung">
+	<div class="imageVerwaltung overflow-hidden">
 		<!-- Softwareimage Table -->
 		<div class="row mb-5">
 			<div class="col">
@@ -155,6 +162,7 @@ export default {
 					:side-menu="false"
 					new-btn-label="Image"
 					new-btn-show
+					reload
 					:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
 					@click:new="openModal">
 				</core-filter-cmpt>

@@ -19,6 +19,8 @@ export const Raumzuordnung = {
 			orteTabulatorOptions: {
 				layout: 'fitColumns',
 				index: 'softwareimageort_id',
+				selectable: true,
+				selectableRangeMode: 'click',
 				columns: [
 					{title: 'Img-Ort-ID', field: 'softwareimageort_id', headerFilter: true, visible: false},
 					{title: 'Image', field: 'image', headerFilter: true},
@@ -195,9 +197,9 @@ export const Raumzuordnung = {
 		}
 	},
 	template: `
-	<div class="raumzuordnung">
+	<div class="raumzuordnung overflow-hidden">
 		<div class="card">
-			<h3 class="h5 card-header">{{ $p.t('global/raumzuordnung') }}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberImage') }}</span></h3>
+			<h3 class="h5 card-header">{{ $p.t('global/raumverfuegbarkeit') }}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberImage') }}</span></h3>
 			<div class="card-body">
 				<core-filter-cmpt
 					ref="raumTable"

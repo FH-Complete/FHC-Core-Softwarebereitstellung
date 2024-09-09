@@ -21,14 +21,15 @@ class Software extends Auth_Controller
 				'getSoftware' => 'extension/software_verwalten:rw',
 				'getSoftwareByKurzbz' => 'extension/software_verwalten:rw',
 				'getSoftwareByImage' => 'extension/software_verwalten:rw',
-				'getSoftwareByOrt' => 'extension/software_verwalten:rw',
+				'getSoftwareByOrt' => array('extension/software_verwalten:rw','extension/softwareliste:r'),
 				'getOeSuggestions' => 'extension/software_verwalten:rw',
 				'getStatus' => 'extension/software_verwalten:rw',
 				'getLanguageIndex' => 'extension/software_verwalten:rw',
 				'getLastSoftwarestatus' => 'extension/software_verwalten:rw',
 				'changeSoftwarestatus' => 'extension/software_verwalten:rw',
 				'deleteSoftware' => 'extension/software_verwalten:rw',
-				'getSoftwarelizenztypen' => 'extension/software_verwalten:rw'
+				'getSoftwarelizenztypen' => 'extension/software_verwalten:rw',
+				'getSoftwarelistData' => 'extension/softwareliste:r'
 			)
 		);
 

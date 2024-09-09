@@ -26,7 +26,8 @@ class Lizenzserver extends Auth_Controller
 
 		// Load language phrases
 		$this->loadPhrases([
-			'ui'
+			'ui',
+			'global'
 		]);
 
 		$this->_setAuthUID(); // sets property uid
@@ -60,6 +61,16 @@ class Lizenzserver extends Auth_Controller
 		$data = json_decode($this->input->raw_input_stream, true);
 
 		if (!isset($data['lizenzserver_kurzbz'])) $this->terminateWithJsonError($this->p->t('ui', 'errorFelderFehlen'));
+
+		// Exit if Lizenzserver has zugeordnete Software
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
+
+		$result = $this->SoftwareModel->loadWhere(['lizenzserver_kurzbz' => $data['lizenzserver_kurzbz']]);
+
+		if (hasData($result))
+		{
+			$this->terminateWithJsonError($this->p->t('global', 'loeschenNichtMoeglichSoftwareBereitsZugeordnet'));
+		}
 
 		// Delete Softwarelizenzserver
 		$result = $this->SoftwarelizenzserverModel->delete(

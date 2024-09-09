@@ -36,7 +36,12 @@ export default {
 						width: 70,
 						frozen: true
 					},
-					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
+					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
+						width: 150,
+						minWidth: 100,
+						maxWidth: 200,
+						frozen: true
+					},
 					{
 						title: this.$p.t('global/softwaretyp'),
 						field: 'softwaretyp_bezeichnung',
@@ -46,28 +51,17 @@ export default {
 						}
 					},
 					{title: this.$p.t('global/softwaretypKurzbz'), field: 'softwaretyp_kurzbz', headerFilter: true},
-					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
+					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
 					{title: this.$p.t('global/beschreibung'), field: 'beschreibung', headerFilter: true},
 					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
 					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true},
 					{title: this.$p.t('global/lizenzart'), field: 'lizenzart', headerFilter: true},
 					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
+					{title: this.$p.t('global/lizenzserverPort'), field: 'lizenzserver_port', headerFilter: true},
 					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true},
 					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
 					{title: this.$p.t('global/lizenzKosten'), field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
-					{
-						title: 'Software-Status',
-						field: 'softwarestatus_kurzbz',
-						editor: "list",
-						editorParams:{ valuesLookup: this.getSoftwarestatus },
-						headerFilter: true,
-						headerFilterParams:{ valuesLookup: this.getSoftwarestatus },
-						formatter: (cell) => this.softwarestatus
-								? this.softwarestatus[cell.getValue()]
-								: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1],
-						frozen: true
-					},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},
 					{title: 'ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
@@ -76,17 +70,36 @@ export default {
 					{title: this.$p.t('global/insertvon'), field: 'insertvon', headerFilter: true},
 					{title: this.$p.t('global/updateamum'), field: 'updateamum', hozAlign:"center", headerFilter: true},
 					{title: this.$p.t('global/updatevon'), field: 'updatevon', headerFilter: true},
+					{title: 'Software-Status', field: 'softwarestatus_kurzbz',
+						editor: "list",
+						editorParams:{ valuesLookup: this.getSoftwarestatus },
+						headerFilter: true,
+						headerFilterParams:{ valuesLookup: this.getSoftwarestatus },
+						formatter: (cell) => this.softwarestatus
+							? this.softwarestatus[cell.getValue()]
+							: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1],
+						width: 150,
+						minWidth: 150,
+						maxWidth: 150,
+						frozen: true
+					},
 					{
 						title: this.$p.t('global/aktionen'),
 						field: 'actions',
-						width: 105,
-						minWidth: 105,
-						maxWidth: 105,
+						width: 220,
+						minWidth: 220,
+						maxWidth: 220,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
 
 							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = this.$p.t('global/raumverfuegbarkeit');
+							button.addEventListener('click', (event) => this.openRaumzuordnung(event, cell.getRow()));
+							container.append(button);
+
+							button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-edit"></i>';
 							button.addEventListener('click', (event) => this.editSoftware(event, cell.getRow().getIndex()));
@@ -267,10 +280,7 @@ export default {
 		onTableCellEdited(cell){
 			this.changeStatus(cell.getValue(), cell.getRow().getIndex());
 		},
-		onTableRowClick(e, row){
-			// exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
+		openRaumzuordnung(e, row){
 			// save currently clicked row
 			this.selectedTabulatorRow = row;
 
@@ -312,7 +322,7 @@ export default {
 		}
 	},
 	template: `
-	<div class="softwareVerwaltung">
+	<div class="softwareVerwaltung overflow-hidden">
 		<!-- Software Verwaltung Table -->
 		<div class="row mb-5">
 			<div class="col">

@@ -6,21 +6,43 @@ export default {
 		CoreFilterCmpt,
 		AutoComplete: primevue.autocomplete
 	},
+	props: {
+		modelValue: {
+			type: Object,
+			required: false
+		}
+	},
 	data: function() {
 		return {
 			softwaresucheTabulatorOptions: {
 				index: 'software_id',
 				layout: 'fitColumns',
+				selectable: false,
 				columns: [
-					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true, frozen: true},
-					{title: 'Software', field: 'software_kurzbz', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true,
+						minWidth: 100,
+						maxWidth: 100,
+						width: 100,
+						frozen: true
+					},
+					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
+						minWidth: 200,
+						maxWidth: 200,
+						width: 200,
+						frozen: true
+					},
 					{title: 'Software-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_bezeichnung', headerFilter: true},
 					{title: 'Image', field: 'image_bezeichnung', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right'},
 					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
-					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true, width: 150}
+					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
+						minWidth: 150,
+						maxWidth: 150,
+						width: 150,
+						frozen: true
+					}
 				]
 			},
 			selOrt: null,
@@ -39,6 +61,12 @@ export default {
 				.catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
+		},
+		onTableBuilt() {
+			if (this.modelValue.ortKurzbz) {
+				this.selOrt = {ort_kurzbz: this.modelValue.ortKurzbz};
+				this.getSoftwareByOrt(this.modelValue.ortKurzbz);
+			}
 		},
 		onComplete(event) {
 			CoreRESTClient.get(
@@ -59,24 +87,6 @@ export default {
 			).catch(
 				error => { this.$fhcAlert.handleSystemError(error); }
 			);
-		},
-		selectAllOrte(){
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrte',
-				null
-			).then(result => {
-					if (CoreRESTClient.isError(result.data))
-					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
-					}
-					else
-					{
-						this.selOrt = CoreRESTClient.getData(result.data);
-					}
-				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
 		}
 	},
 	watch: {
@@ -90,29 +100,32 @@ export default {
 		}
 	},
 	template: `
-	<div class="row">
-		<div class="col">
-			<!-- Softwaresuche Tabelle -->
-			<core-filter-cmpt
-				ref="softwaresucheTable"
-				:side-menu="false"
-				table-only
-				:tabulator-options="softwaresucheTabulatorOptions"
-				@click:new="openModal">
-				<template v-slot:search>
-						<auto-complete
-							class="w-100"
-							v-model="selOrt"
-							optionLabel="ort_kurzbz"
-							dropdown
-							dropdown-current
-							forceSelection
-							:suggestions="ortSuggestions"
-							placeholder="Suche nach Raum..."
-							@complete="onComplete">
-						</auto-complete>		
-				</template>	
-			</core-filter-cmpt>
+	<div class="softwaresuche overflow-hidden">
+		<div class="row">
+			<div class="col">
+				<!-- Softwaresuche Tabelle -->
+				<core-filter-cmpt
+					ref="softwaresucheTable"
+					:side-menu="false"
+					table-only
+					:tabulator-options="softwaresucheTabulatorOptions"
+					:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
+					@click:new="openModal">
+					<template v-slot:search>
+							<auto-complete
+								class="w-100"
+								v-model="selOrt"
+								optionLabel="ort_kurzbz"
+								dropdown
+								dropdown-current
+								forceSelection
+								:suggestions="ortSuggestions"
+								placeholder="Suche nach Raum..."
+								@complete="onComplete">
+							</auto-complete>		
+					</template>	
+				</core-filter-cmpt>
+			</div>
 		</div>
 	</div>
 	`
