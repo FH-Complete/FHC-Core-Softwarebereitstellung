@@ -17,6 +17,8 @@ export default {
 			softwaresucheTabulatorOptions: {
 				index: 'software_id',
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				selectable: false,
 				columns: [
 					{title: this.$p.t('global/raum'), field: 'ort_kurzbz', headerFilter: true,
@@ -58,9 +60,7 @@ export default {
 				})
 				.then(result => result.data)
 				.then(result => {this.$refs.softwaresucheTable.tabulator.setData(CoreRESTClient.getData(result));})
-				.catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onTableBuilt() {
 			if (this.modelValue.ortKurzbz) {
@@ -84,9 +84,7 @@ export default {
 						this.ortSuggestions = CoreRESTClient.getData(result.data);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	watch: {

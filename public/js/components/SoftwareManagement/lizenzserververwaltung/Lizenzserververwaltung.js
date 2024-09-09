@@ -11,6 +11,8 @@ export default {
 		return {
 			lizenzserverTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'lizenzserver_kurzbz',
 				selectable: false,
 				columns: [
@@ -92,9 +94,7 @@ export default {
 						this.$refs.lizenzserverTable.reloadTable();
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `

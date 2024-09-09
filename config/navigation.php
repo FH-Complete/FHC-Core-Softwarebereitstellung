@@ -10,6 +10,11 @@ $config['navigation_header']['*']['Lehre']['children']['SoftwareManagement'] = a
 
 // Add Side-Menu-Entry to Main Page
 $config['navigation_menu']['extensions/FHC-Core-Softwarebereitstellung/*'] = array(
+	'Softwareanforderung' => array(
+		'link' => site_url('extensions/FHC-Core-Softwarebereitstellung/Softwareanforderung'),
+		'description' => 'Softwareanforderung',
+		'requiredPermissions' => 'extension/software_bestellen:rw'
+	),
 	'Lizenzmanagement' => array(
 		'link' => site_url('extensions/FHC-Core-Softwarebereitstellung/SoftwareManagement'),
 		'description' => 'Software-Lizenzmanagement',

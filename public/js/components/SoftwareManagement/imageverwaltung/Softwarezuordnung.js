@@ -14,6 +14,8 @@ export const Softwarezuordnung = {
 			softwarezuordnung: [],
 			softwarezuordnungTabulatorOptions: {
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_id',
 				selectable: false,
 				columns: [
@@ -56,9 +58,7 @@ export const Softwarezuordnung = {
 					}
 					this.$refs.zuordnungTable.tabulator.setData(CoreRESTClient.getData(result));
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `

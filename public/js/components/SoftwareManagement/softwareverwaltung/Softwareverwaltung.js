@@ -26,6 +26,8 @@ export default {
 			return {// tabulator options which can be modified after first render
 				index: 'software_id',
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 				columns: [
@@ -59,7 +61,7 @@ export default {
 					{title: this.$p.t('global/lizenzart'), field: 'lizenzart', headerFilter: true},
 					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
 					{title: this.$p.t('global/lizenzserverPort'), field: 'lizenzserver_port', headerFilter: true},
-					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true},
+					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true, hozAlign: 'right', width: 100},
 					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
 					{title: this.$p.t('global/lizenzKosten'), field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},
@@ -124,7 +126,7 @@ export default {
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex', null)
 			.then(result => result.data)
 			.then(result => { this.languageIndex = CoreRESTClient.getData(result);})
-			.catch( error => { this.$fhcAlert.handleSystemError(error); } );
+			.catch( error => this.$fhcAlert.handleSystemError(error) );
 	},
 	methods: {
 		handleHierarchyViewChange(showHierarchy) {
@@ -164,9 +166,7 @@ export default {
 						return o;
 					}, {});
 				})
-				.catch(error => {
-					this.$fhcAlert.handleSystemError(error);
-				});
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		changeStatus(softwarestatus_kurzbz, software_id = null) {
 			let software_ids = [];
@@ -222,7 +222,7 @@ export default {
 					}
 
 					this.$refs.softwareTable.reloadTable(); }) // TODO use row update instead of reloadTable after solving datatree issues
-				.catch( error => { this.$fhcAlert.handleSystemError(error); });
+				.catch( error => this.$fhcAlert.handleSystemError(error));
 		},
 		editSoftware(event, software_id){
 			this.openModal(event, software_id);
@@ -240,7 +240,7 @@ export default {
 				.then(result => {
 					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.handleSystemMessage(result.retval);
+						this.$fhcAlert.alertDefault('warn', 'Löschen nicht möglich', result.retval[0], true);
 					}
 					else
 					{
@@ -248,9 +248,7 @@ export default {
 						this.$refs.softwareTable.reloadTable();
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		promoteChildren(children, resultArr) {
 			for (let child of children) {
@@ -287,8 +285,8 @@ export default {
 			// get row data
 			this.getSoftwareRowDetails();
 
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.raumzuordnung._.vnode.el.offsetTop);
+			let offcanvasElement = new bootstrap.Offcanvas(document.getElementById('softwareverwaltungOffcanvas'));
+			offcanvasElement.show();
 		},
 		onTableDataLoaded(data){
 			// no promoting of children if hierarchy shown
@@ -359,10 +357,11 @@ export default {
 			</div>
 		</div>
 		<!-- Software Details -->
-		<div class="row mb-5">				
-			<div class="col-md-6">
-				<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+		<div class="offcanvas offcanvas-start w-50" tabindex="-1" id="softwareverwaltungOffcanvas">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 			</div>
+			<raumzuordnung ref="raumzuordnung"></raumzuordnung>
 		</div>
 		<!-- Software modal component -->
 		<software-modal
