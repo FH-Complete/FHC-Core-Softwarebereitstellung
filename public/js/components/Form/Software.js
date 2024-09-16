@@ -28,7 +28,11 @@ export const SoftwareForm = {
 			lizenzserverSuggestions: [], // autocomplete suggestions
 			selLizenzserver: null,	// selected autocomplete values
 			oeSuggestions: [], // autocomplete suggestions
-			selKostentraegerOE: null	// selected autocomplete values
+			selKostentraegerOE: null,	// selected autocomplete values
+			studienjahre: [],
+			selStudienjahr: null,
+			lizenzenSumAndPercentageShareByOeAndStudienjahr: [],
+			lizenzenSumByStudienjahr: ''
 		}
 	},
 	computed: {
@@ -54,9 +58,7 @@ export const SoftwareForm = {
 					this.softwareMetadata = CoreRESTClient.getData(result);
 				}
 			}
-		).catch(
-			error => { this.$fhcAlert.handleSystemError(error); }
-		);
+		).catch(error => this.$fhcAlert.handleSystemError(error));
 
 		// Get Softwarelizenztypen
 		CoreRESTClient
@@ -75,7 +77,8 @@ export const SoftwareForm = {
 	methods: {
 		getDefaultSoftware() {
 			return {
-				softwaretyp_kurzbz: 'software'
+				softwaretyp_kurzbz: 'software',
+				anzahl_lizenzen: 0
 			}
 		},
 		getDefaultSoftwarestatus() {
@@ -120,9 +123,7 @@ export const SoftwareForm = {
 							}
 						}
 					}
-				).catch(
-					error => { this.$fhcAlert.handleSystemError(error); }
-				);
+				).catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get last softwarestatus data
 				CoreRESTClient.get(
@@ -151,9 +152,23 @@ export const SoftwareForm = {
 							this.softwareImages = CoreRESTClient.getData(result);
 						}
 					}
-				).catch(
-					error => { this.$fhcAlert.handleSystemError(error); }
-				);
+				).catch(error => this.$fhcAlert.handleSystemError(error));
+
+				// Get Studienjahre for Dropdown
+				this.$fhcApi
+					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/getStudienjahre')
+					.then(result => this.studienjahre = result.data )
+					.catch(error => this.$fhcAlert.handleSystemError(error) );
+
+				// Get current Studienjahr
+				this.$fhcApi
+					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/getAktOrNextStudienjahr')
+					.then(result => this.selStudienjahr = result.data.studienjahr_kurzbz)
+					.then(() => this.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(
+						this.softwareId,
+						this.selStudienjahr
+					))
+					.catch(error => this.$fhcAlert.handleSystemError(error) );
 			}
 		},
 		saveSoftware() {
@@ -228,6 +243,9 @@ export const SoftwareForm = {
 			this.softwareImages = [];
 			this.selLizenzserver = null;
 			this.selKostentraegerOE = null;
+			this.selStudienjahr = null;
+			this.lizenzenSumAndPercentageShareByOeAndStudienjahr = [],
+			this.lizenzenSumByStudienjahr = ''
 		},
 		getSoftwareByKurzbz(event) {
 			CoreRESTClient.get(
@@ -253,9 +271,7 @@ export const SoftwareForm = {
 						this.parentSoftwareSuggestions = softwareList;
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOeSuggestions(event) {
 			CoreRESTClient.get(
@@ -300,9 +316,7 @@ export const SoftwareForm = {
 						}
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getImagesByBezeichnung(event) {
 			CoreRESTClient.get(
@@ -322,9 +336,7 @@ export const SoftwareForm = {
 						this.softwareImageSuggestions = CoreRESTClient.getData(result.data);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getLizenzserverByKurzbz(event) {
 			CoreRESTClient.get(
@@ -344,10 +356,31 @@ export const SoftwareForm = {
 						this.lizenzserverSuggestions = CoreRESTClient.getData(result.data);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
+		onChangeStudienjahr(){
+			this.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(this.softwareId, this.selStudienjahr);
+		},
+		getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(software_id, studienjahr_kurzbz) {
+			this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/getSwLizenzenSumAndPercentageShareByOeAndStudienjahr', {
+					software_id: software_id,
+					studienjahr_kurzbz: studienjahr_kurzbz
+				})
+				.then( result => {
+					this.lizenzenSumAndPercentageShareByOeAndStudienjahr = result.data;
+					this.lizenzenSumByStudienjahr =
+						this.lizenzenSumAndPercentageShareByOeAndStudienjahr.reduce((totalSum, item) =>
+							totalSum + item.sum_lizenzen, 0
+						);
+					this.lizenzenSumByStudienjahr = this.lizenzenSumByStudienjahr === 0 ? '' : this.lizenzenSumByStudienjahr;
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
+
+		},
+		setLizenzanzahl(){
+			this.software.anzahl_lizenzen = this.lizenzenSumByStudienjahr;
+		}
 	},
 	template: `
 	<div>
@@ -498,7 +531,7 @@ export const SoftwareForm = {
 				</option>
 				</core-form-input>
 			</div>
-			<div class="col-sm-8">
+			<div class="col-sm-6">
 				<core-form-input
 					type="autocomplete"
 					v-model="selLizenzserver"
@@ -515,12 +548,24 @@ export const SoftwareForm = {
 			</div>
 			<div class="col-sm-2">
 				<core-form-input
-					type="number"
-					v-model="software.anzahl_lizenzen"
-					name="anzahl_lizenzen"
-					:label="$p.t('global/lizenzAnzahl')"
+					v-model="software.lizenzserver_port"
+					name="lizenzserver_port"
+					:label="$p.t('global/lizenzserverPort')"
 					>
 				</core-form-input>
+			</div>
+			<div class="col-sm-2">
+				<label class="form-label">{{ $p.t('global/lizenzAnzahl') }}</label>
+				<div class="input-group">
+					<core-form-input
+						type="number"
+						v-model="software.anzahl_lizenzen"
+						name="anzahl_lizenzen"
+						input-group
+						:disabled="software.lizenzart === 'opensource'"
+						>
+					</core-form-input>
+				</div>
 			</div>
 			<div class="col-sm-2">
 				<core-form-input
@@ -564,10 +609,87 @@ export const SoftwareForm = {
 						name="lizenzkosten"
 						placeholder="0.00"
 						input-group
+						:disabled="software.lizenzart === 'opensource'"
 					>
 					</core-form-input>
 					<span class="input-group-text">{{ $p.t('global/euroProJahr') }}</span>
 				</div>
+			</div>
+			<div :hidden="typeof(softwareId) === 'undefined'">
+				<div class="fhc-hr"></div>
+				<div class="row d-flex mb-3">
+					<div class="col-8 align-self-center"><span class="h6">Useranzahl-Aufschlüsselung nach Anforderung pro Organisationseinheit {{ selStudienjahr }}</span></div>
+					<div class="col-2 ms-auto">
+						<label class="form-label">{{ $p.t('global/userAnzahl') }} Total</label>
+						<div class="input-group">			
+							<core-form-input
+								v-model="lizenzenSumByStudienjahr"
+								input-group
+								readonly
+								>
+							</core-form-input>
+							<button class="btn btn-secondary" type="button" @click="setLizenzanzahl" :disabled="lizenzenSumByStudienjahr === '' || software.lizenzart === 'opensource'"
+							 data-bs-toggle="tooltip" title="In SW Lizenz-Anzahl übernehmen">
+								<small><i class="fa fa-angles-up"></i></small>
+							</button>
+							<span class="text-muted" v-show="lizenzenSumByStudienjahr === ''"><small>Noch keine Anforderung</small></span>
+						</div>
+					</div>
+					<div class="col-2 ms-auto">
+						<core-form-input
+							type="select"
+							v-model="selStudienjahr"
+							name="studienjahre"
+							:label="$p.t('lehre/studienjahr')"
+							@change="onChangeStudienjahr">
+							<option 
+								v-for="(studJahr, index) in studienjahre"
+								:key="index" 
+								:value="studJahr.studienjahr_kurzbz">
+								{{ studJahr.studienjahr_kurzbz }}
+							</option>
+						</core-form-input>
+					</div>
+				</div>
+				<div class="row mb-2" v-for="(item, index) in lizenzenSumAndPercentageShareByOeAndStudienjahr" :key="index">
+					<div class="col-sm-3">
+						<core-form-input
+							v-model="item.studiensemester_kurzbz"
+							:label="index === 0 ? $p.t('lehre/studiensemester') : ''"
+							class="form-control-sm"
+							readonly
+							>
+						</core-form-input>
+					</div>
+					<div class="col-sm-5">
+						<core-form-input
+							v-model="item.lv_oe_bezeichnung"
+							:label="index === 0 ? $p.t('global/kostentraegerOe') : ''"
+							class="form-control-sm"
+							readonly
+							>
+						</core-form-input>
+					</div>
+					<div class="col-sm-2">
+						<core-form-input
+							v-model="item.sum_lizenzen"
+							:label="index === 0 ? $p.t('global/userAnzahl') + '/OE' : ''"
+							class="form-control-sm"
+							readonly
+							>
+						</core-form-input>
+					</div>
+					<div class="col-sm-2">
+						<core-form-input
+							v-model="item.percentage_share"
+							:label="index === 0 ? $p.t('global/anteiligInProzent') : ''"
+							class="form-control-sm"
+							readonly
+							>
+						</core-form-input>
+					</div>
+				</div>
+			</div>
 			</div>
 		</form>
 	</div>

@@ -21,14 +21,15 @@ class Software extends Auth_Controller
 				'getSoftware' => 'extension/software_verwalten:rw',
 				'getSoftwareByKurzbz' => 'extension/software_verwalten:rw',
 				'getSoftwareByImage' => 'extension/software_verwalten:rw',
-				'getSoftwareByOrt' => 'extension/software_verwalten:rw',
+				'getSoftwareByOrt' => array('extension/software_verwalten:rw','extension/softwareliste:r'),
 				'getOeSuggestions' => 'extension/software_verwalten:rw',
 				'getStatus' => 'extension/software_verwalten:rw',
 				'getLanguageIndex' => 'extension/software_verwalten:rw',
 				'getLastSoftwarestatus' => 'extension/software_verwalten:rw',
 				'changeSoftwarestatus' => 'extension/software_verwalten:rw',
 				'deleteSoftware' => 'extension/software_verwalten:rw',
-				'getSoftwarelizenztypen' => 'extension/software_verwalten:rw'
+				'getSoftwarelizenztypen' => 'extension/software_verwalten:rw',
+				'getSoftwarelistData' => 'extension/softwareliste:r'
 			)
 		);
 
@@ -312,10 +313,17 @@ class Software extends Auth_Controller
 			array(
 				'required',
 				array(
-					'dependencies',
+					'imageDependencies',
 					function($software_id)
 					{
-						return $this->_checkSoftwareDependencies($software_id);
+						return $this->_checkSoftwareImageDependencies($software_id);
+					}
+				),
+				array(
+					'lvZuordnung',
+					function($software_id)
+					{
+						return $this->_checkLvZuordnung($software_id);
 					}
 				)
 			)
@@ -377,9 +385,9 @@ class Software extends Auth_Controller
 	 * @param software_id
 	 * @return bool true if there are no dependencies, false if there is at least one dependency
 	 */
-	private function _checkSoftwareDependencies($software_id)
+	private function _checkSoftwareImageDependencies($software_id)
 	{
-		$dependenciesRes = $this->SoftwareModel->getSoftwareDependencies($software_id);
+		$dependenciesRes = $this->SoftwareModel->getSoftwareImageDependencies($software_id);
 		$dependantFields = array();
 
 		// software should exist
@@ -398,7 +406,36 @@ class Software extends Auth_Controller
 		// check fails if there are dependencies
 		if (!isEmptyArray($dependantFields))
 		{
-			$this->form_validation->set_message('dependencies', 'Software hat Abhängigkeiten: '.implode(', ', $dependantFields));
+			$this->form_validation->set_message('imageDependencies', 'Software hat Abhängigkeiten: '.implode(', ', $dependantFields));
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check if software was already assigned to Lehrveranstaltung.
+	 * @param software_id
+	 * @return bool true if there are no assignements, false if there is at least one assignment.
+	 */
+	private function _checkLvZuordnung($software_id)
+	{
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
+
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id');
+		$result = $this->SoftwareLvModel->loadWhere(['software_id' => $software_id]);
+
+		// If assignements are found
+		if (hasData($result))
+		{
+			// Get LV Ids that are assigned to that software
+			$lvIds = array_column(getData($result), 'lehrveranstaltung_id');
+
+			// Set validation message with LV Ids
+			$this->form_validation->set_message(
+				'lvZuordnung',
+				'Software bereits zu LV zugeordnet. LV-IDs: '.implode(', ', $lvIds));
+
 			return false;
 		}
 

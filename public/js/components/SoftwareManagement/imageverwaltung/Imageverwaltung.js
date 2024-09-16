@@ -22,27 +22,39 @@ export default {
 		return {
 			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'softwareimage_id',
+				selectable: false,
 				columns: [
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
-					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true, frozen: true},
+					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
+						width: 105,
+						minWidth: 105,
+						maxWidth: 105,
+						frozen: true
+					},
 					{title: this.$p.t('global/betriebssystem'), field: 'betriebssystem', headerFilter: true},
 					{title: this.$p.t('global/verfuegbarkeitStart'), field: 'verfuegbarkeit_start', headerFilter: true, hozAlign: 'center'},
 					{title: this.$p.t('global/verfuegbarkeitEnde'), field: 'verfuegbarkeit_ende', headerFilter: true, hozAlign: 'center'},
 					{title: 'Anzahl Räume', field: 'ort_count', headerFilter: true, hozAlign: 'right'},
 					{title: 'Anzahl Software', field: 'software_count', headerFilter: true, hozAlign: 'right'},
 					{title: this.$p.t('global/anmerkung'), field: 'anmerkung', headerFilter: true},
-					{
-						title: this.$p.t('global/aktionen'),
-						field: 'actions',
-						width: 105,
-						minWidth: 105,
-						maxWidth: 105,
+					{title: this.$p.t('global/aktionen'), field: 'actions',
+						width: 280,
+						minWidth: 280,
+						maxWidth: 280,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
 
 							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = this.$p.t('global/raumSwZuordnung');
+							button.addEventListener('click', (event) => this.openDetail(event, cell.getRow()));
+							container.append(button);
+
+							button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-copy"></i>';
 							button.addEventListener('click', (event) => this.copySoftwareimage(event, cell.getRow().getIndex()));
@@ -110,9 +122,7 @@ export default {
 						this.$refs.softwarezuordnung.getSoftwareByImage(null);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onRaumzuordnungSaved(raumanzahlDifferenz) {
 
@@ -121,10 +131,7 @@ export default {
 			let oldRaumanzahl = row.getData().ort_count;
 			row.update({ort_count: oldRaumanzahl + raumanzahlDifferenz})
 		},
-		onTableRowClick(e, row){
-			// Exclude other clicked elements like buttons, icons...
-			if (e.target.nodeName != 'DIV') return;
-
+		openDetail(e, row){
 			// Get Orte
 			this.$refs.raumzuordnung.getOrteByImage(row.getIndex(), row.getData().bezeichnung);
 
@@ -135,13 +142,12 @@ export default {
 			this.softwareimageId = row.getData().softwareimage_id;
 			this.softwareimage_bezeichnung = row.getData().bezeichnung;
 
-
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.softwarezuordnung._.vnode.el.offsetTop);
+			let offcanvasElement = new bootstrap.Offcanvas(document.getElementById('imageverwaltungOffcanvas'));
+			offcanvasElement.show();
 		}
 	},
 	template: `
-	<div class="imageVerwaltung">
+	<div class="imageVerwaltung overflow-hidden">
 		<!-- Softwareimage Table -->
 		<div class="row mb-5">
 			<div class="col">
@@ -155,20 +161,26 @@ export default {
 					:side-menu="false"
 					new-btn-label="Image"
 					new-btn-show
+					reload
 					:download="[{ formatter: 'csv', file: 'softwareimages.csv', options: {delimiter: ';', bom: true} }]"
 					@click:new="openModal">
 				</core-filter-cmpt>
 			</div>
 		</div>
-		<!-- Softwareimage Details -->			
-		<div class="row mb-5">
-			<div class="col-md-6">
-				<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
-			</div>							
-			<div class="col-md-6">						
-				<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>		
-			</div>							
-		</div>
+		<!-- Softwareimage Details -->	
+		<div class="offcanvas offcanvas-start w-75" tabindex="-1" id="imageverwaltungOffcanvas">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="row">
+				<div class="col-6">
+					<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>
+				</div>
+				<div class="col-6">
+					<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>	
+				</div>
+			</div>
+		</div>		
 		<!-- Softwareimage modal component -->
 		<softwareimage-modal
 		class="fade"

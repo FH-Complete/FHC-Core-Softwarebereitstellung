@@ -14,7 +14,10 @@ export const Softwarezuordnung = {
 			softwarezuordnung: [],
 			softwarezuordnungTabulatorOptions: {
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_id',
+				selectable: false,
 				columns: [
 					{title: 'Software-ID', field: 'software_id', visible: false, headerFilter: true, frozen: true},
 					{title: this.$p.t('global/softwaretyp'), field: 'softwaretyp_kurzbz', headerFilter: true},
@@ -55,13 +58,11 @@ export const Softwarezuordnung = {
 					}
 					this.$refs.zuordnungTable.tabulator.setData(CoreRESTClient.getData(result));
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `
-	<div class="softwarezuordnung">
+	<div class="softwarezuordnung overflow-hidden">
 		<div class="card">
 			<h3 class="h5 card-header">{{ $p.t('global/softwareZuordnung')}}<span class="fhc-subtitle">{{ $p.t('global/zuordnungUeberSoftware')}}</span></h3>
 			<div class="card-body">

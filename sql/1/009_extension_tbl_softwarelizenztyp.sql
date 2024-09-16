@@ -12,7 +12,8 @@ INSERT INTO extension.tbl_softwarelizenztyp(softwarelizenztyp_kurzbz, bezeichnun
 ('floating', 'floating'),
 ('userbased', 'user based'),
 ('machinebased', 'maschine based'),
-('cloudbased', 'cloud based')
+('cloudbased', 'cloud based'),
+('opensource', 'open source')
 ON CONFLICT (softwarelizenztyp_kurzbz) DO NOTHING;
 
 COMMENT ON TABLE extension.tbl_softwarelizenztyp IS 'Software Lizenztyp';

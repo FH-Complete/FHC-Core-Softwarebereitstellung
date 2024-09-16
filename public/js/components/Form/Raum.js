@@ -57,9 +57,7 @@ export const Raum = {
 							}
 						}
 					}
-				).catch(
-					error => {this.$fhcAlert.handleSystemError(error);}
-				);
+				).catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		prefillOrte(selectedData){
@@ -125,9 +123,7 @@ export const Raum = {
 						this.ortSuggestions = CoreRESTClient.getData(result.data);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		selectAllOrte(){
 			CoreRESTClient.get(
@@ -143,9 +139,7 @@ export const Raum = {
 						this.orte = CoreRESTClient.getData(result.data);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `

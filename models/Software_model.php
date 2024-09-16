@@ -14,6 +14,64 @@ class Software_model extends DB_Model
 	}
 
 	/**
+	 * Get initial table data.
+	 * @return mixed
+	 */
+	public function getSoftwarelistData()
+	{
+		$query= "
+			SELECT * FROM (
+				SELECT
+					DISTINCT ON (sw.software_id)
+					sw.software_id,
+					sw.software_kurzbz,
+					sw.softwaretyp_kurzbz,
+					sw.version,
+					sw.beschreibung,
+					sw.hersteller,
+					sw.os,
+					sw.verantwortliche,
+					sw_status.softwarestatus_kurzbz,
+					sw.anmerkung_intern,
+					sw.software_id_parent,
+					sw_parent.software_kurzbz AS software_kurzbz_parent,
+					sw_typ.bezeichnung[(" . $this->_getLanguageIndex() . ")] AS softwaretyp_bezeichnung,
+					sw_status.bezeichnung[(" . $this->_getLanguageIndex() . ")] AS softwarestatus_bezeichnung,
+					sw.insertamum::date,
+					(
+						SELECT
+							CONCAT(person.vorname, ' ', person.nachname)
+						FROM
+							tbl_person AS person
+							JOIN tbl_benutzer AS benutzer USING (person_id)
+						WHERE
+							benutzer.uid = sw.insertvon
+					) AS insertvon,
+					sw.updateamum::date,
+					(
+						SELECT
+							CONCAT(person.vorname, ' ', person.nachname)
+						FROM
+							tbl_person AS person
+							JOIN tbl_benutzer AS benutzer USING (person_id)
+						WHERE
+							benutzer.uid = sw.updatevon
+					) AS updatevon
+				FROM
+					extension.tbl_software sw
+					JOIN extension.tbl_softwaretyp sw_typ USING (softwaretyp_kurzbz)
+					LEFT JOIN extension.tbl_software_softwarestatus sw_swstatus USING (software_id)
+					LEFT JOIN extension.tbl_softwarestatus sw_status USING (softwarestatus_kurzbz)
+					LEFT JOIN extension.tbl_software sw_parent ON sw.software_id_parent = sw_parent.software_id
+				ORDER BY
+					sw.software_id DESC, sw_swstatus.datum DESC, sw_swstatus.software_status_id DESC
+			) software
+			ORDER BY software_kurzbz, version DESC NULLS LAST, software_id DESC";
+
+		return $this->execQuery($query);
+	}
+
+	/**
 	 * Insert new Software plus new Softwarestatus.
 	 * Rollback on error.
 	 *
@@ -260,12 +318,39 @@ class Software_model extends DB_Model
 		);
 	}
 
+	public function getAutocompleteSuggestions($eventQuery, $filterSoftwarestatusKurzbzArr = null){
+		$params[] = '%' . $eventQuery . '%';
+
+		$qry = '
+			SELECT DISTINCT on (software_id) *
+			FROM extension.tbl_software sw
+			JOIN extension.tbl_software_softwarestatus swstat using (software_id)
+			WHERE software_kurzbz ILIKE ? ';
+
+		/* filter by input string */
+		if (is_array($filterSoftwarestatusKurzbzArr)) {
+			$qry.= ' AND swstat.software_id NOT IN (
+				  SELECT software_id
+				  FROM extension.tbl_software_softwarestatus
+				  WHERE softwarestatus_kurzbz IN ?
+			  ) ';
+
+			$params[] = $filterSoftwarestatusKurzbzArr;
+		}
+
+		$qry.='	
+			ORDER BY software_id, swstat.software_status_id DESC, software_kurzbz
+		';
+
+		return $this->execQuery($qry, $params);
+	}
+
 	/**
 	 * Gets dependencies of a software (needed e.g. for checks if a software can be deleted).
 	 * @param software_id
 	 * @return object success or error
 	 */
-	public function getSoftwareDependencies($software_id)
+	public function getSoftwareImageDependencies($software_id)
 	{
 		return $this->execQuery('
 			SELECT

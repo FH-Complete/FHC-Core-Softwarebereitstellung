@@ -31,7 +31,8 @@ export default {
 				tab1: { title: Vue.computed(() => this.$p.t('global/softwareverwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwareverwaltung/Softwareverwaltung.js' },
 				tab2: { title: Vue.computed(() => this.$p.t('global/imageverwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/imageverwaltung/Imageverwaltung.js' },
 				tab3: { title: Vue.computed(() => this.$p.t('global/lizenzserververwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/lizenzserververwaltung/Lizenzserververwaltung.js' },
-				tab4: { title: Vue.computed(() => this.$p.t('global/sucheNachRaum')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js' }
+				tab4: { title: Vue.computed(() => this.$p.t('global/sucheNachRaum')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js' },
+				tab5: { title: Vue.computed(() => this.$p.t('global/swAnforderungenUndLizenen')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Softwareanforderung.js' }
 			}
 		}
 	},
