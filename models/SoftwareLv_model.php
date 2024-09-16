@@ -214,7 +214,7 @@ class SoftwareLv_model extends DB_Model
 				-- Sum by oe
 				groupedLizenzen.sum_lizenzen, 
 				-- Percentage share by oe
-				ROUND ((groupedLizenzen.sum_lizenzen/totalLizenzen.sum_lizenzen::decimal) * 100, 2) AS percentage_share
+				COALESCE(ROUND ((groupedLizenzen.sum_lizenzen/NULLIF(totalLizenzen.sum_lizenzen::decimal, 0)) * 100, 2), 0) AS percentage_share
 			FROM 
 				groupedLizenzen, totalLizenzen 
 			ORDER BY
