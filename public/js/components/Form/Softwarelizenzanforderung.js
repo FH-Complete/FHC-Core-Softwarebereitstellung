@@ -316,7 +316,7 @@ export default {
 									v-model="fd.currLizenzanzahl"
 									name="currLizenzanzahl"
 									class="form-control-sm"
-									:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
+									:label="index === 0 ? $p.t('global', 'userAnzahl') : ''"
 									disabled>
 								</core-form-input>
 								<span class="mx-3 align-self-center">=></span>
@@ -326,7 +326,7 @@ export default {
 										v-model="fd.lizenzanzahl"
 										:name="'lizenzanzahl' + index"
 										class="form-control-sm flex-fill"
-										:label="index === 0 ? $p.t('global', 'lizenzAnzahlNeu') : ''"
+										:label="index === 0 ? $p.t('global', 'userAnzahlNeu') : ''"
 										:tabindex="index + 1"
 										:disabled="fd.zuordnungExists">
 									</core-form-input>
@@ -461,7 +461,7 @@ export default {
 									v-model="fd.currLizenzanzahl"
 									name="currLizenzanzahl"
 									class="form-control-sm"
-									:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
+									:label="index === 0 ? $p.t('global', 'userAnzahl') : ''"
 									disabled>
 								</core-form-input>
 								<span class="mx-3 align-self-center">=></span>
@@ -471,7 +471,7 @@ export default {
 										v-model="fd.lizenzanzahl"
 										:name="'lizenzanzahl' + index"
 										class="form-control-sm flex-fill"
-										:label="index === 0 ? $p.t('global', 'lizenzAnzahl') + ' ' + vorrueckStudiensemester : ''"
+										:label="index === 0 ? $p.t('global', 'userAnzahl') + ' ' + vorrueckStudiensemester : ''"
 										:tabindex="index + 1"
 										:disabled="fd.zuordnungExists">
 									</core-form-input>

@@ -616,9 +616,9 @@ export const SoftwareForm = {
 			<div :hidden="typeof(softwareId) === 'undefined'">
 				<div class="fhc-hr"></div>
 				<div class="row d-flex mb-3">
-					<div class="col-8 align-self-center"><span class="h6">Lizenz-Aufschlüsselung nach Anforderung pro Organisationseinheit {{ selStudienjahr }}</span></div>
+					<div class="col-8 align-self-center"><span class="h6">Useranzahl-Aufschlüsselung nach Anforderung pro Organisationseinheit {{ selStudienjahr }}</span></div>
 					<div class="col-2 ms-auto">
-						<label class="form-label">{{ $p.t('global/lizenzAnzahl') }} Total</label>
+						<label class="form-label">{{ $p.t('global/userAnzahl') }} Total</label>
 						<div class="input-group">			
 							<core-form-input
 								v-model="lizenzenSumByStudienjahr"
@@ -671,7 +671,7 @@ export const SoftwareForm = {
 					<div class="col-sm-2">
 						<core-form-input
 							v-model="item.sum_lizenzen"
-							:label="index === 0 ? $p.t('global/lizenzAnzahl') + '/OE' : ''"
+							:label="index === 0 ? $p.t('global/userAnzahl') + '/OE' : ''"
 							class="form-control-sm"
 							readonly
 							>

@@ -380,7 +380,7 @@ export default {
 								v-model="fd.lizenzanzahl"
 								:name="'lizenzanzahl' + index"
 								class="form-control-sm"
-								:label="index === 0 ? $p.t('global', 'lizenzAnzahl') : ''"
+								:label="index === 0 ? $p.t('global', 'userAnzahl') : ''"
 								:disabled="fd.zuordnungExists"
 								:tabindex="index + 1">
 							</core-form-input>

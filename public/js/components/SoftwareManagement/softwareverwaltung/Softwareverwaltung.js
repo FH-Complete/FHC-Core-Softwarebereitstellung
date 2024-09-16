@@ -61,7 +61,7 @@ export default {
 					{title: this.$p.t('global/lizenzart'), field: 'lizenzart', headerFilter: true},
 					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
 					{title: this.$p.t('global/lizenzserverPort'), field: 'lizenzserver_port', headerFilter: true},
-					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true, hozAlign: 'right', width: 100},
+					{title: this.$p.t('global/userAnzahl'), field: 'anzahl_lizenzen', headerFilter: true, hozAlign: 'right', width: 100},
 					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
 					{title: this.$p.t('global/lizenzKosten'), field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},

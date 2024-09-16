@@ -171,7 +171,7 @@ export default {
 			this.table.updateColumnDefinition('softwaretyp_kurzbz', {title: this.$p.t('global', 'softwaretypKurzbz')});
 			this.table.updateColumnDefinition('studiensemester_kurzbz', {title: this.$p.t('lehre', 'studiensemester')});
 			this.table.updateColumnDefinition('softwaretyp_bezeichnung', {title: this.$p.t('global', 'softwaretyp')});
-			this.table.updateColumnDefinition('anzahl_lizenzen', {title: this.$p.t('global', 'lizenzAnzahl')});
+			this.table.updateColumnDefinition('anzahl_lizenzen', {title: this.$p.t('global', 'userAnzahl')});
 
 		}
 	},
@@ -179,7 +179,7 @@ export default {
 <div class="softwareanforderung overflow-hidden">
 	<!-- Title and Studiensemester Dropdown-->
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/swAnforderungenUndLizenen') }}</div>
+		<div class="col-10 h4">{{ $p.t('global/softwareanforderungSubtitle') }}</div>
 		<div class="col-2 ms-auto">
 			<core-form-input
 				type="select"
@@ -208,7 +208,7 @@ export default {
 				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
 				<template v-slot:actions>
-					<button class="btn btn-primary" @click="openModalChangeLicense">{{ $p.t('global/lizenzanzahlAendern') }}</button>
+					<button class="btn btn-primary" @click="openModalChangeLicense">{{ $p.t('global/userAnzahlAendern') }}</button>
 					<button class="btn btn-outline-secondary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
 						{{ $p.t('ui/aktion') }}
 					</button>
