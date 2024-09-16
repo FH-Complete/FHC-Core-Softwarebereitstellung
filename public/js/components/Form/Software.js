@@ -562,6 +562,7 @@ export const SoftwareForm = {
 						v-model="software.anzahl_lizenzen"
 						name="anzahl_lizenzen"
 						input-group
+						:disabled="software.lizenzart === 'opensource'"
 						>
 					</core-form-input>
 				</div>
@@ -608,6 +609,7 @@ export const SoftwareForm = {
 						name="lizenzkosten"
 						placeholder="0.00"
 						input-group
+						:disabled="software.lizenzart === 'opensource'"
 					>
 					</core-form-input>
 					<span class="input-group-text">{{ $p.t('global/euroProJahr') }}</span>
@@ -626,7 +628,7 @@ export const SoftwareForm = {
 								readonly
 								>
 							</core-form-input>
-							<button class="btn btn-secondary" type="button" @click="setLizenzanzahl" :disabled="lizenzenSumByStudienjahr === ''"
+							<button class="btn btn-secondary" type="button" @click="setLizenzanzahl" :disabled="lizenzenSumByStudienjahr === '' || software.lizenzart === 'opensource'"
 							 data-bs-toggle="tooltip" title="In SW Lizenz-Anzahl übernehmen">
 								<small><i class="fa fa-angles-up"></i></small>
 							</button>
