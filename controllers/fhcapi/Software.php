@@ -33,6 +33,8 @@ class Software extends FHCAPI_Controller
 		// Load libraries
 		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
 
+		// Load config
+		$this->load->config('extensions/FHC-Core-Softwarebereitstellung/softwarebereitstellung');
 
 		// Load language phrases
 		$this->loadPhrases([
@@ -120,7 +122,7 @@ class Software extends FHCAPI_Controller
 		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
 		$this->StudienjahrModel->addOrder('studienjahr_kurzbz');
 		$result = $this->StudienjahrModel->loadWhere(array(
-			'studienjahr_kurzbz >= ' => self::STUDIENJAHR_DROPDOWN_STARTDATE,
+			'studienjahr_kurzbz >= ' => $this->config->item('studienjahr_dropdown_startdate'),
 		));
 
 		// Return
