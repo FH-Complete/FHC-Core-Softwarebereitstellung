@@ -244,13 +244,16 @@ export default {
 			}
 
 			// Flag if selection already exists
-			this.flagAndSortExistingSwLvZuordnungen(this.formData);
+			this.flagExistingSwLvZuordnungen();
+
+			// Sort formData
+			this.sortFormData();
 
 			// Display formData as rows
 			this.isLvSwRowsVisible = true;
 
 		},
-		flagAndSortExistingSwLvZuordnungen(){
+		flagExistingSwLvZuordnungen(){
 			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvZuordnungen', this.formData)
 				.then( result => {
@@ -269,15 +272,30 @@ export default {
 								}
 							});
 						});
-
-						// Sort first where SW-LV Zuordnung does not exist
-						this.formData.sort((a, b) => a.zuordnungExists === b.zuordnungExists
-							? 0
-							: a.zuordnungExists ? 1 : -1
-						);
 					}
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
+		},
+		sortFormData(){
+			this.formData.sort((a, b) => {
+
+				// Sort by zuordnungExists first
+				if (a.zuordnungExists !== b.zuordnungExists) {
+					return a.zuordnungExists ? 1 : -1;
+				}
+
+				// Sort by software_kurzbz second (case insensitive)
+				const softwareA = a.software_kurzbz.toUpperCase();
+				const softwareB = b.software_kurzbz.toUpperCase();
+				if (softwareA < softwareB) return -1;
+				if (softwareA > softwareB) return 1;
+
+				// Sort by stg_bezeichnung third (case insensitive)
+				const stgA = a.stg_bezeichnung.toUpperCase();
+				const stgB = b.stg_bezeichnung.toUpperCase();
+
+				return stgA < stgB ? -1 : stgA > stgB ? 1 : 0;
+			});
 		},
 		onClickChangeTab(tab){
 			this.$refs.modalContainer.hide();
