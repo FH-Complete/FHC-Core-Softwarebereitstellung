@@ -38,6 +38,10 @@ export default {
 					title: Vue.computed(() => this.$p.t('global/softwareanforderung') + ' ' + this.$p.t('global/uebersicht')),
 					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Softwareanforderung.js'
 				},
+				softwareanforderungNachLvTemplate: {
+					title: Vue.computed(() => this.$p.t('global/anforderungNachStandardLvTemplate')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLvTemplate.js'
+				},
 				softwareanforderungNachLv: {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
 					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
