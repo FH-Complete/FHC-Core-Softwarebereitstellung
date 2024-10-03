@@ -202,7 +202,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		$result = $this->LehrveranstaltungModel->getAutocompleteSuggestions(
 			$query,
 			$this->input->get('studiensemester_kurzbz'),
-			$oe_permissions
+			$oe_permissions,
+			'lv'
 		);
 
 		// Return
