@@ -64,6 +64,28 @@ export default {
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
 					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
 					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
+					{
+						title: 'Standardisiert',
+						field: 'lehrveranstaltung_template_id',
+						formatter: function(cell) {
+							const value = cell.getValue();
+							return value !== null && value !== undefined && value !== ""
+								? '<i class="fa fa-check text-success"></i>'
+								: '<i class="fa fa-xmark text-danger"></i>';
+						},
+						headerFilter: 'tickCross',
+						headerFilterParams:{ tristate: true },
+						headerFilterFunc: function(headerValue, rowValue) {
+							return headerValue === ""
+								? true // Show all
+								: headerValue === true
+									? (rowValue !== null && rowValue !== undefined && rowValue !== "") // Show numbers
+									: (rowValue === null || rowValue === ""); // Show null
+						},
+						visible: true,
+						width: 70,
+						hozAlign: 'center'
+					},
 					{title: 'SW-Typ Kurzbz', field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
 					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, visible: false, },
 					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 70},
@@ -74,7 +96,7 @@ export default {
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 70},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
-					{title: 'Lizenzanzahl', field: 'anzahl_lizenzen', headerFilter: true,
+					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true,
 						hozAlign: 'right', frozen: true}
 				]
 			}
