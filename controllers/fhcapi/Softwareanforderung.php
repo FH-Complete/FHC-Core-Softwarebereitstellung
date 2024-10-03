@@ -20,6 +20,7 @@ class Softwareanforderung extends FHCAPI_Controller
 			array(
 				'getSwLvZuordnungen' => 'extension/software_bestellen:rw',
 				'saveSoftwareByLvs' => 'extension/software_bestellen:rw',
+				'saveSoftwareByTemplate' => 'extension/software_bestellen:rw',
 				'updateSoftwareLv' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvZuordnungen' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
@@ -75,6 +76,62 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// Ohterwise insert batch
 		$result = $this->SoftwareLvModel->insertBatch($this->input->post());
+
+		// Terminate on error
+		$data = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+
+		// On success
+		$this->terminateWithSuccess($data);
+	}
+
+	/**
+	 * Save one or more LV-Template-SW Zuordnungen and also their Lehrveranstaltungen-SW-Zuordnungen.
+	 * LV-Templates are saved with lizenzanzahl null.
+	 */
+	public function saveSoftwareByTemplate(){
+
+		$this->_validate($this->input->post('postData'));
+
+		$lehrveranstaltung_template_id =  $this->input->post('template')['lehrveranstaltung_id'];
+
+		// Check if posted SW LV Zuordnungen already exists
+		$result = $this->_checkAndGetExistingSwLvZuordnungen($this->input->post('postData'));
+
+		// Return if at least one SW LV Zuordnung exists
+		if(count($result) > 0)
+		{
+			$this->terminateWithValidationErrors(['swLvExistCheck' => $this->p->t('global', 'mindEineZuorndungExistiertSchon')]);
+		}
+
+		// Create LV-Template-SW Zuordnung for each SW in postData
+		$data = [];
+		$uniqueSoftwareIds = [];  // To track unique software IDs
+		foreach ($this->input->post('postData') as $post) {
+			// Add post
+			$data[] = $post;
+
+			// If new software_id found in post
+			if (!in_array($post['software_id'], $uniqueSoftwareIds)) {
+
+				// Add software_id to the unique list
+				$uniqueSoftwareIds[] = $post['software_id'];
+
+				// Create a new object for the LV-Template-SW Zuordnung
+				$templateData = [
+					'software_id' => $post['software_id'],
+					'lehrveranstaltung_id' => $lehrveranstaltung_template_id,
+					'studiensemester_kurzbz' => $post['studiensemester_kurzbz'], // Keep the same semester
+					'lizenzanzahl' => null  // Hardcoded to null
+				];
+
+				// Add the new object to the data array
+				$data[] = $templateData;
+			}
+		}
+
+		// Insert LV-SW-Zuordnungen
+		$result = $this->SoftwareLvModel->insertBatch($data);
+
 
 		// Terminate on error
 		$data = $this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);

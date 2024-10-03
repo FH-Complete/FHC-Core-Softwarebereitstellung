@@ -26,6 +26,7 @@ export default {
 			selectedStudiensemester: '',
 			selectedLvs: [],
 			selectedSw: [],
+			selectedTemplate: {},
 			formData: [],
 			requestModus: '' // 'sw' if request by software, 'lv' if request by lv
 		};
@@ -62,9 +63,24 @@ export default {
 			}
 
 			// Save SW-LV-Zuordnungen
-			if (this.$refs.form)
+			if (this.$refs.form) {
+				let apiUrl = '';
+				let payload = {};
+
+				if (this.requestModus === 'tpl') {
+					apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSoftwareByTemplate';
+					payload = {
+						postData: postData,
+						template: this.selectedTemplate // Additionally add template data
+					};
+				}
+				else {
+					apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSoftwareByLvs';
+					payload = postData;
+				}
+
 				this.$refs.form
-					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSoftwareLv', postData)
+					.post(apiUrl, payload)
 					.then(result => {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
 
@@ -83,6 +99,36 @@ export default {
 
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
+			}
+		},
+		openModalLvTemplateToSw(selectedData, selectedStudiensemester) {
+			this.requestModus = 'tpl';
+
+			// Reset form
+			this.resetForm();
+
+			// Prefill software select with data of table selection
+			if (Array.isArray(selectedData)) {
+				// Get LV Templates from selected data
+				this.selectedTemplate = selectedData.find(data => data.lehrtyp_kurzbz == 'tpl');
+
+				// Get LVs from selected data
+				this.selectedLvs = selectedData
+					.filter(data => data.lehrtyp_kurzbz != 'tpl')
+					.map(data => ({
+						'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
+						'lehrveranstaltung_id': data.lehrveranstaltung_id,
+						'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
+						'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
+						'stg_bezeichnung': data.stg_bezeichnung
+					}));
+			}
+
+			// Load Studiensemester to populate dropdown
+			this.loadAndSetStudiensemester(selectedStudiensemester);
+
+			// Open modal
+			this.$refs.modalContainer.show();
 		},
 		openModalLvToSw(selectedData, selectedStudiensemester) {
 			this.requestModus = 'lv';
@@ -95,6 +141,7 @@ export default {
 				this.selectedLvs = selectedData.map(data => ({
 					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
+					'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
 					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
 					'stg_bezeichnung': data.stg_bezeichnung
 				}));
@@ -220,6 +267,7 @@ export default {
 			this.selectedStudiensemester = this.studiensemester.length > 0 ? this.studiensemester[0].studiensemester_kurzbz : '';
 			this.selectedLvs = [];
 			this.selectedSw = [];
+			this.selectedTemplate = {};
 			this.isLvSwRowsVisible = false;
 		},
 		generateSwLvRows(){
@@ -233,6 +281,7 @@ export default {
 						studiensemester_kurzbz: this.selectedStudiensemester,
 						lv_oe_bezeichnung: lv.lv_oe_bezeichnung,
 						lehrveranstaltung_id: lv.lehrveranstaltung_id,
+						lehrveranstaltung_template_id: lv.lehrveranstaltung_template_id,
 						lv_bezeichnung: lv.lv_bezeichnung,
 						stg_bezeichnung: lv.stg_bezeichnung,
 						software_id: sw.software_id,
@@ -317,7 +366,7 @@ export default {
 								v-model="selectedStudiensemester"
 								name="studiensemester"
 								:label="$p.t('lehre', 'studiensemester')"
-								:disabled="requestModus === 'lv'"
+								:disabled="requestModus === 'lv' || requestModus === 'tpl'"
 								@change="onStudiensemesterChange">
 								<option 
 								v-for="(studSem, index) in studiensemester"
@@ -327,7 +376,16 @@ export default {
 								</option>
 							</core-form-input>
 						</div>
-						<div class="col-10 mb-3">
+						<div class="col-2 mb-3 align-self-start" v-if="requestModus == 'tpl'">
+						 	<core-form-input
+								v-model="selectedTemplate.lv_bezeichnung"
+								name="selectedTemplate"
+								:label="$p.t('global/standardLvTemplate')"
+								readonly
+								>
+							</core-form-input>
+						</div>
+						<div class="col-8 mb-3">
 							<core-form-input
 								type="autocomplete"
 								v-model="selectedLvs"
@@ -340,6 +398,7 @@ export default {
 								dropdown
 								multiple
 								:suggestions="lvSuggestions"
+								:disabled="requestModus == 'tpl'"
 								@complete="searchLv">
 							</core-form-input>
 						</div>
