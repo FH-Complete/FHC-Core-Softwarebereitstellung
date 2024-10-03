@@ -35,7 +35,8 @@ class SoftwareLv_model extends DB_Model
                 lv.orgform_kurzbz,
 				lv.semester,   
                 lv.bezeichnung AS "lv_bezeichnung",   
-				lv.oe_kurzbz AS "lv_oe_kurzbz",  
+				lv.oe_kurzbz AS "lv_oe_kurzbz",
+			    lv.lehrveranstaltung_template_id,
                 CASE
                     WHEN oe.organisationseinheittyp_kurzbz = \'Kompetenzfeld\' THEN (\'KF \' || oe.bezeichnung)
                     WHEN oe.organisationseinheittyp_kurzbz = \'Department\' THEN (\'DEP \' || oe.bezeichnung)
