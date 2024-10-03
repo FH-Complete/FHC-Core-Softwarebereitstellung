@@ -63,10 +63,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	public function saveSoftwareByLvs(){
 
-		$this->_validate();
+		$this->_validate($this->input->post());
 
 		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->_checkAndGetExistingSwLvZuordnungen();
+		$result = $this->_checkAndGetExistingSwLvZuordnungen($this->input->post());
 
 		// Return if at least one SW LV Zuordnung exists
 		if(count($result) > 0)
@@ -145,7 +145,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	public function updateSoftwareLv()
 	{
-		$this->_validate();
+		$this->_validate($this->input->post());
 
 		// Update batch
 		$result = $this->SoftwareLvModel->updateBatch($this->input->post());
@@ -163,7 +163,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	public function checkAndGetExistingSwLvZuordnungen(){
 
 		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->_checkAndGetExistingSwLvZuordnungen();
+		$result = $this->_checkAndGetExistingSwLvZuordnungen($this->input->post());
 
 		// On success
 		$this->terminateWithSuccess($result);
@@ -280,11 +280,11 @@ class Softwareanforderung extends FHCAPI_Controller
 	 *
 	 * @return array
 	 */
-	private function _checkAndGetExistingSwLvZuordnungen(){
+	private function _checkAndGetExistingSwLvZuordnungen($data){
 
 		$existingZuordnungen = [];
 
-		foreach($this->input->post() as $item)
+		foreach($data as $item)
 		{
 			$result = $this->SoftwareLvModel->loadWhere(array(
 				'software_id' => $item['software_id'],
@@ -305,13 +305,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * Performs software validation checks.
 	 * @return object success if software data valid, error otherwise
 	 */
-	private function _validate()
+	private function _validate($data)
 	{
 		// load ci validation lib
 		$this->load->library('form_validation');
-
-		// Store post data to $data to add form validation fields
-		$data = $this->input->post();
 
 		foreach ($data as $key => $post)
 		{
