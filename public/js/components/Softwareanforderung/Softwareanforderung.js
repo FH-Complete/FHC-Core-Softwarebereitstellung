@@ -114,7 +114,7 @@ export default {
 			// Reset table data
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSoftwareLvZuordnungen' +
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvZuordnungen' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				),
 			);
@@ -157,7 +157,7 @@ export default {
 			// Set table data
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSoftwareLvZuordnungen' +
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvZuordnungen' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				),
 			);

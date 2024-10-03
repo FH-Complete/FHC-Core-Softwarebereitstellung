@@ -104,7 +104,7 @@ class SoftwareLv_model extends DB_Model
 		if (isset($oes) && is_array($oes))
 		{
 			/* filter organisationseinheit */
-			$qry.= ' AND lv.oe_kurzbz IN ? ';
+			$qry.= ' AND stg.oe_kurzbz IN ? ';
 			$params[]= $oes;
 		}
 

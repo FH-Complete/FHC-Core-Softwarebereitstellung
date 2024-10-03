@@ -228,7 +228,7 @@ export default {
 			}
 
 			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLehrveranstaltungenByLvs', postData)
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStudienplan', postData)
 				.then( result => result.data)
 				.then (data =>
 				{
