@@ -120,6 +120,7 @@ export default {
 						'lehrveranstaltung_id': data.lehrveranstaltung_id,
 						'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
 						'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
+						'studiengang_kz': data.studiengang_kz,
 						'stg_bezeichnung': data.stg_bezeichnung
 					}));
 			}
@@ -143,6 +144,7 @@ export default {
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
 					'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
 					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
+					'studiengang_kz': data.studiengang_kz,
 					'stg_bezeichnung': data.stg_bezeichnung
 				}));
 			}
@@ -283,17 +285,24 @@ export default {
 						lehrveranstaltung_id: lv.lehrveranstaltung_id,
 						lehrveranstaltung_template_id: lv.lehrveranstaltung_template_id,
 						lv_bezeichnung: lv.lv_bezeichnung,
+						studiengang_kz: lv.studiengang_kz,
 						stg_bezeichnung: lv.stg_bezeichnung,
 						software_id: sw.software_id,
 						software_kurzbz: sw.software_kurzbz,
 						lizenzanzahl: 0,  // Default
-						zuordnungExists: false // Default
+						zuordnungExists: false, // Default,
+						stgOeBerechtigt: false
 					})
 				}
 			}
 
 			// Flag if selection already exists
 			this.flagExistingSwLvZuordnungen();
+
+			if (this.requestModus === 'tpl')
+			{
+				this.flagBerechtigtOnStgOe();
+			}
 
 			// Sort formData
 			this.sortFormData();
@@ -325,12 +334,36 @@ export default {
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
+		flagBerechtigtOnStgOe(){
+			let postData = {
+				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id),
+				studiensemester_kurzbz: this.selectedStudiensemester
+			}
+
+			this.$fhcApi
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStudienplan', postData)
+				.then( result => result.data)
+				.then (data =>
+				{
+					if (data.length > 0)
+					{
+						this.formData.forEach(fd => {
+							const match = data.find(item => item.studiengang_kz === fd.studiengang_kz);
+
+							if (match) {
+								fd.stgOeBerechtigt = true;
+							}
+						});
+					}
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
+		},
 		sortFormData(){
 			this.formData.sort((a, b) => {
 
 				// Sort by zuordnungExists first
 				if (a.zuordnungExists !== b.zuordnungExists) {
-					return a.zuordnungExists ? 1 : -1;
+					return a.zuordnungExists ? -1 : 1;
 				}
 
 				// Sort by software_kurzbz second (case insensitive)
@@ -339,11 +372,12 @@ export default {
 				if (softwareA < softwareB) return -1;
 				if (softwareA > softwareB) return 1;
 
-				// Sort by stg_bezeichnung third (case insensitive)
-				const stgA = a.stg_bezeichnung.toUpperCase();
-				const stgB = b.stg_bezeichnung.toUpperCase();
+				// Sort by stgOeBerechtigt third (false should be last)
+				if (a.stgOeBerechtigt !== b.stgOeBerechtigt) {
+					return a.stgOeBerechtigt === false ? -1 : 1;
+				}
 
-				return stgA < stgB ? -1 : stgA > stgB ? 1 : 0;
+				return 0; // In case all comparisons are equal
 			});
 		},
 		onClickChangeTab(tab){
@@ -423,6 +457,11 @@ export default {
 						</div>
 					</div>
 					<div class="fhc-hr mt-n-3" v-if="isLvSwRowsVisible"></div>
+					<div class="row-col" v-if="isLvSwRowsVisible && requestModus == 'tpl'">
+						<div class="alert alert-info" role="alert">
+							Bitte geben Sie die User-Anzahl an; für Lehrveranstaltungen außerhalb Ihres Kompetenzbereichs wird die User-Anzahl auf 0 gesetzt, und die Softwarebeauftragten werden informiert, um diese anzupassen.	
+						</div>
+					</div>
 					<div class="row" v-if="isLvSwRowsVisible" v-for="(fd, index) in formData" :key="index">
 							<div class="col-2 mb-2">
 								<core-form-input
@@ -432,6 +471,7 @@ export default {
 									class="form-control-sm"
 									readonly>
 								</core-form-input>
+								<div class="form-text text-danger" v-if="!fd.stgOeBerechtigt">{{ $p.t('ui/nurLeseberechtigung') }}</div>
 							</div>
 							<div class="col-4 mb-2">
 								<core-form-input
@@ -458,7 +498,7 @@ export default {
 								:name="'lizenzanzahl' + index"
 								class="form-control-sm"
 								:label="index === 0 ? $p.t('global', 'userAnzahl') : ''"
-								:disabled="fd.zuordnungExists"
+								:disabled="fd.zuordnungExists || !fd.stgOeBerechtigt"
 								:tabindex="index + 1">
 							</core-form-input>
 							<div class="form-text text-danger" v-if="fd.zuordnungExists">{{ $p.t('global/bereitsAngefordert') }}</div>
