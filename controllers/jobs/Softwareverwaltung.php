@@ -15,6 +15,7 @@ class Softwareverwaltung extends JOB_Controller
 		$this->_ci =& get_instance();
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
 	}
 
 	/**
@@ -75,5 +76,39 @@ class Softwareverwaltung extends JOB_Controller
 		}
 
 		$this->logInfo('Ende Job sendMailSoftwareLizenzlaufzeitEnde');
+	}
+
+	/**
+	 * Job to automatically find and insert newly created standardised LV, whose LV template has already been
+	 * assigned to SW, into DB table table_software_lv.
+	 * Insert with Lizenzanzahl 0.
+	 * Job also informs corresponding Softwarebeauftragte about newly created assignment.
+	 *
+	 */
+	public function handleNewStandardisierteLv(){
+
+		$this->logInfo('Start Job handleNewStandardisierteLv');
+
+		// Get akt or next Studiensemester
+		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$result = $this->StudiensemesterModel->getAktOrNextSemester();
+		$studiensemester_kurzbz = getData($result)[0]->studiensemester_kurzbz;
+
+		// Get unassigned standardised Lehrveranstaltungen with the software_id from the corresponding template
+		$result = $this->_ci->SoftwareLvModel->getUnassignedStandardLvsByTemplate($studiensemester_kurzbz);
+
+		if (isError($result))
+		{
+			$this->logError(getError($result));
+		}
+
+		// Exit if no unassigned standardised Lvs found.
+		if (!hasData($result))
+		{
+			$this->logInfo("End Job handleNewStandardisierteLv.");
+			exit;
+		}
+
+		$this->logInfo('end handleNewStandardisierteLv');
 	}
 }

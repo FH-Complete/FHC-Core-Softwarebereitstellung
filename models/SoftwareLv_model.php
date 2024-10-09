@@ -225,6 +225,53 @@ class SoftwareLv_model extends DB_Model
 		return $this->execQuery($qry, [$software_id, $studiensemester_kurzbz_arr]);
 	}
 
+	public function getUnassignedStandardLvsByTemplate($studiensemester_kurzbz){
+		$qry = '
+			WITH CTE_ValidTemplates AS (
+				-- Get all templates that exist in tbl_software_lv and also fetch the software_id from tbl_software_lv
+				SELECT
+					lv.lehrveranstaltung_id AS tpl_lehrveranstaltung_id,
+					swlv.software_id,
+					swlv.studiensemester_kurzbz
+				FROM lehre.tbl_lehrveranstaltung lv
+				JOIN extension.tbl_software_lv swlv USING (lehrveranstaltung_id)
+    			WHERE lv.lehrtyp_kurzbz = \'tpl\'
+    			AND swlv.studiensemester_kurzbz = ?
+			),
+			CTE_MissingChildLvs AS (
+				-- Find child rows of valid templates, and join with software_id from CTE_ValidTemplates
+				SELECT 
+					lv.lehrveranstaltung_id,
+					tpl.software_id,
+					tpl.studiensemester_kurzbz
+				FROM lehre.tbl_lehrveranstaltung lv
+				JOIN CTE_ValidTemplates tpl
+					ON lv.lehrveranstaltung_template_id = tpl.tpl_lehrveranstaltung_id
+				WHERE NOT EXISTS (
+					SELECT 1
+					FROM extension.tbl_software_lv swlv
+					WHERE swlv.lehrveranstaltung_id = lv.lehrveranstaltung_id
+					AND swlv.studiensemester_kurzbz = ?
+				)
+			)
+			
+			-- Final output: Missing child lvs along with the software_id from the corresponding template
+			SELECT 
+				lv.*,
+				cte.software_id,
+				cte.studiensemester_kurzbz,
+				sw.software_kurzbz,
+				stg.oe_kurzbz AS "stg_oe_kurzbz" -- OE of LV-Stg
+			FROM lehre.tbl_lehrveranstaltung lv
+			JOIN CTE_MissingChildLvs cte USING (lehrveranstaltung_id)
+			JOIN extension.tbl_software sw USING (software_id)
+			JOIN public.tbl_studiengang stg USING (studiengang_kz)
+			ORDER BY lv.studiengang_kz;
+		';
+
+		return $this->execQuery($qry, [$studiensemester_kurzbz, $studiensemester_kurzbz]);
+	}
+
 	private function _getLanguageIndex()
 	{
 		$this->load->model('system/Sprache_model', 'SpracheModel');
