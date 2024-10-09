@@ -86,7 +86,6 @@ class Softwareverwaltung extends JOB_Controller
 	 *
 	 */
 	public function handleNewStandardisierteLv(){
-
 		$this->logInfo('Start Job handleNewStandardisierteLv');
 
 		// Get akt or next Studiensemester
@@ -109,6 +108,26 @@ class Softwareverwaltung extends JOB_Controller
 			exit;
 		}
 
-		$this->logInfo('end handleNewStandardisierteLv');
+		// Prepare insert batch data
+		$unassignedStandardLvs = getData($result);
+		$unassignedStandardLvsBatch = [];
+		foreach ($unassignedStandardLvs as $item) {
+			$unassignedStandardLvsBatch[] = [
+				'software_id' => $item->software_id,
+				'lehrveranstaltung_id' => $item->lehrveranstaltung_id,
+				'studiensemester_kurzbz' => $item->studiensemester_kurzbz,
+				'lizenzanzahl' => 0
+			];
+		}
+
+		// Assign the unassigned standardised Lvs to software from the corresponding template
+		$result = $this->_ci->SoftwareLvModel->insertBatch($unassignedStandardLvsBatch);
+
+		if (isError($result))
+		{
+			$this->logError(getError($result));
+		}
+
+		$this->logInfo('End handleNewStandardisierteLv');
 	}
 }
