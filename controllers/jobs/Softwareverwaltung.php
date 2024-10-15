@@ -16,6 +16,8 @@ class Softwareverwaltung extends JOB_Controller
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
+
+		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
 	}
 
 	/**
@@ -79,55 +81,48 @@ class Softwareverwaltung extends JOB_Controller
 	}
 
 	/**
-	 * Job to automatically find and insert newly created standardised LV, whose LV template has already been
-	 * assigned to SW, into DB table table_software_lv.
-	 * Insert with Lizenzanzahl 0.
-	 * Job also informs corresponding Softwarebeauftragte about newly created assignment.
+	 * Executes multiple Softwarebereitstellung tasks and sends a single mail to Softwarebeauftragte summarizing all
+	 * completed tasks.
+	 *
+	 * 1. task: Assign software to newly added standardized LVs whose LV templates are already linked to a software.
 	 *
 	 */
-	public function handleNewStandardisierteLv(){
-		$this->logInfo('Start Job handleNewStandardisierteLv');
+	public function execJobsAndMailToSoftwarebeauftragte(){
 
-		// Get akt or next Studiensemester
-		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
-		$result = $this->StudiensemesterModel->getAktOrNextSemester();
-		$studiensemester_kurzbz = getData($result)[0]->studiensemester_kurzbz;
+		$this->logInfo('Start execJobsAndMailToSoftwarebeauftragte');
 
-		// Get unassigned standardised Lehrveranstaltungen with the software_id from the corresponding template
-		$result = $this->_ci->SoftwareLvModel->getUnassignedStandardLvsByTemplate($studiensemester_kurzbz);
+		// Load all Studiengang OEs and add corresponding Fakultät OE
+		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
 
-		if (isError($result))
+		// Prepare to collect all messages
+		$allMessages = [];
+
+		// 1. Task: Assign software to newly added standardized LVs
+		$newlyAssignedLvs =  $this->softwarelib->handleUnassignedStandardLvs();
+
+		if (count($newlyAssignedLvs) > 0)
 		{
-			$this->logError(getError($result));
+			// Group unassigned Lvs
+			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+				$newlyAssignedLvs,
+				$studiengangToFakultaetMap
+			);
+
+			// Prepare and store messages
+			$allMessages = array_merge(
+				$allMessages,
+				$this->softwarelib->prepareMessagesNewlyAssignedStandardLvs($groupedLvsByFakultaet)
+			);
 		}
 
-		// Exit if no unassigned standardised Lvs found.
-		if (!hasData($result))
-		{
-			$this->logInfo("End Job handleNewStandardisierteLv.");
-			exit;
+		// Group messages by Fakultät OE before sending mails
+		$messagesGroupedByFak = $this->softwarelib->groupMessagesByFakultaet($allMessages);
+
+		// Send emails grouped by Fakultät
+		foreach ($messagesGroupedByFak as $oe_kurzbz => $messages) {
+			$this->softwarelib->sendMailToSoftwarebeauftragte($oe_kurzbz, $messages);
 		}
 
-		// Prepare insert batch data
-		$unassignedStandardLvs = getData($result);
-		$unassignedStandardLvsBatch = [];
-		foreach ($unassignedStandardLvs as $item) {
-			$unassignedStandardLvsBatch[] = [
-				'software_id' => $item->software_id,
-				'lehrveranstaltung_id' => $item->lehrveranstaltung_id,
-				'studiensemester_kurzbz' => $item->studiensemester_kurzbz,
-				'lizenzanzahl' => 0
-			];
-		}
-
-		// Assign the unassigned standardised Lvs to software from the corresponding template
-		$result = $this->_ci->SoftwareLvModel->insertBatch($unassignedStandardLvsBatch);
-
-		if (isError($result))
-		{
-			$this->logError(getError($result));
-		}
-
-		$this->logInfo('End handleNewStandardisierteLv');
+		$this->logInfo('End execJobsAndMailToSoftwarebeauftragte');
 	}
 }
