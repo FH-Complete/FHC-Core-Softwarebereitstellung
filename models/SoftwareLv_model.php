@@ -119,8 +119,8 @@ class SoftwareLv_model extends DB_Model
 	 */
 	public function insertBatch($batch)
 	{
-		// Get the user UID
-		$uid = getAuthUid();
+		// If running in CLI mode, use 'system', else get the user UID
+		$uid =  php_sapi_name() === 'cli' ? 'system' : getAuthUid();
 
 		// Add 'insertvon' to each entry in the batch
 		foreach ($batch as &$item) {
