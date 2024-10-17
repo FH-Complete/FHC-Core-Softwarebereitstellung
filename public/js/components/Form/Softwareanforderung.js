@@ -291,7 +291,7 @@ export default {
 						software_kurzbz: sw.software_kurzbz,
 						lizenzanzahl: 0,  // Default
 						zuordnungExists: false, // Default,
-						stgOeBerechtigt: false
+						stgOeBerechtigt: true
 					})
 				}
 			}
@@ -350,8 +350,8 @@ export default {
 						this.formData.forEach(fd => {
 							const match = data.find(item => item.studiengang_kz === fd.studiengang_kz);
 
-							if (match) {
-								fd.stgOeBerechtigt = true;
+							if (!match) {
+								fd.stgOeBerechtigt = false;
 							}
 						});
 					}
