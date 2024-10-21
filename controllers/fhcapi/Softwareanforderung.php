@@ -27,7 +27,8 @@ class Softwareanforderung extends FHCAPI_Controller
 				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
-				'getLvsByStudienplan' => 'extension/software_bestellen:rw'
+				'getLvsByStudienplan' => 'extension/software_bestellen:rw',
+				'getOtoboUrl' => 'extension/software_bestellen:rw'
 			)
 		);
 
@@ -36,6 +37,14 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Load models
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
+
+		// Load config
+		$this->load->config('extensions/FHC-Core-Softwarebereitstellung/softwarebereitstellung');
+
+		// Load language phrases
+		$this->loadPhrases([
+			'ui'
+		]);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -209,6 +218,19 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
 		$this->terminateWithSuccess($data);
+	}
+
+	public function getOtoboUrl()
+	{
+		if ($this->config->item('otobo_url'))
+		{
+			$this->terminateWithSuccess($this->config->item('otobo_url'));
+		}
+		else
+		{
+			$this->terminateWithError($this->p->t('ui', 'errorUnbekannteUrl'));
+		}
+
 	}
 
 	/**

@@ -194,6 +194,12 @@ export default {
 		onFormClosed(){
 			// Deselect all rows
 			this.$refs.softwareanforderungNachSwTable.tabulator.deselectRow();
+		},
+		openOtoboLink(){
+			this.$fhcApi
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getOtoboUrl')
+				.then(result => { window.open(result.data, '_blank'); })
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		}
 	},
 	template: `
@@ -203,7 +209,7 @@ export default {
 		<div class="col-sm-3 col-md-2 d-flex justify-content-end">
 		<!-- TODO phrase exists, but not breaking line properly -->
 		<!--<button class="btn btn-secondary text-start ms-auto" @click="">{{ $p.t('global/swNichtGefundenHierBestellen') }}</button>--> 
-			<button class="btn btn-secondary text-start" @click="">Software nicht gefunden?<br>Hier bei IT-Services bestellen</button>
+			<button class="btn btn-secondary text-start" @click="openOtoboLink">Software nicht gefunden?<br>Hier bei IT-Services bestellen</button>
 		</div>
 	</div>
 	<div class="row mb-5">
