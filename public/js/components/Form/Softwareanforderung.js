@@ -449,7 +449,7 @@ export default {
 								@complete="searchSw"
 								:suggestions="swSuggestions">
 							</core-form-input>
-							<div v-show="requestModus === 'lv'">
+							<div v-show="requestModus === 'lv' || requestModus === 'tpl'">
 								<a class="link-secondary" href="#" @click="onClickChangeTab('softwareanforderungNachSw')">
 									<small>SW nicht gefunden? Über 'Anforderung nach Software' suchen</small>
 								</a>
