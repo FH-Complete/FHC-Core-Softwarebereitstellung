@@ -345,16 +345,13 @@ export default {
 				.then( result => result.data)
 				.then (data =>
 				{
-					if (data.length > 0)
-					{
-						this.formData.forEach(fd => {
-							const match = data.find(item => item.studiengang_kz === fd.studiengang_kz);
+					this.formData.forEach(fd => {
+						const match = data.find(item => item.studiengang_kz === fd.studiengang_kz);
 
-							if (!match) {
-								fd.stgOeBerechtigt = false;
-							}
-						});
-					}
+						if (!match) {
+							fd.stgOeBerechtigt = false;
+						}
+					});
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
