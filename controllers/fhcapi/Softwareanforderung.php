@@ -18,7 +18,8 @@ class Softwareanforderung extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
-				'getSwLvZuordnungen' => 'extension/software_bestellen:rw',
+				'getSwLvZuordnungenBerechtigtByLvOe' => 'extension/software_bestellen:rw',
+				'getSwLvZuordnungenBerechtigtByStgOe' => 'extension/software_bestellen:rw',
 				'saveSoftwareByLvs' => 'extension/software_bestellen:rw',
 				'saveSoftwareByTemplate' => 'extension/software_bestellen:rw',
 				'updateSoftwareLv' => 'extension/software_bestellen:rw',
@@ -52,7 +53,7 @@ class Softwareanforderung extends FHCAPI_Controller
 
 	// Get all Software-Lehrveranstaltung-Zuordnungen of selected Studiensemester and Organisationseinheiten
 	// the user has permission to view.
-	public function getSwLvZuordnungen(){
+	public function getSwLvZuordnungenBerechtigtByLvOe(){
 		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
 		$oe_permissions = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
 		if(!$oe_permissions) $oe_permissions = [];
@@ -67,6 +68,26 @@ class Softwareanforderung extends FHCAPI_Controller
 		$data = $this->getDataOrTerminateWithError($result);
 		$this->terminateWithSuccess($data);
 	}
+
+	// Get all Software-Lehrveranstaltung-Zuordnungen of selected Studiensemester and Organisationseinheiten
+	// the user has permission to view.
+	public function getSwLvZuordnungenBerechtigtByStgOe(){
+		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
+		$oe_permissions = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
+		if(!$oe_permissions) $oe_permissions = [];
+
+		// Get all Software-Lehrveranstaltung-Zuordnungen
+		$result = $this->SoftwareLvModel->getSwLvZuordnungen(
+			$this->input->get('studiensemester_kurzbz'),
+			$oe_permissions,
+			'stg'
+		);
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
+
 	/**
 	 * Save one or more Software-Lehrveranstaltung-Zuordnungen
 	 */

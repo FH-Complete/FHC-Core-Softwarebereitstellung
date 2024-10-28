@@ -19,7 +19,7 @@ class SoftwareLv_model extends DB_Model
 	 * @param $oes	Filter by Organisationseinheiten
 	 * @return mixed
 	 */
-	public function getSwLvZuordnungen($studiensemester_kurzbz = null, $oes = null)
+	public function getSwLvZuordnungen($studiensemester_kurzbz = null, $oes = null, $oe_column = 'lv')
 	{
 		$qry = '
 			SELECT 
@@ -34,7 +34,8 @@ class SoftwareLv_model extends DB_Model
 				swlv.updateamum::date,  
                 lv.orgform_kurzbz,
 				lv.semester,   
-                lv.bezeichnung AS "lv_bezeichnung",   
+                lv.bezeichnung AS "lv_bezeichnung", 
+			    lv.lehrtyp_kurzbz,
 				lv.oe_kurzbz AS "lv_oe_kurzbz",
 			    lv.lehrveranstaltung_template_id,
                 CASE
@@ -104,8 +105,17 @@ class SoftwareLv_model extends DB_Model
 
 		if (isset($oes) && is_array($oes))
 		{
-			/* filter organisationseinheit */
-			$qry.= ' AND stg.oe_kurzbz IN ? ';
+			if ($oe_column === 'lv')
+			{
+				/* filter by lv organisationseinheit (Standard behaviour) */
+				$qry.= ' AND lv.oe_kurzbz IN ?';
+			}
+			elseif ($oe_column === 'stg')
+			{
+				/* filter by lv studiengangs organisationseinheit () */
+				$qry.= ' AND stg.oe_kurzbz IN ? ';
+			}
+
 			$params[]= $oes;
 		}
 
