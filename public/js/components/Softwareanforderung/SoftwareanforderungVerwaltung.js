@@ -37,14 +37,12 @@ export default {
 			return {
 				// NOTE: data is set on table built to await preselected actual Studiensemester
 				ajaxResponse(url, params, response){
-					return self.cbDataTree
-						? self.prepDataTreeData(response.data) // Prepare data for dataTree view
-						: response.data; // else return data for normal list view
+					return self.prepDataTreeData(response.data); // Prepare data for dataTree view
 				},
 				layout: 'fitColumns',
 				autoResize: false, // prevent auto resizing of table
 				resizableColumnFit: true, //maintain the fit of columns when resizing
-				index: 'lehrveranstaltung_id',
+				index: 'software_lv_id',
 				groupBy: 'lv_oe_bezeichnung',
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: [true, self.cbDataTreeStartExpanded],
@@ -127,79 +125,82 @@ export default {
 			}
 		},
 		prepDataTreeData(data){
-			let toDelete = [];
-			const uniqueLvTemplates = new Set();  // To track unique Lehrveranstaltungen
+			let toDelete = []; 	// Array to track indices of items to delete from top level
+			const uniqueQuellkurse = new Set();  // Set to track unique Quellkurse
 
-			for (let childIdx = 0; childIdx < data.length; childIdx++) {
-				let child = data[childIdx];
+			// Loop data
+			for (let itemIdx = 0; itemIdx < data.length; itemIdx++) {
+				let item = data[itemIdx];
 
-				if (child.lehrtyp_kurzbz === 'tpl' || !child[parentIdField]) {
+				// Check if the item is a top-level Quellkurs (type 'tpl') or has no parent
+				if (item.lehrtyp_kurzbz === 'tpl' || !item[parentIdField]) {
 
-					if (!uniqueLvTemplates.has(child.lehrveranstaltung_id)) {
-						uniqueLvTemplates.add(child.lehrveranstaltung_id);  // Track unique LV Templates
+					// Ensure each Quellkurs is unique
+					if (!uniqueQuellkurse.has(item.lehrveranstaltung_id)) {
+						uniqueQuellkurse.add(item.lehrveranstaltung_id);  // Track unique Quellkurse
 
-						// Nullify some lv and software-related fields for parent rows
-						child.stg_typ_kurzbz = null;
-						child.semester = null;
-						child.software_id = null;
-						child.software_kurzbz = null;
-						child.version = null;
-						child.softwaretyp_kurzbz = null;
-						child.softwaretyp_bezeichnung = null;
-						child.softwarestatus_bezeichnung = null;
+						// Initialize _children array for top-level Quellkurs
+						item._children = [];
 
-						// It's a parent, set children
-						this._appendChild(data, child, toDelete);
+						// Populate software entries as children of the Quellkurs
+						this._append2ndLvl_SwQuellkursZuordnung(data, item, toDelete);
+
+						// Clean up unnecessary fields for Quellkurs level
+						item.software_lv_id = null;
+						item.stg_typ_kurzbz = null;
+						item.semester = null;
+						item.software_id = null;
+						item.software_kurzbz = null;
+						item.version = null;
+						item.softwaretyp_kurzbz = null;
+						item.softwaretyp_bezeichnung = null;
+						item.softwarestatus_bezeichnung = null;
 					} else {
-						// Remove duplicate parents
-						toDelete.push(childIdx);
+						// Mark duplicate Quellkurse for deletion later
+						toDelete.push(itemIdx);
 					}
 				}
 			}
 
-			let test = data.filter((_, index) => !toDelete.includes(index));
-
-			// Remove duplicates or children incorrectly placed at the top level
+			// Filter out duplicate Quellkurse and incorrectly top level placed children
 			return data.filter((_, index) => !toDelete.includes(index));
 		},
-		_appendChild(data, parent, toDelete) {
+		_append2ndLvl_SwQuellkursZuordnung(data, parentTpl, toDelete) {
+			data.forEach((item, index) => {
 
-			// Loop through all data and find children for the current parent
-			data.forEach((child, index) => {
-				
+				// If the current item matches the Quellkurs
+				if (item[idField] === parentTpl[idField]) {
 
-				//console.log(parent);
-				//console.log(child);
+					// Check if the sw-template entry already exists under the parent Quellkurs
+					let swTplChild = parentTpl._children.find(c => c.software_id  === item.software_id );
 
-				// If software doesn't already exist under this parent, add it
-				if (child[parentIdField] === parent[idField]) {
-					// If parent is found, check if software already exists as a child
-					let softwareChild = parent._children?.find(c => c.software_id === child.software_id);
-					if (!parent._children) parent._children = [];
-
-					if (!softwareChild) {
-						// Add Software as a child level
-						softwareChild = {
-							software_lv_id: parent.software_lv_id,
-							lehrveranstaltung_id: parent[idField],
-							lehrtyp_kurzbz: parent.lehrtyp_kurzbz,
-							software_id: child.software_id,
-							softwaretyp_bezeichnung: child.softwaretyp_bezeichnung,
-							software_kurzbz: child.software_kurzbz,
-							version: child.version,
-							softwarestatus_bezeichnung: child.softwarestatus_bezeichnung,
-							_children: []  // Create an empty _children array for STG_KZ
+					// If not found, create a new sw-template entry
+					if (!swTplChild) {
+						swTplChild = {
+							...item,
+							_children: []
 						};
-						parent._children.push(softwareChild);
+
+						// Add the sw-template entry as a child of the Quellkurs
+						parentTpl._children.push(swTplChild);
 					}
 
-					// Add all relevant data as the child of Software
-					softwareChild._children.push({
-						...child // push all child properties
-					});
+					/// Call to add all LV-SW Zuordnungen that are assigend to the Quellkurs
+					this._append3rdLvl_SwLvZuordnung(data, swTplChild, toDelete);
+				}
+			});
+		},
+		_append3rdLvl_SwLvZuordnung(data, swTplChild, toDelete) {
+			data.forEach((item, index) => {
+				// If item matches the current software entry
+				if (item[parentIdField] === swTplChild[idField] &&
+					item.software_id === swTplChild.software_id) {
 
-					// Mark the child to be removed from the top level
-					toDelete.push(index);
+					// Add item as a child of the software entry
+					swTplChild._children.push(item);  // Add LV as a child
+
+					// Mark the index for deletion
+					toDelete.push(index);  
 				}
 			});
 		},
