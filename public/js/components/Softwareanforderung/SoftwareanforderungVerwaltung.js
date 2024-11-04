@@ -14,12 +14,16 @@ export default {
 		CoreFormInput,
 		SoftwareanforderungForm
 	},
-	inject: ['STUDIENSEMESTER_DROPDOWN_STARTDATE'],
+	inject: [
+		'STUDIENSEMESTER_DROPDOWN_STARTDATE',
+		'BEARBEITUNGSSPERRE_DATUM'
+	],
 	data: function() {
 		return {
 			table: null,
 			studiensemester: [],
 			selectedStudiensemester: '',
+			bearbeitungIsGesperrt: false,
 			cbDataTree: true, // checkbox display dataTree or not
 			cbDataTreeStartExpanded: false,	// checkbox expand dataTree or not
 			cbGroupStartOpen: true,	// checkbox group organisationseinheit start open
@@ -29,6 +33,12 @@ export default {
 		cbGroupStartOpen(newVal){
 			this.table.setGroupStartOpen(newVal);
 			this.table.setData();
+		},
+		bearbeitungIsGesperrt(newVal){
+			// Redraw the table to affect button disable status
+			if (this.table) {
+				this.table.redraw(true);
+			}
 		}
 	},
 	computed: {
@@ -52,14 +62,14 @@ export default {
 					filter: false, //persist filter sorting
 				},
 				columns: [
-					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
-					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
-					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
+					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: true},
+					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: true},
+					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: true},
 					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:false},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 270},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
 					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
-					{title: 'Lehrtyp-Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:false},
+					{title: 'Lehrtyp-Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:true},
 					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
 					{title: 'SW-Typ Kurzbz', field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
 					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, visible: false, },
@@ -71,7 +81,42 @@ export default {
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 70},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
 					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true, width: 100,
-						hozAlign: 'right', frozen: true}
+						hozAlign: 'right', frozen: true},
+					{title: this.$p.t('global/aktionen'), field: 'actions',
+						width: 280,
+						minWidth: 280,
+						maxWidth: 280,
+						formatter: (cell, formatterParams, onRendered) => {
+
+							if (cell.getData().lehrtyp_kurzbz === 'tpl' &&
+								cell.getData().software_id !== null)
+							{
+								let container = document.createElement('div');
+								container.className = "d-flex gap-2";
+
+								let button = document.createElement('button');
+								button.className = 'btn btn-outline-secondary';
+								button.innerHTML = '<i class="fa fa-edit"></i>';
+								button.disabled = this.bearbeitungIsGesperrt;
+								button.addEventListener('click', (event) =>
+									this.editSwLvZuordnung(event, cell.getRow().getIndex())
+								);
+								container.append(button);
+
+								button = document.createElement('button');
+								button.className = 'btn btn-outline-secondary';
+								button.innerHTML = '<i class="fa fa-xmark"></i>';
+								button.disabled = this.bearbeitungIsGesperrt;
+								button.addEventListener('click', () =>
+									this.deleteSwLvZuordnung(cell.getRow().getIndex())
+								);
+								container.append(button);
+
+								return container;
+							}
+						},
+						frozen: true
+					}
 				]
 			}
 		}
@@ -85,20 +130,46 @@ export default {
 				.then( result =>  this.selectedStudiensemester = result.data[0].studiensemester_kurzbz ) // Preselect Studiensemester
 				.catch( error => this.$fhcAlert.handleSystemError(error) );
 		},
-		onChangeStudiensemester(){
+		async onChangeStudiensemester(){
 			// Reset table data
-			this.table.setData(
-				CoreRESTClient._generateRouterURI(
+			this.table
+				.setData(CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvZuordnungenBerechtigtByLvOe' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				)
-			);
+					'?studiensemester_kurzbz=' + this.selectedStudiensemester))
+				.then(() => this.checkBearbeitungIsGesperrt() );
+		},
+		editSwLvZuordnung(e, software_lv_id){
+			console.log(software_lv_id);
+		},
+		deleteSwLvZuordnung(software_lv_id){
+			console.log(software_lv_id);
+		},
+		async checkBearbeitungIsGesperrt(){
+			await this.$fhcApi
+				.get('api/frontend/v1/organisation/Studiensemester/getStudienjahrByStudiensemester', {
+					semester: this.selectedStudiensemester
+				})
+				.then((result) => {
+					const startstudienjahr = result.data.startstudienjahr;
+					const today = new Date();
+					const bearbeitungssperreDatum = new Date(
+						startstudienjahr,
+						this.BEARBEITUNGSSPERRE_DATUM.month,
+						this.BEARBEITUNGSSPERRE_DATUM.day
+					);
+
+					this.bearbeitungIsGesperrt = bearbeitungssperreDatum < today
+				})
+				.catch((error) => {this.$fhcAlert.handleSystemError(error);});
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungVerwaltungTable.tabulator;
 
 			// Await Studiensemester
 			await this.loadAndSetStudiensemester();
+
+			// Check if Bearbeitung is gesperrt
+			await this.checkBearbeitungIsGesperrt();
 
 			// Set table data
 			this.table.setData(
