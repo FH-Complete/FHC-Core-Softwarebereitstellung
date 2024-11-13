@@ -379,7 +379,6 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// Get all Lvs
 		// Filter query by studiensemester and permitted oes
-		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
 		$result = $this->LehrveranstaltungModel->getLvsByStudienplan(
 			$this->input->get('studiensemester_kurzbz'),
 			$oe_permissions,
