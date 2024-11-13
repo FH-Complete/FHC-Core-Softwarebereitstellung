@@ -35,7 +35,7 @@ export default {
 			this.table.setData();
 		},
 		bearbeitungIsGesperrt(newVal){
-			// Redraw the table to affect button disable status
+			// Redraw the table to disable/enable action buttons
 			if (this.table) {
 				this.table.redraw(true);
 			}
@@ -108,7 +108,10 @@ export default {
 								button.innerHTML = '<i class="fa fa-xmark"></i>';
 								button.disabled = this.bearbeitungIsGesperrt;
 								button.addEventListener('click', () =>
-									this.deleteSwLvZuordnung(cell.getRow().getIndex())
+									this.deleteSwLvZuordnung(
+										cell.getRow().getIndex(),
+										cell.getData().lehrveranstaltung_id
+									)
 								);
 								container.append(button);
 
@@ -141,26 +144,25 @@ export default {
 		editSwLvZuordnung(e, software_lv_id){
 			console.log(software_lv_id);
 		},
-		deleteSwLvZuordnung(software_lv_id){
-			console.log(software_lv_id);
+		deleteSwLvZuordnung(software_lv_id, lehrveranstaltung_id){
+			this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/delete', {
+					software_lv_id: software_lv_id,
+					studiensemester_kurzbz: this.selectedStudiensemester
+				})
+				.then((result) => {
+
+				})
+				.catch((error) => {this.$fhcAlert.handleSystemError(error);});
 		},
 		async checkBearbeitungIsGesperrt(){
 			await this.$fhcApi
-				.get('api/frontend/v1/organisation/Studiensemester/getStudienjahrByStudiensemester', {
-					semester: this.selectedStudiensemester
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkIfBearbeitungIsGesperrt', {
+					studiensemester_kurzbz: this.selectedStudiensemester
 				})
-				.then((result) => {
-					const startstudienjahr = result.data.startstudienjahr;
-					const today = new Date();
-					const bearbeitungssperreDatum = new Date(
-						startstudienjahr,
-						this.BEARBEITUNGSSPERRE_DATUM.month,
-						this.BEARBEITUNGSSPERRE_DATUM.day
-					);
-
-					this.bearbeitungIsGesperrt = bearbeitungssperreDatum < today
-				})
-				.catch((error) => {this.$fhcAlert.handleSystemError(error);});
+				.then((result) => result.data)
+				.then((data) => this.bearbeitungIsGesperrt = data.retval )
+				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungVerwaltungTable.tabulator;

@@ -12,6 +12,9 @@ class SoftwareLib
 
 		$this->_ci->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
 		$this->_ci->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareSoftwarestatus_model', 'SoftwareSoftwarestatusModel');
+
+		// Load config
+		$this->_ci->load->config('extensions/FHC-Core-Softwarebereitstellung/softwarebereitstellung');
 	}
 
 	/**
@@ -64,6 +67,30 @@ class SoftwareLib
 		}
 
 		return success($result);
+	}
+
+	public function checkIfBearbeitungIsGesperrt($studiensemester_kurzbz)
+	{
+		// Get Startstudienjahr by Studiensemester
+		$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$result = $this->_ci->StudiensemesterModel->getStudienjahrByStudiensemester($studiensemester_kurzbz);
+		$startstudienjahr = hasData($result) ? getData($result)->startstudienjahr : '';
+
+		$today = new DateTime();
+		$today->setTime(0, 0, 0);
+
+		if ($this->_ci->config->item('bearbeitungssperre_datum'))
+		{
+			$bearbeitungssperreDatum = new DateTime();
+			$bearbeitungssperreDatum->setDate(
+				$startstudienjahr,
+				$this->_ci->config->item('bearbeitungssperre_datum')['month'],
+				$this->_ci->config->item('bearbeitungssperre_datum')['day']
+			);
+			$bearbeitungssperreDatum->setTime(0,0,0);
+		}
+
+		return $bearbeitungssperreDatum < $today;
 	}
 
 	// JOBS & ALERTS

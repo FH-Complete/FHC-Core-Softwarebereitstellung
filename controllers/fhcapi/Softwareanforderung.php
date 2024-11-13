@@ -29,7 +29,9 @@ class Softwareanforderung extends FHCAPI_Controller
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
 				'getLvsByStudienplan' => 'extension/software_bestellen:rw',
-				'getOtoboUrl' => 'extension/software_bestellen:rw'
+				'getOtoboUrl' => 'extension/software_bestellen:rw',
+				'delete' => 'extension/software_bestellen:rw',
+				'checkIfBearbeitungIsGesperrt' => 'extension/software_bestellen:rw'
 			)
 		);
 
@@ -38,9 +40,13 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Load models
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
+		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
 
 		// Load config
 		$this->load->config('extensions/FHC-Core-Softwarebereitstellung/softwarebereitstellung');
+
+		// Load libraries
+		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
 
 		// Load language phrases
 		$this->loadPhrases([
@@ -252,6 +258,82 @@ class Softwareanforderung extends FHCAPI_Controller
 			$this->terminateWithError($this->p->t('ui', 'errorUnbekannteUrl'));
 		}
 
+	}
+	
+	public function delete(){
+		$software_lv_id = $this->input->post('software_lv_id');
+		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
+
+		// Check if deletion is allowed
+		$bearbeitungIsGesperrt = $this->softwarelib->checkIfBearbeitungIsGesperrt($studiensemester_kurzbz);
+
+		if ($bearbeitungIsGesperrt) exit;	// There is a frontend check too, no more explanation needed.
+
+		// Get Lehrveranstaltung and Software by software_lv_id
+		$lehrveranstaltung_id = null;
+		$software_id = null;
+
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
+		$result = $this->SoftwareLvModel->load($software_lv_id);
+
+		if (hasData($result))
+		{
+			$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
+			$software_id = getData($result)[0]->software_id;
+		}
+		
+		// Check if Lehrveranstaltung is a Quellkurs
+		$result = $this->LehrveranstaltungModel->checkIsTemplate($lehrveranstaltung_id);
+		$isTemplate = $this->getDataOrTerminateWithError($result);
+
+		// If is Quellkurs
+		if ($isTemplate)
+		{
+			// Get zugehörige Lv-Sw-Zuordnungen
+			$this->LehrveranstaltungModel->addSelect('lehrveranstaltung_id');
+			$result = $this->LehrveranstaltungModel->loadWhere([
+				'lehrveranstaltung_template_id' => $lehrveranstaltung_id
+			]);
+
+			$assignedLvIds = hasData($result) ? getData($result) : [];
+
+			// Get software_lv_id from zugehörige Lv-Sw-Zuordnungen
+			if (count($assignedLvIds) > 0)
+			{
+				$this->SoftwareLvModel->addSelect('software_lv_id');
+				$result = $this->SoftwareLvModel->loadWhere('
+					lehrveranstaltung_id IN (' . implode(', ',
+						array_column($assignedLvIds, 'lehrveranstaltung_id')) . ') AND
+					software_id = '. $this->db->escape($software_id). ' AND
+					studiensemester_kurzbz = '. $this->db->escape($studiensemester_kurzbz)
+				);
+
+				$assignedSwLvIds = hasData($result) ? getData($result) : [];
+
+				// Store software_lv_ids for deletion
+				$deleteSoftwareLvIds = array_merge(
+					[$this->input->post('software_lv_id')], // template
+					array_column($assignedSwLvIds, 'software_lv_id') // zugehörige lvs
+				);
+			}
+		}
+		// Else is not a Quellkurs. Its a single Lehrveranstaltung.
+		else
+		{
+			// Store software_lv_id for deletion
+			$deleteSoftwareLvIds = [$this->input->post('software_lv_id')];	// lv
+		}
+
+		// Delete software_lv_ids
+		foreach ($deleteSoftwareLvIds as $software_lv_id) {
+			// $this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]); // TODO einblenden
+		}
+	}
+
+	public function checkIfBearbeitungIsGesperrt(){
+		$result = $this->softwarelib->checkIfBearbeitungIsGesperrt($this->input->post('studiensemester_kurzbz'));
+
+		$this->terminateWithSuccess(success($result)); // return true or false
 	}
 
 	/**
