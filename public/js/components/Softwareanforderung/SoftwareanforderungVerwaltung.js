@@ -61,11 +61,11 @@ export default {
 					filter: false, //persist filter sorting
 				},
 				columns: [
+					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 270},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: true},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: true},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: true},
 					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:false},
-					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 270},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
 					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
 					{title: 'Lehrtyp-Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:true},
@@ -107,10 +107,7 @@ export default {
 								button.innerHTML = '<i class="fa fa-xmark"></i>';
 								button.disabled = this.bearbeitungIsGesperrt;
 								button.addEventListener('click', () =>
-									this.deleteSwLvZuordnung(
-										cell.getRow().getIndex(),
-										cell.getData().lehrveranstaltung_id
-									)
+									this.deleteSwLvZuordnung(cell.getRow().getIndex())
 								);
 								container.append(button);
 
@@ -143,14 +140,17 @@ export default {
 		editSwLvZuordnung(e, software_lv_id){
 			console.log(software_lv_id);
 		},
-		deleteSwLvZuordnung(software_lv_id, lehrveranstaltung_id){
+		async deleteSwLvZuordnung(software_lv_id){
+			if (!await this.$fhcAlert.confirmDelete()) return;
+
 			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/delete', {
 					software_lv_id: software_lv_id,
 					studiensemester_kurzbz: this.selectedStudiensemester
 				})
 				.then((result) => {
-
+					this.reloadTabulator();
+					this.$fhcAlert.alertSuccess('Gelöscht');
 				})
 				.catch((error) => {this.$fhcAlert.handleSystemError(error);});
 		},

@@ -325,9 +325,14 @@ class Softwareanforderung extends FHCAPI_Controller
 		}
 
 		// Delete software_lv_ids
+		$deleted = [];
 		foreach ($deleteSoftwareLvIds as $software_lv_id) {
-			// $this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]); // TODO einblenden
+			 $this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]);
+
+			 $deleted[]= $software_lv_id;
 		}
+
+		$this->terminateWithSuccess($deleted);
 	}
 
 	public function checkIfBearbeitungIsGesperrt(){
