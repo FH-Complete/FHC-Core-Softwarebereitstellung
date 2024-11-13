@@ -15,8 +15,7 @@ export default {
 		SoftwareanforderungForm
 	},
 	inject: [
-		'STUDIENSEMESTER_DROPDOWN_STARTDATE',
-		'BEARBEITUNGSSPERRE_DATUM'
+		'STUDIENSEMESTER_DROPDOWN_STARTDATE'
 	],
 	data: function() {
 		return {

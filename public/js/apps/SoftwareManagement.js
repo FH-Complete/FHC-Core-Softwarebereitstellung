@@ -23,11 +23,6 @@ import FhcApi from "../../../../js/plugin/FhcApi.js";
 import Phrasen from "../../../../js/plugin/Phrasen.js";
 
 const STUDIENSEMESTER_DROPDOWN_STARTDATE = '2024-09-01'; // Dropdown starts from this studiensemester up to all future ones
-// Deadline pro Studienjahr, bis wann SW Zuordnungen bearbeitet oder gelöscht werden dürfen
-const BEARBEITUNGSSPERRE_DATUM = {
-	day: 30,
-	month: 3	// 3 = April
-};
 
 const softwareManagementApp = Vue.createApp({
 	components: {
@@ -37,8 +32,7 @@ const softwareManagementApp = Vue.createApp({
 	},
 	provide() {
 		return {
-			STUDIENSEMESTER_DROPDOWN_STARTDATE,
-			BEARBEITUNGSSPERRE_DATUM
+			STUDIENSEMESTER_DROPDOWN_STARTDATE
 		};
 	}
 });
