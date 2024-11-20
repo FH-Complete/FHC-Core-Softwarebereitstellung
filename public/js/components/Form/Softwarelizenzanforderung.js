@@ -38,7 +38,7 @@ export default {
 			// Update SW-LV-Zuordnungen
 			if (this.$refs.form)
 				this.$refs.form
-					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateSoftwareLv', postData)
+					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateLizenzanzahl', postData)
 					.then(result => {
 
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));

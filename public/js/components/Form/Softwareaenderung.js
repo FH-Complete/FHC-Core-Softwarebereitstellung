@@ -11,7 +11,7 @@ export default {
 		CoreBsModal
 	},
 	emit: [
-		'formClosed'
+		'onSaved'
 	],
 	data() {
 		return {
@@ -30,28 +30,35 @@ export default {
 	},
 	methods: {
 		updateSoftware() {
-			// Return if no SW selected
+
+			// Return if no SW is selected
 			this.errorMsg = null;
 			if (this.selectedSw === null) return this.errorMsg = this.$p.t('global', 'softwareAuswaehlen');
 
-			// Update SW-LV-Zuordnungen
-			if (this.$refs.form)
+			// Prepare data for backend
+			const postData = {
+				...this.selectedRow,
+				...this.selectedSw,
+				studiensemester_kurzbz: this.selectedStudiensemester
+			};
+
+			// Update Software
+			if (this.$refs.form) {
+				let apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateSoftware';
+
 				this.$refs.form
-					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateSw', {
-						software_lv_id: this.selectedRow.software_lv_id,
-						lehrveranstaltung_id: this.selectedRow.lehrveranstaltung_id,
-						software_id: this.selectedSw.software_id,
-						studiensemester_kurzbz: this.selectedStudiensemester
-					})
+					.post(apiUrl, postData)
 					.then(result => {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
+						this.$emit('onSaved');
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
+			}
 		},
-		openModalSwAendern(selectedRow, selectedStudiensemester) {
-
+		openModalUpdateSwByLv(selectedRow, selectedStudiensemester) {
 			this.resetForm();
-			
+
+			// Store selected row data
 			this.selectedRow = {
 				'software_lv_id': selectedRow.software_lv_id,
 				'lv_oe_bezeichnung': selectedRow.lv_oe_bezeichnung,
@@ -63,31 +70,54 @@ export default {
 			};
 
 			// Prefill Lehrveranstaltung with selected row data
-			if (selectedRow.lehrtyp_kurzbz === 'tpl')
-			{
-				this.requestModus = 'tpl';
-
-				this.selectedTemplate = this.selectedRow;
-
-				if (Array.isArray(selectedRow._children) && selectedRow._children.length > 0)
-				{
-					this.selectedLvs = selectedRow._children.map(data => ({
-						'software_lv_id': selectedRow.software_lv_id,
-						'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
-						'lehrveranstaltung_id': data.lehrveranstaltung_id,
-						'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
-						'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
-						'studiengang_kz': data.studiengang_kz,
-						'stg_bezeichnung': data.stg_bezeichnung
-					}));
-				}
-			}
-			else
-			{
-				this.selectedLvs = this.selectedRow;
-			}
+			this.selectedLvs = this.selectedRow;
 
 			// Prefill software with selected row data
+			this.selectedSw = {
+				'software_id': selectedRow.software_id,
+				'software_kurzbz': selectedRow.software_kurzbz
+			};
+
+			// Load Studiensemester to populate dropdown
+			this.loadAndSetStudiensemester(selectedStudiensemester);
+
+			// Open modal
+			this.$refs.modalContainer.show();
+		},
+		openModalUpdateSwByTemplate(selectedRow, selectedStudiensemester) {
+			this.resetForm();
+
+			this.requestModus = 'tpl';
+
+			// Get LV Template from selected row
+			this.selectedTemplate = selectedRow;
+
+			// Store selected row data
+			this.selectedRow = {
+				'software_lv_id': selectedRow.software_lv_id,
+				'lv_oe_bezeichnung': selectedRow.lv_oe_bezeichnung,
+				'lehrveranstaltung_id': selectedRow.lehrveranstaltung_id,
+				'lehrveranstaltung_template_id': selectedRow.lehrveranstaltung_template_id,
+				'lv_bezeichnung': selectedRow.lv_bezeichnung + ' [ ' + selectedRow.orgform_kurzbz + ' ]',
+				'studiengang_kz': selectedRow.studiengang_kz,
+				'stg_bezeichnung': selectedRow.stg_bezeichnung
+			};
+
+			// Prefill Lehrveranstaltungen dropdown
+			if (Array.isArray(selectedRow._children) && selectedRow._children.length > 0)
+			{
+				this.selectedLvs = selectedRow._children.map(data => ({
+					'software_lv_id': selectedRow.software_lv_id,
+					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
+					'lehrveranstaltung_id': data.lehrveranstaltung_id,
+					'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
+					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
+					'studiengang_kz': data.studiengang_kz,
+					'stg_bezeichnung': data.stg_bezeichnung
+				}));
+			}
+
+			// Prefill software dropdown
 			this.selectedSw = {
 				'software_id': selectedRow.software_id,
 				'software_kurzbz': selectedRow.software_kurzbz

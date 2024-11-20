@@ -138,7 +138,17 @@ export default {
 				.then(() => this.checkBearbeitungIsGesperrt() );
 		},
 		editSwLvZuordnung(row){
-			this.$refs.softwareaenderungForm.openModalSwAendern(row.getData(), this.selectedStudiensemester);
+			// If selected row is a Quellkurs
+			if (row.getData().lehrtyp_kurzbz === 'tpl')
+			{
+				this.$refs.softwareaenderungForm.openModalUpdateSwByTemplate(row.getData(), this.selectedStudiensemester);
+			}
+			// Else its a simple LV
+			else
+			{
+				this.$refs.softwareaenderungForm.openModalUpdateSwByLv(row.getData(), this.selectedStudiensemester);
+			}
+
 		},
 		async deleteSwLvZuordnung(software_lv_id){
 			if (!await this.$fhcAlert.confirmDelete()) return;
@@ -286,7 +296,7 @@ export default {
 				}
 				this.$refs.softwareanforderungVerwaltungTable.reloadTable();
 			}
-		},
+		}
 	},
 	template: `
 <div class="softwareanforderungVerwaltung overflow-hidden">
@@ -336,6 +346,6 @@ export default {
 </div>
 
 <!-- Form -->
-<softwareaenderung-form ref="softwareaenderungForm" @form-closed="onFormClosed"></softwareaenderung-form>
+<softwareaenderung-form ref="softwareaenderungForm" @on-saved="reloadTabulator()"></softwareaenderung-form>
 `
 };
