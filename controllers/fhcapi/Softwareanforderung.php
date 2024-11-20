@@ -23,6 +23,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'saveSoftwareByLvs' => 'extension/software_bestellen:rw',
 				'saveSoftwareByTemplate' => 'extension/software_bestellen:rw',
 				'updateSoftwareLv' => 'extension/software_bestellen:rw',
+				'updateSw' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvZuordnungen' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
 				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
@@ -50,7 +51,8 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// Load language phrases
 		$this->loadPhrases([
-			'ui'
+			'ui',
+			'global'
 		]);
 	}
 
@@ -335,10 +337,110 @@ class Softwareanforderung extends FHCAPI_Controller
 		$this->terminateWithSuccess($deleted);
 	}
 
+	public function updateSw(){
+		$software_lv_id = $this->input->post('software_lv_id');
+		$new_software_id = $this->input->post('software_id');
+		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
+
+		// Check if deletion is allowed
+		$bearbeitungIsGesperrt = $this->softwarelib->checkIfBearbeitungIsGesperrt($studiensemester_kurzbz);
+		if ($bearbeitungIsGesperrt) exit;	// There is a frontend check too, no more explanation needed.
+
+		// Get Lehrveranstaltung and Software by software_lv_id
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
+		$result = $this->SoftwareLvModel->load($software_lv_id);
+
+		if (hasData($result))
+		{
+			$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
+			$software_id = getData($result)[0]->software_id;
+		}
+
+		// Check if posted SW LV Zuordnungen already exists
+		$result = $this->_checkAndGetExistingSwLvZuordnungen([
+			[
+				'lehrveranstaltung_id' => $lehrveranstaltung_id,
+				'software_id' => $new_software_id,
+				'studiensemester_kurzbz' => $studiensemester_kurzbz
+			]
+		]);
+
+		// Return if at least one SW LV Zuordnung exists
+		if(count($result) > 0)
+		{
+			$this->terminateWithValidationErrors(['selectedSw' => $this->p->t('global', 'mindEineZuorndungExistiertBereits')]);
+		}
+
+		// Check if Lehrveranstaltung is a Quellkurs
+		$result = $this->LehrveranstaltungModel->checkIsTemplate($lehrveranstaltung_id);
+		$this->addMeta('checkTemplateResult: ', $result);
+		$isTemplate = $this->getDataOrTerminateWithError($result);
+
+		$updateSoftwareLvIds = [];
+
+		// If is Quellkurs
+		if ($isTemplate)
+		{
+			// Get zugehörige Lv-Sw-Zuordnungen
+			$this->LehrveranstaltungModel->addSelect('lehrveranstaltung_id');
+			$result = $this->LehrveranstaltungModel->loadWhere([
+				'lehrveranstaltung_template_id' => $lehrveranstaltung_id
+			]);
+
+			$assignedLvIds = hasData($result) ? getData($result) : [];
+
+			// Get software_lv_id from zugehörige Lv-Sw-Zuordnungen
+			if (count($assignedLvIds) > 0)
+			{
+				$this->SoftwareLvModel->addSelect('software_lv_id');
+				$result = $this->SoftwareLvModel->loadWhere('
+					lehrveranstaltung_id IN (' . implode(', ',
+						array_column($assignedLvIds, 'lehrveranstaltung_id')) . ') AND
+					software_id = '. $this->db->escape($software_id). ' AND
+					studiensemester_kurzbz = '. $this->db->escape($studiensemester_kurzbz)
+				);
+
+				$assignedSwLvIds = hasData($result) ? getData($result) : [];
+
+				// Store software_lv_ids for update
+				$updateSoftwareLvIds = array_merge(
+					[$this->input->post('software_lv_id')], // template
+					array_column($assignedSwLvIds, 'software_lv_id') // zugehörige lvs
+				);
+			}
+		}
+		// Else is not a Quellkurs. Its a single Lehrveranstaltung.
+		else
+		{
+			// Store software_lv_id for update
+			$updateSoftwareLvIds = [$this->input->post('software_lv_id')];	// lv
+		}
+
+		// Prepare data for batch update
+		$updateData = [];
+		foreach ($updateSoftwareLvIds as $id) {
+			$updateData[] = [
+				'software_lv_id' => $id,
+				'software_id' => $new_software_id
+			];
+		}
+
+		if (!empty($updateData)) {
+			// Update batch
+			$result = $this->SoftwareLvModel->updateBatch($updateData);
+
+			// On error
+			$this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		}
+
+		// On success
+		$this->terminateWithSuccess();
+	}
+
 	public function checkIfBearbeitungIsGesperrt(){
 		$result = $this->softwarelib->checkIfBearbeitungIsGesperrt($this->input->post('studiensemester_kurzbz'));
 
-		$this->terminateWithSuccess(success($result)); // return true or false
+		$this->terminateWithSuccess($result); // return true or false
 	}
 
 	/**
