@@ -1,7 +1,7 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
+import SoftwareaenderungForm from "../Form/Softwareaenderung.js";
 
 // Fields used to restructure table data for dataTree
 const idField = 'lehrveranstaltung_id';
@@ -12,7 +12,7 @@ export default {
 	components: {
 		CoreFilterCmpt,
 		CoreFormInput,
-		SoftwareanforderungForm
+		SoftwareaenderungForm
 	},
 	inject: [
 		'STUDIENSEMESTER_DROPDOWN_STARTDATE'
@@ -98,7 +98,7 @@ export default {
 								button.innerHTML = '<i class="fa fa-edit"></i>';
 								button.disabled = this.bearbeitungIsGesperrt;
 								button.addEventListener('click', (event) =>
-									this.editSwLvZuordnung(event, cell.getRow().getIndex())
+									this.editSwLvZuordnung(cell.getRow())
 								);
 								container.append(button);
 
@@ -137,8 +137,8 @@ export default {
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester))
 				.then(() => this.checkBearbeitungIsGesperrt() );
 		},
-		editSwLvZuordnung(e, software_lv_id){
-			console.log(software_lv_id);
+		editSwLvZuordnung(row){
+			this.$refs.softwareaenderungForm.openModalSwAendern(row.getData(), this.selectedStudiensemester);
 		},
 		async deleteSwLvZuordnung(software_lv_id){
 			if (!await this.$fhcAlert.confirmDelete()) return;
@@ -334,5 +334,8 @@ export default {
 		</div>
 	</div>
 </div>
+
+<!-- Form -->
+<softwareaenderung-form ref="softwareaenderungForm" @form-closed="onFormClosed"></softwareaenderung-form>
 `
 };
