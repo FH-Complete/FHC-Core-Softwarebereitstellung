@@ -97,7 +97,35 @@ export default {
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 70},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
 					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true,
-						hozAlign: 'right', frozen: true}
+						hozAlign: 'right', frozen: true},
+					{title: this.$p.t('global/aktionen'), field: 'actions',
+						width: 80,
+						formatter: (cell, formatterParams, onRendered) => {
+							let container = document.createElement('div');
+							container.className = "d-flex gap-2";
+
+							let button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-edit"></i>';
+							button.disabled = this.bearbeitungIsGesperrt;
+							button.addEventListener('click', (event) =>
+								this.editSwLvZuordnung(cell.getRow())
+							);
+							container.append(button);
+
+							button = document.createElement('button');
+							button.className = 'btn btn-outline-secondary';
+							button.innerHTML = '<i class="fa fa-xmark"></i>';
+							button.disabled = this.bearbeitungIsGesperrt;
+							button.addEventListener('click', () =>
+								this.deleteSwLvs(cell.getRow().getIndex())
+							);
+							container.append(button);
+
+							return container;
+						},
+						frozen: true
+					}
 				]
 			}
 		}
@@ -114,6 +142,30 @@ export default {
 		setTotalLizenzanzahl(data){
 			this.totalLizenzanzahl = data.reduce((sum, row) => sum + row.anzahl_lizenzen, 0);
 			
+		},
+		editSwLvZuordnung(row){
+			// If selected row is a Quellkurs
+			if (row.getData().lehrtyp_kurzbz === 'tpl')
+			{
+				this.$refs.softwareaenderungForm.openModalUpdateSwByTemplate(row.getData(), this.selectedStudiensemester);
+			}
+			// Else its a simple LV
+			else
+			{
+				this.$refs.softwareaenderungForm.openModalUpdateSwByLv(row.getData(), this.selectedStudiensemester);
+			}
+		},
+		async deleteSwLvs(software_lv_id){
+			if (!await this.$fhcAlert.confirmDelete()) return;
+
+			this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvs', {
+					software_lv_id: software_lv_id,
+					studiensemester_kurzbz: this.selectedStudiensemester
+				})
+				.then((result) => this.reloadTabulator())
+				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
+				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
 		calculateByGroupHeader(value, count, data, calcParams){
 			// Extract the values for the current group
@@ -169,6 +221,17 @@ export default {
 
 			// Reset data
 			this.table.setData();
+		},
+		reloadTabulator() {
+			if (this.$refs.softwareanforderungTable.tabulator !== null && this.$refs.softwareanforderungTable.tabulator !== undefined)
+			{
+				for (let option in this.tabulatorOptions)
+				{
+					if (this.$refs.softwareanforderungTable.tabulator.options.hasOwnProperty(option))
+						this.$refs.softwareanforderungTable.tabulator.options[option] = this.tabulatorOptions[option];
+				}
+				this.$refs.softwareanforderungTable.reloadTable();
+			}
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungTable.tabulator;
