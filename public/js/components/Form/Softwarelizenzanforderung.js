@@ -195,7 +195,7 @@ export default {
 			})
 
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvZuordnungen', postData)
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvs', postData)
 				.then( result => {
 					if (result.data.length > 0)
 					{
@@ -223,12 +223,12 @@ export default {
 		},
 		flagLvsNotExistingInVorrueckStudiensemester(){
 			let postData = {
-				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id),
-				studiensemester_kurzbz: this.vorrueckStudiensemester
+				studiensemester_kurzbz: this.vorrueckStudiensemester,
+				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id)
 			}
 
 			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStudienplan', postData)
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', postData)
 				.then( result => result.data)
 				.then (data =>
 				{

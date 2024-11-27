@@ -97,9 +97,8 @@ export default {
 			// Reset table data
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
-					'/api/frontend/v1/education/Lehrveranstaltung/getTemplateLvTree' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester +
-					'&berechtigung=' + BERECHTIGUNG_SOFTWAREANFORDERUNG
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests' +
+					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				),
 			);
 		},
@@ -112,9 +111,8 @@ export default {
 			// Set table data
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
-					'/api/frontend/v1/education/Lehrveranstaltung/getTemplateLvTree' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester +
-					'&berechtigung=' + BERECHTIGUNG_SOFTWAREANFORDERUNG
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests' +
+					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				),
 			);
 

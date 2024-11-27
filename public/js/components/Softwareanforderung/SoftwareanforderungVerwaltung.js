@@ -107,7 +107,7 @@ export default {
 								button.innerHTML = '<i class="fa fa-xmark"></i>';
 								button.disabled = this.bearbeitungIsGesperrt;
 								button.addEventListener('click', () =>
-									this.deleteSwLvZuordnung(cell.getRow().getIndex())
+									this.deleteSwLvs(cell.getRow().getIndex())
 								);
 								container.append(button);
 
@@ -133,7 +133,7 @@ export default {
 			// Reset table data
 			this.table
 				.setData(CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvZuordnungenBerechtigtByLvOe' +
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester))
 				.then(() => this.checkBearbeitungIsGesperrt() );
 		},
@@ -150,11 +150,11 @@ export default {
 			}
 
 		},
-		async deleteSwLvZuordnung(software_lv_id){
+		async deleteSwLvs(software_lv_id){
 			if (!await this.$fhcAlert.confirmDelete()) return;
 
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/delete', {
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvs', {
 					software_lv_id: software_lv_id,
 					studiensemester_kurzbz: this.selectedStudiensemester
 				})
@@ -185,7 +185,7 @@ export default {
 			// Set table data
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvZuordnungenBerechtigtByLvOe' +
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				)
 			);

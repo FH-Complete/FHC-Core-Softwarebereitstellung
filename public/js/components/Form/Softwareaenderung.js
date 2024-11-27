@@ -29,7 +29,7 @@ export default {
 		};
 	},
 	methods: {
-		updateSoftware() {
+		updateSwLvs() {
 
 			// Return if no SW is selected
 			this.errorMsg = null;
@@ -44,7 +44,7 @@ export default {
 
 			// Update Software
 			if (this.$refs.form) {
-				let apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateSoftware';
+				let apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateSwLvs';
 
 				this.$refs.form
 					.post(apiUrl, postData)
@@ -233,7 +233,7 @@ export default {
 				</template>
 				<template #footer>
 					<button type="button" class="btn btn-primary" 
-						@click="updateSoftware">
+						@click="updateSwLvs">
 						{{ modalTitel }}
 					</button>
 				</template>

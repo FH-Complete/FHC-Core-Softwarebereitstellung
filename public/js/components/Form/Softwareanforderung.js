@@ -68,14 +68,14 @@ export default {
 				let payload = {};
 
 				if (this.requestModus === 'tpl') {
-					apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSoftwareByTemplate';
+					apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSwRequestByTpl';
 					payload = {
 						postData: postData,
 						template: this.selectedTemplate // Additionally add template data
 					};
 				}
 				else {
-					apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSoftwareByLvs';
+					apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSwRequestByLvs';
 					payload = postData;
 				}
 
@@ -313,7 +313,7 @@ export default {
 		},
 		flagExistingSwLvZuordnungen(){
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvZuordnungen', this.formData)
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvs', this.formData)
 				.then( result => {
 					if (result.data.length > 0)
 					{
@@ -336,12 +336,12 @@ export default {
 		},
 		flagBerechtigtOnStgOe(){
 			let postData = {
-				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id),
-				studiensemester_kurzbz: this.selectedStudiensemester
+				studiensemester_kurzbz: this.selectedStudiensemester,
+				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id)
 			}
 
 			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStudienplan', postData)
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', postData)
 				.then( result => result.data)
 				.then (data =>
 				{

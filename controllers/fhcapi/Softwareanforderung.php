@@ -18,20 +18,21 @@ class Softwareanforderung extends FHCAPI_Controller
 	{
 		parent::__construct(
 			array(
-				'getSwLvZuordnungenBerechtigtByLvOe' => 'extension/software_bestellen:rw',
-				'getSwLvZuordnungenBerechtigtByStgOe' => 'extension/software_bestellen:rw',
-				'saveSoftwareByLvs' => 'extension/software_bestellen:rw',
-				'saveSoftwareByTemplate' => 'extension/software_bestellen:rw',
-				'updateSoftware' => 'extension/software_bestellen:rw',
+				'getSwLvsRequestedByLv' => 'extension/software_bestellen:rw',
+				'getSwLvsRequestedByTpl' => 'extension/software_bestellen:rw',
+				'updateSwLvs' => 'extension/software_bestellen:rw',
+				'deleteSwLvs' => 'extension/software_bestellen:rw',
+				'checkAndGetExistingSwLvs' => 'extension/software_bestellen:rw',
+				'getLvsByStgOe' => 'extension/software_bestellen:rw',
+				'getLvsForTplRequests' => 'extension/software_bestellen:rw',
+				'saveSwRequestByLvs' => 'extension/software_bestellen:rw',
+				'saveSwRequestByTpl' => 'extension/software_bestellen:rw',
 				'updateLizenzanzahl' => 'extension/software_bestellen:rw',
-				'checkAndGetExistingSwLvZuordnungen' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
 				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
-				'getLvsByStudienplan' => 'extension/software_bestellen:rw',
 				'getOtoboUrl' => 'extension/software_bestellen:rw',
-				'delete' => 'extension/software_bestellen:rw',
 				'checkIfBearbeitungIsGesperrt' => 'extension/software_bestellen:rw'
 			)
 		);
@@ -59,17 +60,21 @@ class Softwareanforderung extends FHCAPI_Controller
 	// -----------------------------------------------------------------------------------------------------------------
 	// Public methods
 
-	// Get all Software-Lehrveranstaltung-Zuordnungen of selected Studiensemester and Organisationseinheiten
-	// the user has permission to view.
-	public function getSwLvZuordnungenBerechtigtByLvOe(){
+	/**
+	 * Get all Software-Lehrveranstaltung-Zuordnungen of selected Studiensemester and Organisationseinheiten
+	 * the user has permission to view. Permission is checked against lv oes.
+	 */
+	public function getSwLvsRequestedByTpl(){
 		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$oe_permissions = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$oe_permissions) $oe_permissions = [];
+		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
+		if(!$entitledOes) $entitledOes = [];
 
 		// Get all Software-Lehrveranstaltung-Zuordnungen
-		$result = $this->SoftwareLvModel->getSwLvZuordnungen(
+		$result = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studiensemester_kurzbz'),
-			$oe_permissions
+			$entitledOes,
+			null,
+			true
 		);
 
 		// Return
@@ -77,18 +82,67 @@ class Softwareanforderung extends FHCAPI_Controller
 		$this->terminateWithSuccess($data);
 	}
 
-	// Get all Software-Lehrveranstaltung-Zuordnungen of selected Studiensemester and Organisationseinheiten
-	// the user has permission to view.
-	public function getSwLvZuordnungenBerechtigtByStgOe(){
+	/**
+	 * Get all Software-Lehrveranstaltung-Zuordnungen of selected Studiensemester and Organisationseinheiten
+	 * the user has permission to view. Permission is checked against lv's stg oes.
+	 */
+	public function getSwLvsRequestedByLv(){
 		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$oe_permissions = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$oe_permissions) $oe_permissions = [];
+		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
+		if(!$entitledOes) $entitledOes = [];
 
 		// Get all Software-Lehrveranstaltung-Zuordnungen
-		$result = $this->SoftwareLvModel->getSwLvZuordnungen(
+		$result = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studiensemester_kurzbz'),
-			$oe_permissions,
-			'stg'
+			null,
+			$entitledOes,
+			false
+		);
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
+
+	/**
+	 * Get all Lehrveranstaltungen of a given Studiensemester limited to
+	 * the OEs for which the user has the necessary permissions
+	 */
+	public function getLvsByStgOe()
+	{
+		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
+		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
+		if(!$entitledOes) $entitledOes = [];
+
+		// Get all Lvs
+		// Filter query by studiensemester and permitted oes
+		$result = $this->LehrveranstaltungModel->getLvs(
+			$this->input->get('studiensemester_kurzbz'),
+			null,
+			$entitledOes,	// check against stg oes
+			$this->input->get('lv_ids') ?  $this->input->get('lv_ids') : null  // Set to null if not provided
+		);
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
+
+	/**
+	 * Get all Lehrveranstaltungen of a given Studiensemester limited to
+	 * the OEs for which the user has the necessary permissions
+	 */
+	public function getLvsForTplRequests()
+	{
+		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
+		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
+		if(!$entitledOes) $entitledOes = [];
+
+		// Get all Lvs
+		// Filter query by studiensemester and permitted oes
+		$result = $this->LehrveranstaltungModel->getTemplateLvTree(
+			$this->input->get('studiensemester_kurzbz'),
+			$entitledOes
 		);
 
 		// Return
@@ -99,12 +153,12 @@ class Softwareanforderung extends FHCAPI_Controller
 	/**
 	 * Save one or more Software-Lehrveranstaltung-Zuordnungen
 	 */
-	public function saveSoftwareByLvs(){
+	public function saveSwRequestByLvs(){
 
 		$this->_validateLizenzanzahl($this->input->post());
 
 		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->_checkAndGetExistingSwLvZuordnungen($this->input->post());
+		$result = $this->_checkAndGetExistingSwLvs($this->input->post());
 
 		// Return if at least one SW LV Zuordnung exists
 		if(count($result) > 0)
@@ -126,14 +180,14 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * Save one or more LV-Template-SW Zuordnungen and also their Lehrveranstaltungen-SW-Zuordnungen.
 	 * LV-Templates are saved with lizenzanzahl null.
 	 */
-	public function saveSoftwareByTemplate(){
+	public function saveSwRequestByTpl(){
 
 		$this->_validateLizenzanzahl($this->input->post('postData'));
 
 		$lehrveranstaltung_template_id =  $this->input->post('template')['lehrveranstaltung_id'];
 
 		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->_checkAndGetExistingSwLvZuordnungen($this->input->post('postData'));
+		$result = $this->_checkAndGetExistingSwLvs($this->input->post('postData'));
 
 		// Return if at least one SW LV Zuordnung exists
 		if(count($result) > 0)
@@ -202,7 +256,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * If given software_lv_id is a template, all zugehoerige Lvs are retrieved and SW is changed for all.
 	 * If given software_lv_id is standalone lv, SW is changed for this lv.
 	 */
-	public function updateSoftware(){
+	public function updateSwLvs(){
 		$software_lv_id = $this->input->post('software_lv_id');
 		$updated_software_id = $this->input->post('software_id');
 		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
@@ -221,7 +275,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		}
 
 		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->_checkAndGetExistingSwLvZuordnungen([
+		$result = $this->_checkAndGetExistingSwLvs([
 			[
 				'lehrveranstaltung_id' => $lehrveranstaltung_id,
 				'software_id' => $updated_software_id,
@@ -301,73 +355,13 @@ class Softwareanforderung extends FHCAPI_Controller
 	}
 
 	/**
-	 * Check given selections if already exist and returns existing Software-Lv-Zuordnungen.
+	 * Deletes requested Software for given Template Lvs or standalone LV after some checks:
+	 * No update if Bearbeitung is gesperrt.
+	 * No update if SW is already assigend.
+	 * If given software_lv_id is a template, all zugehoerige Lvs are retrieved and SW is deleted for all.
+	 * If given software_lv_id is standalone lv, SW is deleted for this lv.
 	 */
-	public function checkAndGetExistingSwLvZuordnungen(){
-
-		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->_checkAndGetExistingSwLvZuordnungen($this->input->post());
-
-		// On success
-		$this->terminateWithSuccess($result);
-	}
-
-	/**
-	 * Autocomplete Software Suggestions.
-	 * @return void
-	 */
-	public function autocompleteSwSuggestions($query = '')
-	{
-		$result = $this->SoftwareModel->getAutocompleteSuggestions(
-			$query,
-			self::NOT_ZUORDENBARE_STATI
-		);
-		// Return
-		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data);
-	}
-
-	/**
-	 * Autocomplete Lehrveranstaltungen Suggestions
-	 * @return void
-	 */
-	public function autocompleteLvSuggestionsByStudsem($query = '')
-	{
-		$query = strtolower(urldecode($query));
-
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$oe_permissions = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$oe_permissions) $oe_permissions = [];
-
-		// Get results for given lv search string
-		// Filter query by studiensemester and permitted oes
-		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
-		$result = $this->LehrveranstaltungModel->getAutocompleteSuggestions(
-			$query,
-			$this->input->get('studiensemester_kurzbz'),
-			$oe_permissions,
-			'lv'
-		);
-
-		// Return
-		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data);
-	}
-
-	public function getOtoboUrl()
-	{
-		if ($this->config->item('otobo_url'))
-		{
-			$this->terminateWithSuccess($this->config->item('otobo_url'));
-		}
-		else
-		{
-			$this->terminateWithError($this->p->t('ui', 'errorUnbekannteUrl'));
-		}
-
-	}
-	
-	public function delete(){
+	public function deleteSwLvs(){
 		$software_lv_id = $this->input->post('software_lv_id');
 		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
 
@@ -388,7 +382,7 @@ class Softwareanforderung extends FHCAPI_Controller
 			$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
 			$software_id = getData($result)[0]->software_id;
 		}
-		
+
 		// Check if Lehrveranstaltung is a Quellkurs
 		$result = $this->LehrveranstaltungModel->checkIsTemplate($lehrveranstaltung_id);
 		$isTemplate = $this->getDataOrTerminateWithError($result);
@@ -434,12 +428,79 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Delete software_lv_ids
 		$deleted = [];
 		foreach ($deleteSoftwareLvIds as $software_lv_id) {
-			 $this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]);
+			$this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]);
 
-			 $deleted[]= $software_lv_id;
+			$deleted[]= $software_lv_id;
 		}
 
 		$this->terminateWithSuccess($deleted);
+	}
+
+	/**
+	 * Check given selections if already exist and returns existing Software-Lv-Zuordnungen.
+	 */
+	public function checkAndGetExistingSwLvs(){
+
+		// Check if posted SW LV Zuordnungen already exists
+		$result = $this->_checkAndGetExistingSwLvs($this->input->post());
+
+		// On success
+		$this->terminateWithSuccess($result);
+	}
+
+	/**
+	 * Autocomplete Software Suggestions.
+	 * @return void
+	 */
+	public function autocompleteSwSuggestions($query = '')
+	{
+		$result = $this->SoftwareModel->getAutocompleteSuggestions(
+			$query,
+			self::NOT_ZUORDENBARE_STATI
+		);
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
+
+	/**
+	 * Autocomplete Lehrveranstaltungen Suggestions
+	 * @return void
+	 */
+	public function autocompleteLvSuggestionsByStudsem($query = '')
+	{
+		$query = strtolower(urldecode($query));
+
+		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
+		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
+		if(!$entitledOes) $oe_permissions = [];
+
+		// Get results for given lv search string
+		// Filter query by studiensemester and permitted oes
+		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
+		$result = $this->LehrveranstaltungModel->getAutocompleteSuggestions(
+			$query,
+			$this->input->get('studiensemester_kurzbz'),
+			$entitledOes,
+			'lv'
+		);
+
+		// Return
+		$data = $this->getDataOrTerminateWithError($result);
+		$this->terminateWithSuccess($data);
+	}
+
+	public function getOtoboUrl()
+	{
+		if ($this->config->item('otobo_url'))
+		{
+			$this->terminateWithSuccess($this->config->item('otobo_url'));
+		}
+		else
+		{
+			$this->terminateWithError($this->p->t('ui', 'errorUnbekannteUrl'));
+		}
+
 	}
 
 	public function checkIfBearbeitungIsGesperrt(){
@@ -474,31 +535,6 @@ class Softwareanforderung extends FHCAPI_Controller
 		$this->terminateWithSuccess($data[0]->studiensemester_kurzbz);
 	}
 
-	/**
-	 * Get all Lehrveranstaltungen of a given Studiensemester limited to
-	 * the OEs for which the user has the necessary permissions
-	 */
-	public function getLvsByStudienplan()
-	{
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$oe_permissions = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$oe_permissions) $oe_permissions = [];
-
-		// Get all Lvs
-		// Filter query by studiensemester and permitted oes
-		$result = $this->LehrveranstaltungModel->getLvsByStudienplan(
-			$this->input->get('studiensemester_kurzbz'),
-			$oe_permissions,
-			'lv',
-			$this->input->get('lv_ids') ?  $this->input->get('lv_ids') : null,  // Set to null if not provided
-			'stg'	// check oe permissions against stg oe of the lv
-		);
-
-		// Return
-		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data);
-	}
-
 	// -----------------------------------------------------------------------------------------------------------------
 	// Private methods
 
@@ -517,7 +553,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	 *
 	 * @return array
 	 */
-	private function _checkAndGetExistingSwLvZuordnungen($data){
+	private function _checkAndGetExistingSwLvs($data){
 
 		$existingZuordnungen = [];
 
