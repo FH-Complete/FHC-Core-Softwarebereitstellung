@@ -34,9 +34,9 @@ export default {
 	data() {
 		return {
 			tabs: {
-				softwareanforderung: {
+				softwarebereitstellungUebersicht: {
 					title: Vue.computed(() => this.$p.t('global/softwarebereitstellung') + ' ' + this.$p.t('global/uebersicht')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Softwareanforderung.js'
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js'
 				},
 				softwareanforderungNachLvTemplate: {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachQuellkurs')),
