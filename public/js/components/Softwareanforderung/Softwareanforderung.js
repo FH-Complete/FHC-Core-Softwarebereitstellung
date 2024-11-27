@@ -2,12 +2,14 @@ import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import SoftwarelizenzanforderungForm from "../Form/Softwarelizenzanforderung.js";
+import SoftwareaenderungForm from "../Form/Softwareaenderung.js";
 
 export default {
 	components: {
 		CoreFilterCmpt,
 		CoreFormInput,
-		SoftwarelizenzanforderungForm
+		SoftwarelizenzanforderungForm,
+		SoftwareaenderungForm
 	},
 	inject: ['STUDIENSEMESTER_DROPDOWN_STARTDATE'],
 	data: function() {
@@ -320,6 +322,8 @@ export default {
 	
 	<!-- Form -->
 	<softwarelizenzanforderung-form ref="softwarelizenzanforderungForm" @form-closed="onFormClosed"></softwarelizenzanforderung-form>
+
+	<softwareaenderung-form ref="softwareaenderungForm" @on-saved="reloadTabulator()"></softwareaenderung-form>
 </div>
 `
 };
