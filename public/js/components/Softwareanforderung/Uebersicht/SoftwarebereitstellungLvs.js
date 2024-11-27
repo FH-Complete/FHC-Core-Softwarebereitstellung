@@ -45,9 +45,6 @@ export default {
 				groupToggleElement:"header", //toggle group on click anywhere in the group header
 				groupClosedShowCalcs:true, //show column calculations when a group is closed
 				groupStartOpen: self.cbGroupStartOpen,
-				groupHeader: (value, count, data, group) => {
-					return self.calculateByGroupHeader(value, count, data, group);
-				},
 				selectable: true,
 				selectableRangeMode: 'click',
 				persistence:{
@@ -188,23 +185,6 @@ export default {
 				}])
 				.then(() => this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert')))
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
-		},
-		calculateByGroupHeader(value, count, data, calcParams){
-			// Extract the values for the current group
-			const values = data.map(item => item.anzahl_lizenzen);
-
-			// Sum Lizenzanzahl of all Lehrveranstaltungen to get total sum by OE
-			let oeLizenzanzahl = values.reduce((sum, value) => sum + value, 0);
-
-			// Calculate OE percentage share of allover total Lizenzanzahl
-			let percentageShare = (oeLizenzanzahl / this.totalLizenzanzahl * 100).toFixed(2);
-			percentageShare = isNaN(percentageShare) ? '0' : percentageShare;
-
-			// Return Bootstrap 5 div
-			return `
-			  <div class="d-inline fw-normal">${value}</div>
-			  <div class="d-inline float-end fw-normal">Anteil KF: ${percentageShare}%  |  \u2211 ${oeLizenzanzahl}</div>
-		  	`;
 		},
 		onChangeStudiensemester(){
 			// Reset table data
