@@ -158,11 +158,9 @@ export default {
 					software_lv_id: software_lv_id,
 					studiensemester_kurzbz: this.selectedStudiensemester
 				})
-				.then((result) => {
-					this.reloadTabulator();
-					this.$fhcAlert.alertSuccess('Gelöscht');
-				})
-				.catch((error) => {this.$fhcAlert.handleSystemError(error);});
+				.then((result) => this.reloadTabulator())
+				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
+				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
 		async checkBearbeitungIsGesperrt(){
 			await this.$fhcApi
