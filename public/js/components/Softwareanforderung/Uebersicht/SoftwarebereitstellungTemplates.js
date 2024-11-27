@@ -31,12 +31,6 @@ export default {
 		cbGroupStartOpen(newVal){
 			this.table.setGroupStartOpen(newVal);
 			this.table.setData();
-		},
-		bearbeitungIsGesperrt(newVal){
-			// Redraw the table to disable/enable action buttons
-			if (this.table) {
-				this.table.redraw(true);
-			}
 		}
 	},
 	computed: {
@@ -174,8 +168,8 @@ export default {
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkIfBearbeitungIsGesperrt', {
 					studiensemester_kurzbz: this.selectedStudiensemester
 				})
-				.then((result) => result.data)
-				.then((data) => this.bearbeitungIsGesperrt = data.retval )
+				.then((result) => this.bearbeitungIsGesperrt = result.data)
+				.then(() => this.table.redraw(true) ) // Redraw the table to disable/enable action buttons
 				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
 		async onTableBuilt(){

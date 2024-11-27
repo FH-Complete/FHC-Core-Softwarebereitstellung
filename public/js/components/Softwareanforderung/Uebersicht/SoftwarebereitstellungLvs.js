@@ -19,6 +19,7 @@ export default {
 			selectedStudiensemester: '',
 			totalLizenzanzahl: 0,
 			cbGroupStartOpen: true,	// checkbox group organisationseinheit start open
+			bearbeitungIsGesperrt: false
 		}
 	},
 	watch: {
@@ -207,12 +208,12 @@ export default {
 		},
 		onChangeStudiensemester(){
 			// Reset table data
-			this.table.setData(
-				CoreRESTClient._generateRouterURI(
+			this.table
+				.setData(CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			);
+				))
+				.then(() => this.checkBearbeitungIsGesperrt());
 		},
 		openModalChangeLicense(){
 			let selectedData = this.table.getSelectedData();
@@ -254,11 +255,22 @@ export default {
 				this.$refs.softwareanforderungTable.reloadTable();
 			}
 		},
+		async checkBearbeitungIsGesperrt(){
+			await this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkIfBearbeitungIsGesperrt', {
+					studiensemester_kurzbz: this.selectedStudiensemester
+				})
+				.then((result) => this.bearbeitungIsGesperrt = result.data)
+				.then(() => this.table.redraw(true) ) // Redraw the table to disable/enable action buttons
+				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
+		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungTable.tabulator;
 
 			// Await Studiensemester
 			await this.loadAndSetStudiensemester();
+
+			await this.checkBearbeitungIsGesperrt();
 
 			// Set table data
 			this.table.setData(
