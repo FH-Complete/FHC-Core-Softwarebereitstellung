@@ -34,9 +34,13 @@ export default {
 	data() {
 		return {
 			tabs: {
-				softwareanforderung: {
-					title: Vue.computed(() => this.$p.t('global/softwareanforderung') + ' ' + this.$p.t('global/uebersicht')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Softwareanforderung.js'
+				softwarebereitstellungUebersicht: {
+					title: Vue.computed(() => this.$p.t('global/softwarebereitstellung') + ' ' + this.$p.t('global/uebersicht')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js'
+				},
+				softwareanforderungNachLvTemplate: {
+					title: Vue.computed(() => this.$p.t('global/anforderungNachQuellkurs')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLvTemplate.js'
 				},
 				softwareanforderungNachLv: {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
@@ -57,7 +61,7 @@ export default {
 	<!-- Navigation component -->
 	<core-navigation-cmpt></core-navigation-cmpt>
 	
-	<core-base-layout :title="$p.t('global/softwareanforderung')" :subtitle="$p.t('global/softwareanforderungSubtitle')">
+	<core-base-layout :title="$p.t('global/softwarebereitstellung')" :subtitle="$p.t('global/softwarebereitstellungSubtitle')">
 		<template #main>
 			<core-tabs ref="tabs" :config="tabs"></core-tabs>									
 		</template>

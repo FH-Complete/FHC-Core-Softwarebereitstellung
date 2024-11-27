@@ -47,7 +47,28 @@ export default {
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, minWidth: 250},
 					{title: 'LE-Gruppen', field: 'lehreinheitgruppen_bezeichnung', headerFilter: true, width: 200},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false, minWidth: 80},
-					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200}
+					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200},
+					{
+						title: 'Standardisiert',
+						field: 'lehrveranstaltung_template_id',
+						formatter: function(cell) {
+							const value = cell.getValue();
+							return value !== null && value !== undefined && value !== ""
+								? '<i class="fa fa-check text-success"></i>'
+								: '<i class="fa fa-xmark text-danger"></i>';
+						},
+						headerFilter: 'tickCross',
+						headerFilterParams:{ tristate: true },
+						headerFilterFunc: function(headerValue, rowValue) {
+							return headerValue === ""
+								? true // Show all
+								: headerValue === true
+									? (rowValue !== null && rowValue !== undefined && rowValue !== "") // Show numbers
+									: (rowValue === null || rowValue === ""); // Show null
+						},
+						width: 70,
+						hozAlign: 'center'
+					}
 				]
 			}
 		}
@@ -80,7 +101,7 @@ export default {
 			// Reset table data
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLehrveranstaltungen' +
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				),
 			);
@@ -94,7 +115,7 @@ export default {
 			// Set table data
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLehrveranstaltungen' +
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				),
 			);
@@ -111,7 +132,7 @@ export default {
 	template: `
 <div class="softwareanforderungNachLv overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/swAnforderungUeberAuswahlVonLvs') }}</div>
+		<div class="col-10 h4">{{ $p.t('global/swAnforderungFuerEinzelneLvs') }}</div>
 		<div class="col-2 ms-auto">
 			<core-form-input
 				type="select"

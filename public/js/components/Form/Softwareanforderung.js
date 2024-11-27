@@ -26,6 +26,7 @@ export default {
 			selectedStudiensemester: '',
 			selectedLvs: [],
 			selectedSw: [],
+			selectedTemplate: {},
 			formData: [],
 			requestModus: '' // 'sw' if request by software, 'lv' if request by lv
 		};
@@ -62,9 +63,24 @@ export default {
 			}
 
 			// Save SW-LV-Zuordnungen
-			if (this.$refs.form)
+			if (this.$refs.form) {
+				let apiUrl = '';
+				let payload = {};
+
+				if (this.requestModus === 'tpl') {
+					apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSwRequestByTpl';
+					payload = {
+						postData: postData,
+						template: this.selectedTemplate // Additionally add template data
+					};
+				}
+				else {
+					apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSwRequestByLvs';
+					payload = postData;
+				}
+
 				this.$refs.form
-					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/saveSoftwareLv', postData)
+					.post(apiUrl, payload)
 					.then(result => {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
 
@@ -83,6 +99,37 @@ export default {
 
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
+			}
+		},
+		openModalLvTemplateToSw(selectedData, selectedStudiensemester) {
+			this.requestModus = 'tpl';
+
+			// Reset form
+			this.resetForm();
+
+			// Prefill software select with data of table selection
+			if (Array.isArray(selectedData)) {
+				// Get LV Templates from selected data
+				this.selectedTemplate = selectedData.find(data => data.lehrtyp_kurzbz == 'tpl');
+
+				// Get LVs from selected data
+				this.selectedLvs = selectedData
+					.filter(data => data.lehrtyp_kurzbz != 'tpl')
+					.map(data => ({
+						'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
+						'lehrveranstaltung_id': data.lehrveranstaltung_id,
+						'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
+						'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
+						'studiengang_kz': data.studiengang_kz,
+						'stg_bezeichnung': data.stg_bezeichnung
+					}));
+			}
+
+			// Load Studiensemester to populate dropdown
+			this.loadAndSetStudiensemester(selectedStudiensemester);
+
+			// Open modal
+			this.$refs.modalContainer.show();
 		},
 		openModalLvToSw(selectedData, selectedStudiensemester) {
 			this.requestModus = 'lv';
@@ -95,7 +142,9 @@ export default {
 				this.selectedLvs = selectedData.map(data => ({
 					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
+					'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
 					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
+					'studiengang_kz': data.studiengang_kz,
 					'stg_bezeichnung': data.stg_bezeichnung
 				}));
 			}
@@ -220,6 +269,7 @@ export default {
 			this.selectedStudiensemester = this.studiensemester.length > 0 ? this.studiensemester[0].studiensemester_kurzbz : '';
 			this.selectedLvs = [];
 			this.selectedSw = [];
+			this.selectedTemplate = {};
 			this.isLvSwRowsVisible = false;
 		},
 		generateSwLvRows(){
@@ -233,26 +283,37 @@ export default {
 						studiensemester_kurzbz: this.selectedStudiensemester,
 						lv_oe_bezeichnung: lv.lv_oe_bezeichnung,
 						lehrveranstaltung_id: lv.lehrveranstaltung_id,
+						lehrveranstaltung_template_id: lv.lehrveranstaltung_template_id,
 						lv_bezeichnung: lv.lv_bezeichnung,
+						studiengang_kz: lv.studiengang_kz,
 						stg_bezeichnung: lv.stg_bezeichnung,
 						software_id: sw.software_id,
 						software_kurzbz: sw.software_kurzbz,
 						lizenzanzahl: 0,  // Default
-						zuordnungExists: false // Default
+						zuordnungExists: false, // Default,
+						stgOeBerechtigt: true
 					})
 				}
 			}
 
 			// Flag if selection already exists
-			this.flagAndSortExistingSwLvZuordnungen(this.formData);
+			this.flagExistingSwLvZuordnungen();
+
+			if (this.requestModus === 'tpl')
+			{
+				this.flagBerechtigtOnStgOe();
+			}
+
+			// Sort formData
+			this.sortFormData();
 
 			// Display formData as rows
 			this.isLvSwRowsVisible = true;
 
 		},
-		flagAndSortExistingSwLvZuordnungen(){
+		flagExistingSwLvZuordnungen(){
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvZuordnungen', this.formData)
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvs', this.formData)
 				.then( result => {
 					if (result.data.length > 0)
 					{
@@ -269,15 +330,52 @@ export default {
 								}
 							});
 						});
-
-						// Sort first where SW-LV Zuordnung does not exist
-						this.formData.sort((a, b) => a.zuordnungExists === b.zuordnungExists
-							? 0
-							: a.zuordnungExists ? 1 : -1
-						);
 					}
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
+		},
+		flagBerechtigtOnStgOe(){
+			let postData = {
+				studiensemester_kurzbz: this.selectedStudiensemester,
+				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id)
+			}
+
+			this.$fhcApi
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', postData)
+				.then( result => result.data)
+				.then (data =>
+				{
+					this.formData.forEach(fd => {
+						const match = data.find(item => item.studiengang_kz === fd.studiengang_kz);
+
+						if (!match) {
+							fd.stgOeBerechtigt = false;
+						}
+					});
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
+		},
+		sortFormData(){
+			this.formData.sort((a, b) => {
+
+				// Sort by zuordnungExists first
+				if (a.zuordnungExists !== b.zuordnungExists) {
+					return a.zuordnungExists ? -1 : 1;
+				}
+
+				// Sort by software_kurzbz second (case insensitive)
+				const softwareA = a.software_kurzbz.toUpperCase();
+				const softwareB = b.software_kurzbz.toUpperCase();
+				if (softwareA < softwareB) return -1;
+				if (softwareA > softwareB) return 1;
+
+				// Sort by stgOeBerechtigt third (false should be last)
+				if (a.stgOeBerechtigt !== b.stgOeBerechtigt) {
+					return a.stgOeBerechtigt === false ? -1 : 1;
+				}
+
+				return 0; // In case all comparisons are equal
+			});
 		},
 		onClickChangeTab(tab){
 			this.$refs.modalContainer.hide();
@@ -299,7 +397,7 @@ export default {
 								v-model="selectedStudiensemester"
 								name="studiensemester"
 								:label="$p.t('lehre', 'studiensemester')"
-								:disabled="requestModus === 'lv'"
+								:disabled="requestModus === 'lv' || requestModus === 'tpl'"
 								@change="onStudiensemesterChange">
 								<option 
 								v-for="(studSem, index) in studiensemester"
@@ -309,7 +407,16 @@ export default {
 								</option>
 							</core-form-input>
 						</div>
-						<div class="col-10 mb-3">
+						<div class="col-2 mb-3 align-self-start" v-if="requestModus == 'tpl'">
+						 	<core-form-input
+								v-model="selectedTemplate.lv_bezeichnung"
+								name="selectedTemplate"
+								:label="$p.t('global/standardLvTemplate')"
+								readonly
+								>
+							</core-form-input>
+						</div>
+						<div class="col-8 mb-3">
 							<core-form-input
 								type="autocomplete"
 								v-model="selectedLvs"
@@ -322,6 +429,7 @@ export default {
 								dropdown
 								multiple
 								:suggestions="lvSuggestions"
+								:disabled="requestModus == 'tpl'"
 								@complete="searchLv">
 							</core-form-input>
 						</div>
@@ -338,7 +446,7 @@ export default {
 								@complete="searchSw"
 								:suggestions="swSuggestions">
 							</core-form-input>
-							<div v-show="requestModus === 'lv'">
+							<div v-show="requestModus === 'lv' || requestModus === 'tpl'">
 								<a class="link-secondary" href="#" @click="onClickChangeTab('softwareanforderungNachSw')">
 									<small>SW nicht gefunden? Über 'Anforderung nach Software' suchen</small>
 								</a>
@@ -346,6 +454,11 @@ export default {
 						</div>
 					</div>
 					<div class="fhc-hr mt-n-3" v-if="isLvSwRowsVisible"></div>
+					<div class="row-col" v-if="isLvSwRowsVisible && requestModus == 'tpl'">
+						<div class="alert alert-info" role="alert">
+							Bitte geben Sie die User-Anzahl an; für Lehrveranstaltungen außerhalb Ihres Kompetenzbereichs wird die User-Anzahl auf 0 gesetzt, und die Softwarebeauftragten werden informiert, um diese anzupassen.	
+						</div>
+					</div>
 					<div class="row" v-if="isLvSwRowsVisible" v-for="(fd, index) in formData" :key="index">
 							<div class="col-2 mb-2">
 								<core-form-input
@@ -355,6 +468,7 @@ export default {
 									class="form-control-sm"
 									readonly>
 								</core-form-input>
+								<div class="form-text text-danger" v-if="!fd.stgOeBerechtigt">{{ $p.t('ui/nurLeseberechtigung') }}</div>
 							</div>
 							<div class="col-4 mb-2">
 								<core-form-input
@@ -381,7 +495,7 @@ export default {
 								:name="'lizenzanzahl' + index"
 								class="form-control-sm"
 								:label="index === 0 ? $p.t('global', 'userAnzahl') : ''"
-								:disabled="fd.zuordnungExists"
+								:disabled="fd.zuordnungExists || !fd.stgOeBerechtigt"
 								:tabindex="index + 1">
 							</core-form-input>
 							<div class="form-text text-danger" v-if="fd.zuordnungExists">{{ $p.t('global/bereitsAngefordert') }}</div>

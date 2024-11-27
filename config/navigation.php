@@ -3,19 +3,19 @@
 $config['navigation_header']['*']['Lehre']['children']['SoftwareManagement'] = array(
 	'link' => site_url('extensions/FHC-Core-Softwarebereitstellung/SoftwareManagement'),
 	'sort' => 30,
-	'description' => 'Software Management',
+	'description' => 'Softwarebereitstellung',
 	'expand' => false,
 	'requiredPermissions' => 'extension/software_verwalten:rw'
 );
 
 // Add Side-Menu-Entry to Main Page
 $config['navigation_menu']['extensions/FHC-Core-Softwarebereitstellung/*'] = array(
-	'Softwareanforderung' => array(
+	'Softwarebereitstellung' => array(
 		'link' => site_url('extensions/FHC-Core-Softwarebereitstellung/Softwareanforderung'),
-		'description' => 'Softwareanforderung',
+		'description' => 'Softwarebereitstellung',
 		'requiredPermissions' => 'extension/software_bestellen:rw'
 	),
-	'Lizenzmanagement' => array(
+	'Softwareverwaltung' => array(
 		'link' => site_url('extensions/FHC-Core-Softwarebereitstellung/SoftwareManagement'),
 		'description' => 'Software-Lizenzmanagement',
 		'requiredPermissions' => 'extension/software_verwalten:rw'

@@ -15,6 +15,9 @@ class Softwareverwaltung extends JOB_Controller
 		$this->_ci =& get_instance();
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
+
+		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
 	}
 
 	/**
@@ -75,5 +78,51 @@ class Softwareverwaltung extends JOB_Controller
 		}
 
 		$this->logInfo('Ende Job sendMailSoftwareLizenzlaufzeitEnde');
+	}
+
+	/**
+	 * Executes multiple Softwarebereitstellung tasks and sends a single mail to Softwarebeauftragte summarizing all
+	 * completed tasks.
+	 *
+	 * 1. task: Assign software to newly added standardized LVs whose LV templates are already linked to a software.
+	 *
+	 */
+	public function execJobsAndMailToSoftwarebeauftragte(){
+
+		$this->logInfo('Start execJobsAndMailToSoftwarebeauftragte');
+
+		// Load all Studiengang OEs and add corresponding Fakultät OE
+		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+
+		// Prepare to collect all messages
+		$allMessages = [];
+
+		// 1. Task: Assign software to newly added standardized LVs
+		$newlyAssignedLvs =  $this->softwarelib->handleUnassignedStandardLvs();
+
+		if (count($newlyAssignedLvs) > 0)
+		{
+			// Group unassigned Lvs
+			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+				$newlyAssignedLvs,
+				$studiengangToFakultaetMap
+			);
+
+			// Prepare and store messages
+			$allMessages = array_merge(
+				$allMessages,
+				$this->softwarelib->prepareMessagesNewlyAssignedStandardLvs($groupedLvsByFakultaet)
+			);
+		}
+
+		// Group messages by Fakultät OE before sending mails
+		$messagesGroupedByFak = $this->softwarelib->groupMessagesByFakultaet($allMessages);
+
+		// Send emails grouped by Fakultät
+		foreach ($messagesGroupedByFak as $oe_kurzbz => $messages) {
+			$this->softwarelib->sendMailToSoftwarebeauftragte($oe_kurzbz, $messages);
+		}
+
+		$this->logInfo('End execJobsAndMailToSoftwarebeauftragte');
 	}
 }

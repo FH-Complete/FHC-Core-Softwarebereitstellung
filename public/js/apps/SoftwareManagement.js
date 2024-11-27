@@ -24,7 +24,6 @@ import Phrasen from "../../../../js/plugin/Phrasen.js";
 
 const STUDIENSEMESTER_DROPDOWN_STARTDATE = '2024-09-01'; // Dropdown starts from this studiensemester up to all future ones
 
-
 const softwareManagementApp = Vue.createApp({
 	components: {
 		SoftwareManagement,

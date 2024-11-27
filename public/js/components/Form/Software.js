@@ -596,6 +596,7 @@ export const SoftwareForm = {
 					dropdown
 					dropdown-current
 					forceSelection
+					:disabled="software.lizenzart === 'opensource'"
 					:suggestions="oeSuggestions"
 					@complete="getOeSuggestions"
 				>

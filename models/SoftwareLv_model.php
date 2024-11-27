@@ -15,11 +15,15 @@ class SoftwareLv_model extends DB_Model
 	 * Get all Software-Lehrveranstaltungs-Zuordnungen with Lizenzanzahl.
 	 * Includes information about Lehrveranstaltungen with its Stg, OE and OE-type.
 	 * Filter by Studiensemester and Organisationseinheiten if necessary.
-	 * @param $studiensemester_kurzbz	Filter by Studiensemester
-	 * @param $oes	Filter by Organisationseinheiten
+	 * @param $studiensemester_kurzbz    Filter by Studiensemester
+	 * @param null $lv_oes Filter by lv oes
+	 * @param null $stg_oes Filter by lv's stg oes
+	 * @param null | bool $assignedByTpl
+	 * If true, only SwLvs that were requested by Quellkurs are returned.
+	 * If false, only SwLvs that were requested by Lv (NOT by Quellkurs) are returned.
 	 * @return mixed
 	 */
-	public function getSwLvZuordnungen($studiensemester_kurzbz = null, $oes = null)
+	public function getSwLvs($studiensemester_kurzbz = null, $lv_oes = null, $stg_oes = null, $requestedByTpl = null)
 	{
 		$qry = '
 			SELECT 
@@ -34,8 +38,10 @@ class SoftwareLv_model extends DB_Model
 				swlv.updateamum::date,  
                 lv.orgform_kurzbz,
 				lv.semester,   
-                lv.bezeichnung AS "lv_bezeichnung",   
-				lv.oe_kurzbz AS "lv_oe_kurzbz",  
+                lv.bezeichnung AS "lv_bezeichnung", 
+			    lv.lehrtyp_kurzbz,
+				lv.oe_kurzbz AS "lv_oe_kurzbz",
+			    lv.lehrveranstaltung_template_id,
                 CASE
                     WHEN oe.organisationseinheittyp_kurzbz = \'Kompetenzfeld\' THEN (\'KF \' || oe.bezeichnung)
                     WHEN oe.organisationseinheittyp_kurzbz = \'Department\' THEN (\'DEP \' || oe.bezeichnung)
@@ -88,8 +94,15 @@ class SoftwareLv_model extends DB_Model
 				JOIN extension.tbl_softwaretyp 			sw_typ USING (softwaretyp_kurzbz)
 				JOIN public.tbl_organisationseinheit 	oe USING (oe_kurzbz)
 				JOIN public.tbl_studiengang          	stg ON stg.studiengang_kz = lv.studiengang_kz
-				JOIN public.tbl_studiengangstyp 		stgtyp ON stgtyp.typ = stg.typ
-            WHERE 1 = 1 
+				JOIN public.tbl_studiengangstyp 		stgtyp ON stgtyp.typ = stg.typ';
+
+		if (is_bool($requestedByTpl))
+		{
+			/* filter studiensemester */
+			$qry.= ' LEFT JOIN extension.tbl_software_lv swlv1 ON swlv1.lehrveranstaltung_id = lv.lehrveranstaltung_template_id AND swlv1.software_id = swlv.software_id';
+		}
+
+		$qry.= ' WHERE 1 = 1 
             ';
 
 		$params = [];
@@ -101,11 +114,30 @@ class SoftwareLv_model extends DB_Model
 			$params[]= $studiensemester_kurzbz;
 		}
 
-		if (isset($oes) && is_array($oes))
+		if ($requestedByTpl === true)
 		{
-			/* filter organisationseinheit */
-			$qry.= ' AND lv.oe_kurzbz IN ? ';
-			$params[]= $oes;
+			/* filter templates and their assigned lvs that were requested via Quellkurs  */
+			$qry.= ' AND (swlv1.software_lv_id IS NOT NULL OR lv.lehrtyp_kurzbz = \'tpl\')';
+		}
+
+		if ($requestedByTpl === false)
+		{
+			/* filter lvs that where not requested via Quellkurs */
+			$qry.= ' AND swlv1.software_lv_id IS NULL AND lv.lehrtyp_kurzbz = \'lv\'';
+		}
+
+		if (isset($lv_oes) && is_array($lv_oes))
+		{
+			/* filter by lv organisationseinheit */
+			$qry.= ' AND lv.oe_kurzbz IN ?';
+			$params[]= $lv_oes;
+		}
+
+		if (isset($stg_oes) && is_array($stg_oes))
+		{
+			/* filter by lv studiengangs organisationseinheit */
+			$qry.= ' AND stg.oe_kurzbz IN ?';
+			$params[]= $stg_oes;
 		}
 
 		return $this->execQuery($qry, $params);
@@ -118,8 +150,8 @@ class SoftwareLv_model extends DB_Model
 	 */
 	public function insertBatch($batch)
 	{
-		// Get the user UID
-		$uid = getAuthUid();
+		// If running in CLI mode, use 'system', else get the user UID
+		$uid =  php_sapi_name() === 'cli' ? 'system' : getAuthUid();
 
 		// Add 'insertvon' to each entry in the batch
 		foreach ($batch as &$item) {
@@ -222,6 +254,53 @@ class SoftwareLv_model extends DB_Model
 		';
 
 		return $this->execQuery($qry, [$software_id, $studiensemester_kurzbz_arr]);
+	}
+
+	public function getUnassignedStandardLvsByTemplate($studiensemester_kurzbz){
+		$qry = '
+			WITH CTE_ValidTemplates AS (
+				-- Get all templates that exist in tbl_software_lv and also fetch the software_id from tbl_software_lv
+				SELECT
+					lv.lehrveranstaltung_id AS tpl_lehrveranstaltung_id,
+					swlv.software_id,
+					swlv.studiensemester_kurzbz
+				FROM lehre.tbl_lehrveranstaltung lv
+				JOIN extension.tbl_software_lv swlv USING (lehrveranstaltung_id)
+    			WHERE lv.lehrtyp_kurzbz = \'tpl\'
+    			AND swlv.studiensemester_kurzbz = ?
+			),
+			CTE_MissingChildLvs AS (
+				-- Find child rows of valid templates, and join with software_id from CTE_ValidTemplates
+				SELECT 
+					lv.lehrveranstaltung_id,
+					tpl.software_id,
+					tpl.studiensemester_kurzbz
+				FROM lehre.tbl_lehrveranstaltung lv
+				JOIN CTE_ValidTemplates tpl
+					ON lv.lehrveranstaltung_template_id = tpl.tpl_lehrveranstaltung_id
+				WHERE NOT EXISTS (
+					SELECT 1
+					FROM extension.tbl_software_lv swlv
+					WHERE swlv.lehrveranstaltung_id = lv.lehrveranstaltung_id
+					AND swlv.studiensemester_kurzbz = ?
+				)
+			)
+			
+			-- Final output: Missing child lvs along with the software_id from the corresponding template
+			SELECT 
+				lv.*,
+				cte.software_id,
+				cte.studiensemester_kurzbz,
+				sw.software_kurzbz,
+				stg.oe_kurzbz AS "stg_oe_kurzbz" -- OE of LV-Stg
+			FROM lehre.tbl_lehrveranstaltung lv
+			JOIN CTE_MissingChildLvs cte USING (lehrveranstaltung_id)
+			JOIN extension.tbl_software sw USING (software_id)
+			JOIN public.tbl_studiengang stg USING (studiengang_kz)
+			ORDER BY lv.studiengang_kz;
+		';
+
+		return $this->execQuery($qry, [$studiensemester_kurzbz, $studiensemester_kurzbz]);
 	}
 
 	private function _getLanguageIndex()
