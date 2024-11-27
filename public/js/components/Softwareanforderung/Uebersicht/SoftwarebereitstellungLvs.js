@@ -99,7 +99,17 @@ export default {
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
 					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true, width: 100,
-						hozAlign: 'right', frozen: true},
+						hozAlign: 'right', frozen: true, editor:"number", editorParams:{
+							min:0,
+							max:100,
+							step:10,
+							elementAttributes:{
+								maxlength:"3",
+							},
+							selectContents:true,
+							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
+						}
+					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 80,
 						formatter: (cell, formatterParams, onRendered) => {
@@ -167,6 +177,15 @@ export default {
 				})
 				.then((result) => this.reloadTabulator())
 				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
+				.catch((error) => this.$fhcAlert.handleSystemError(error));
+		},
+		onCellEdited(cell){
+			this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateLizenzanzahl', [{
+					software_lv_id: cell.getData().software_lv_id,
+					lizenzanzahl: cell.getData().anzahl_lizenzen,
+				}])
+				.then(() => this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert')))
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
 		calculateByGroupHeader(value, count, data, calcParams){
@@ -292,7 +311,10 @@ export default {
 				reload
 				:side-menu="false"
 				:tabulator-options="tabulatorOptions"
-				:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
+				:tabulator-events="[
+					{event: 'tableBuilt', handler: onTableBuilt},
+					{event: 'cellEdited', handler: onCellEdited}
+				]"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
 				<template v-slot:actions>
 					<button class="btn btn-primary" @click="openModalChangeLicense">{{ $p.t('global/userAnzahlAendern') }}</button>

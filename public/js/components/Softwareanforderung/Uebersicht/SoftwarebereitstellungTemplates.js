@@ -79,7 +79,17 @@ export default {
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
 					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true, width: 100,
-						hozAlign: 'right', frozen: true},
+						hozAlign: 'right', frozen: true, editor:"number", editorParams:{
+							min:0,
+							max:100,
+							step:10,
+							elementAttributes:{
+								maxlength:"3",
+							},
+							selectContents:true,
+							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
+						}
+					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 80,
 						formatter: (cell, formatterParams, onRendered) => {
@@ -199,6 +209,17 @@ export default {
 			{
 				// Toggle to show/hide the selected children lvs
 				row.treeToggle();
+			}
+		},
+		onCellEdited(cell){
+			if (cell.getData().lehrtyp_kurzbz !== 'tpl') {
+				this.$fhcApi
+					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateLizenzanzahl', [{
+						software_lv_id: cell.getData().software_lv_id,
+						lizenzanzahl: cell.getData().anzahl_lizenzen,
+					}])
+					.then(() => this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert')))
+					.catch((error) => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		prepDataTreeData(data){
@@ -323,7 +344,8 @@ export default {
 				:tabulator-options="tabulatorOptions"
 				:tabulator-events="[
 					{event: 'tableBuilt', handler: onTableBuilt},
-					{event: 'rowClick', handler: onRowClick}
+					{event: 'rowClick', handler: onRowClick},
+					{event: 'cellEdited', handler: onCellEdited}
 				]">
 				<template v-slot:actions>
 					<div class="form-check form-check-inline ms-3">
