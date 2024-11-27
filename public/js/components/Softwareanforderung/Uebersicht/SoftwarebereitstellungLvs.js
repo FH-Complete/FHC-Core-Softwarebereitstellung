@@ -1,8 +1,8 @@
-import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import CoreFormInput from "../../../../../js/components/Form/Input.js";
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import SoftwarelizenzanforderungForm from "../Form/Softwarelizenzanforderung.js";
-import SoftwareaenderungForm from "../Form/Softwareaenderung.js";
+import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
+import CoreFormInput from "../../../../../../js/components/Form/Input.js";
+import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
+import SoftwarelizenzanforderungForm from "../../Form/Softwarelizenzanforderung.js";
+import SoftwareaenderungForm from "../../Form/Softwareaenderung.js";
 
 export default {
 	components: {
@@ -266,7 +266,7 @@ export default {
 <div class="softwareanforderung overflow-hidden">
 	<!-- Title and Studiensemester Dropdown-->
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/softwarebereitstellungSubtitle') }}</div>
+		<div class="col-10 h4">{{ $p.t('global/softwarebereitstellungSubtitle') }} - Für einzelne LVs</div>
 		<div class="col-2 ms-auto">
 			<core-form-input
 				type="select"

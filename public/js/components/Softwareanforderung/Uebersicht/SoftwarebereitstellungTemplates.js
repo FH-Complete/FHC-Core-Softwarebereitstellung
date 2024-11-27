@@ -1,7 +1,7 @@
-import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import CoreFormInput from "../../../../../js/components/Form/Input.js";
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
-import SoftwareaenderungForm from "../Form/Softwareaenderung.js";
+import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
+import CoreFormInput from "../../../../../../js/components/Form/Input.js";
+import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
+import SoftwareaenderungForm from "../../Form/Softwareaenderung.js";
 
 // Fields used to restructure table data for dataTree
 const idField = 'lehrveranstaltung_id';
