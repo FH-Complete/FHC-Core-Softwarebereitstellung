@@ -296,7 +296,7 @@ export default {
 	template: `
 <div class="softwareanforderungVerwaltung overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/swAnforderungUeberAuswahlVonStandardisiertenLvTemplates') }}</div>
+		<div class="col-10 h4">{{ $p.t('global/softwarebereitstellungSubtitle') }} - Für Quellkurse</div>
 		<div class="col-2 ms-auto">
 			<core-form-input
 				type="select"
@@ -318,6 +318,7 @@ export default {
 				ref="softwareanforderungVerwaltungTable"
 				uniqueId="softwareanforderungVerwaltungTable"
 				table-only
+				reload
 				:side-menu="false"
 				:tabulator-options="tabulatorOptions"
 				:tabulator-events="[
