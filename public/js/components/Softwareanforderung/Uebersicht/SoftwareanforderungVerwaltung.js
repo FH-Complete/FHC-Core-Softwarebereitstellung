@@ -6,7 +6,6 @@ import SoftwareaenderungForm from "../Form/Softwareaenderung.js";
 // Fields used to restructure table data for dataTree
 const idField = 'lehrveranstaltung_id';
 const parentIdField = 'lehrveranstaltung_template_id';
-const BERECHTIGUNG_SOFTWAREANFORDERUNG = 'extension/software_bestellen';
 
 export default {
 	components: {
