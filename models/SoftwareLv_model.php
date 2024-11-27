@@ -15,11 +15,15 @@ class SoftwareLv_model extends DB_Model
 	 * Get all Software-Lehrveranstaltungs-Zuordnungen with Lizenzanzahl.
 	 * Includes information about Lehrveranstaltungen with its Stg, OE and OE-type.
 	 * Filter by Studiensemester and Organisationseinheiten if necessary.
-	 * @param $studiensemester_kurzbz	Filter by Studiensemester
-	 * @param $oes	Filter by Organisationseinheiten
+	 * @param $studiensemester_kurzbz    Filter by Studiensemester
+	 * @param null $lv_oes Filter by lv oes
+	 * @param null $stg_oes Filter by lv's stg oes
+	 * @param null | bool $assignedByTpl
+	 * If true, only SwLvs that were requested by Quellkurs are returned.
+	 * If false, only SwLvs that were requested by Lv (NOT by Quellkurs) are returned.
 	 * @return mixed
 	 */
-	public function getSwLvZuordnungen($studiensemester_kurzbz = null, $oes = null, $oe_column = 'lv')
+	public function getSwLvs($studiensemester_kurzbz = null, $lv_oes = null, $stg_oes = null, $requestedByTpl = null)
 	{
 		$qry = '
 			SELECT 
@@ -90,8 +94,15 @@ class SoftwareLv_model extends DB_Model
 				JOIN extension.tbl_softwaretyp 			sw_typ USING (softwaretyp_kurzbz)
 				JOIN public.tbl_organisationseinheit 	oe USING (oe_kurzbz)
 				JOIN public.tbl_studiengang          	stg ON stg.studiengang_kz = lv.studiengang_kz
-				JOIN public.tbl_studiengangstyp 		stgtyp ON stgtyp.typ = stg.typ
-            WHERE 1 = 1 
+				JOIN public.tbl_studiengangstyp 		stgtyp ON stgtyp.typ = stg.typ';
+
+		if (is_bool($requestedByTpl))
+		{
+			/* filter studiensemester */
+			$qry.= ' LEFT JOIN extension.tbl_software_lv swlv1 ON swlv1.lehrveranstaltung_id = lv.lehrveranstaltung_template_id AND swlv1.software_id = swlv.software_id';
+		}
+
+		$qry.= ' WHERE 1 = 1 
             ';
 
 		$params = [];
@@ -103,20 +114,30 @@ class SoftwareLv_model extends DB_Model
 			$params[]= $studiensemester_kurzbz;
 		}
 
-		if (isset($oes) && is_array($oes))
+		if ($requestedByTpl === true)
 		{
-			if ($oe_column === 'lv')
-			{
-				/* filter by lv organisationseinheit (Standard behaviour) */
-				$qry.= ' AND lv.oe_kurzbz IN ?';
-			}
-			elseif ($oe_column === 'stg')
-			{
-				/* filter by lv studiengangs organisationseinheit () */
-				$qry.= ' AND stg.oe_kurzbz IN ? ';
-			}
+			/* filter templates and their assigned lvs that were requested via Quellkurs  */
+			$qry.= ' AND (swlv1.software_lv_id IS NOT NULL OR lv.lehrtyp_kurzbz = \'tpl\')';
+		}
 
-			$params[]= $oes;
+		if ($requestedByTpl === false)
+		{
+			/* filter lvs that where not requested via Quellkurs */
+			$qry.= ' AND swlv1.software_lv_id IS NULL AND lv.lehrtyp_kurzbz = \'lv\'';
+		}
+
+		if (isset($lv_oes) && is_array($lv_oes))
+		{
+			/* filter by lv organisationseinheit */
+			$qry.= ' AND lv.oe_kurzbz IN ?';
+			$params[]= $lv_oes;
+		}
+
+		if (isset($stg_oes) && is_array($stg_oes))
+		{
+			/* filter by lv studiengangs organisationseinheit */
+			$qry.= ' AND stg.oe_kurzbz IN ?';
+			$params[]= $stg_oes;
 		}
 
 		return $this->execQuery($qry, $params);
