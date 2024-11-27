@@ -132,7 +132,7 @@ export default {
 	template: `
 <div class="softwareanforderungNachLv overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/swAnforderungUeberAuswahlVonLvs') }}</div>
+		<div class="col-10 h4">{{ $p.t('global/swAnforderungFuerEinzelneLvs') }}</div>
 		<div class="col-2 ms-auto">
 			<core-form-input
 				type="select"

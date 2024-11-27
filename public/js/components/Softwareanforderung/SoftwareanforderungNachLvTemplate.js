@@ -206,7 +206,7 @@ export default {
 	template: `
 <div class="softwareanforderungNachStandardLvTemplate overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/swAnforderungUeberAuswahlVonStandardisiertenLvTemplates') }}</div>
+		<div class="col-10 h4">{{ $p.t('global/swAnforderungFuerQuellkurs') }}</div>
 		<div class="col-2 ms-auto">
 			<core-form-input
 				type="select"

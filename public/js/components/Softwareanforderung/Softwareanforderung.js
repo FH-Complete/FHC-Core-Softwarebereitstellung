@@ -201,7 +201,7 @@ export default {
 <div class="softwareanforderung overflow-hidden">
 	<!-- Title and Studiensemester Dropdown-->
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/softwareanforderungSubtitle') }}</div>
+		<div class="col-10 h4">{{ $p.t('global/softwarebereitstellungSubtitle') }}</div>
 		<div class="col-2 ms-auto">
 			<core-form-input
 				type="select"
