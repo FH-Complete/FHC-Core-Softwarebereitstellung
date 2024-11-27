@@ -70,7 +70,7 @@ export default {
 			};
 
 			// Prefill Lehrveranstaltung with selected row data
-			this.selectedLvs = this.selectedRow;
+			this.selectedLvs = [this.selectedRow]; // must be array for autoselect
 
 			// Prefill software with selected row data
 			this.selectedSw = {
