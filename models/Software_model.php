@@ -330,9 +330,21 @@ class Software_model extends DB_Model
 		/* filter by input string */
 		if (is_array($filterSoftwarestatusKurzbzArr)) {
 			$qry.= ' AND swstat.software_id NOT IN (
-				  SELECT software_id
-				  FROM extension.tbl_software_softwarestatus
-				  WHERE softwarestatus_kurzbz IN ?
+				SELECT
+				  software_id
+				FROM
+				  (
+					SELECT
+					  DISTINCT ON (software_id) software_id,
+					  softwarestatus_kurzbz
+					FROM
+					  extension.tbl_software_softwarestatus
+					ORDER BY
+					  software_id,
+					  software_status_id DESC
+				  ) ordered_subquery
+				WHERE
+				  softwarestatus_kurzbz IN ?
 			  ) ';
 
 			$params[] = $filterSoftwarestatusKurzbzArr;
