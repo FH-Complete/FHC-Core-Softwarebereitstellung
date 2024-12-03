@@ -80,6 +80,13 @@ class SoftwareLv_model extends DB_Model
 				sw.software_kurzbz,
 				sw.version,
 				sw_typ.bezeichnung[(' . $this->_getLanguageIndex() . ')] AS softwaretyp_bezeichnung,
+				(SELECT softwarestatus_kurzbz
+					FROM extension.tbl_software_softwarestatus
+					JOIN extension.tbl_softwarestatus USING (softwarestatus_kurzbz)
+					WHERE software_id = swlv.software_id
+					ORDER BY software_status_id DESC
+					LIMIT 1
+				),
 				(SELECT bezeichnung[(' . $this->_getLanguageIndex() . ')] 
 					FROM extension.tbl_software_softwarestatus
 					JOIN extension.tbl_softwarestatus USING (softwarestatus_kurzbz)
