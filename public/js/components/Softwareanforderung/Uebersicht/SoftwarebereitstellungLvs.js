@@ -95,7 +95,17 @@ export default {
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true, width: 200},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
-					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
+					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
+						formatter: (cell) => {
+							const { softwarestatus_kurzbz, softwarestatus_bezeichnung } = cell.getRow().getData();
+
+							// Format Softwarestatus Bezeichnung red if status is End of Life or Nicht verfuegbar
+							return (softwarestatus_kurzbz === 'endoflife' || softwarestatus_kurzbz === 'nichtverfuegbar')
+								? `<span class="text-danger">${softwarestatus_bezeichnung}</span>`
+								: softwarestatus_bezeichnung;
+						}
+					},
+					{title: 'Softwarestatus Kurzbz', field: 'softwarestatus_kurzbz', headerFilter: true, visible: false},
 					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true, width: 100,
 						hozAlign: 'right', frozen: true, editor:"number", editorParams:{
 							min:0,
