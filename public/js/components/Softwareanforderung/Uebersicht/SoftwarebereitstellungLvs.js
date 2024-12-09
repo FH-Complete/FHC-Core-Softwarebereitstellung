@@ -109,7 +109,8 @@ export default {
 					},
 					{title: 'Softwarestatus Kurzbz', field: 'softwarestatus_kurzbz', headerFilter: true, visible: false},
 					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true, width: 100,
-						hozAlign: 'right', frozen: true, editor:"number", editorParams:{
+						hozAlign: 'right', frozen: true, editor:"number",
+						editorParams:{
 							min:0,
 							max:100,
 							step:10,
@@ -118,7 +119,8 @@ export default {
 							},
 							selectContents:true,
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
-						}
+						},
+						editable: true,
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 80,
