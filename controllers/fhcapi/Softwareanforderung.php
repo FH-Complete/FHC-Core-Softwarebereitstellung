@@ -91,17 +91,40 @@ class Softwareanforderung extends FHCAPI_Controller
 		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
 		if(!$entitledOes) $entitledOes = [];
 
-		// Get all Software-Lehrveranstaltung-Zuordnungen
-		$result = $this->SoftwareLvModel->getSwLvs(
+		// Get SW-LV-Zuordnungen berechtigt by lvs' stg
+		$lvs = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studiensemester_kurzbz'),
 			null,
-			$entitledOes,
-			false
+			$entitledOes
 		);
 
+		$lvs = hasData($lvs) ? getData($lvs) : [];
+
+		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
+		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
+			$this->input->get('studiensemester_kurzbz'),
+			$entitledOes,
+			null,
+			true
+		);
+
+		$qkvLvs = hasData($qkvLvs) ? getData($qkvLvs) : [];
+
+		// Remove Lvs that were requested as Quellkursverantwortlicher (and appear in seperated table)
+		$idsToRemove = array_column($qkvLvs, 'software_lv_id');
+
+		foreach ($lvs as $key => $val) {
+			if (in_array($val->software_lv_id, $idsToRemove))
+			{
+				unset($lvs[$key]);
+			}
+		}
+
+		// Re-index the array
+		$lvs = array_values($lvs);
+
 		// Return
-		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data);
+		$this->terminateWithSuccess($lvs);
 	}
 
 	/**
