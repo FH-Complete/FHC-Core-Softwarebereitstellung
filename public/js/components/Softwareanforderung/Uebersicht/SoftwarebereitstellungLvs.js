@@ -64,7 +64,7 @@ export default {
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
 					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
 					{
-						title: 'Standardisiert',
+						title: 'Quellkurs-LV',
 						field: 'lehrveranstaltung_template_id',
 						formatter: function(cell) {
 							const value = cell.getValue();

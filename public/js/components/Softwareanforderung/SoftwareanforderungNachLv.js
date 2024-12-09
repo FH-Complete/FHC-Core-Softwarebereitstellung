@@ -49,7 +49,7 @@ export default {
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false, minWidth: 80},
 					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200},
 					{
-						title: 'Standardisiert',
+						title: 'Quellkurs-LV',
 						field: 'lehrveranstaltung_template_id',
 						formatter: function(cell) {
 							const value = cell.getValue();
