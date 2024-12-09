@@ -69,8 +69,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
 		if(!$entitledOes) $entitledOes = [];
 
-		// Get all Software-Lehrveranstaltung-Zuordnungen
-		$result = $this->SoftwareLvModel->getSwLvs(
+		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
+		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studiensemester_kurzbz'),
 			$entitledOes,
 			null,
@@ -78,7 +78,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		);
 
 		// Return
-		$data = $this->getDataOrTerminateWithError($result);
+		$data = $this->getDataOrTerminateWithError($qkvLvs);
 		$this->terminateWithSuccess($data);
 	}
 
