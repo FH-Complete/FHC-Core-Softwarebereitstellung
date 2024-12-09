@@ -85,6 +85,8 @@ export default {
 						width: 70,
 						hozAlign: 'center'
 					},
+					{title: 'Erstellt von', field: 'insertvon', headerFilter: true, visible: false},
+					{title: 'Erstellt am', field: 'insertamum', headerFilter: true, visible: false},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 270},
 					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
 					{title: 'SW-Typ Kurzbz', field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
