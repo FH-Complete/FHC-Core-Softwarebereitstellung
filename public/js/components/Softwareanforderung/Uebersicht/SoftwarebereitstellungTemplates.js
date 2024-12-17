@@ -21,7 +21,7 @@ export default {
 			table: null,
 			studiensemester: [],
 			selectedStudiensemester: '',
-			bearbeitungIsGesperrt: false,
+			planungDeadlinePast: false,
 			cbDataTree: true, // checkbox display dataTree or not
 			cbDataTreeStartExpanded: false,	// checkbox expand dataTree or not
 			cbGroupStartOpen: true,	// checkbox group organisationseinheit start open
@@ -122,7 +122,7 @@ export default {
 								let button = document.createElement('button');
 								button.className = 'btn btn-outline-secondary';
 								button.innerHTML = '<i class="fa fa-edit"></i>';
-								button.disabled = this.bearbeitungIsGesperrt;
+								button.disabled = this.planungDeadlinePast;
 								button.addEventListener('click', (event) =>
 									this.editSwLvZuordnung(cell.getRow())
 								);
@@ -131,7 +131,7 @@ export default {
 								button = document.createElement('button');
 								button.className = 'btn btn-outline-secondary';
 								button.innerHTML = '<i class="fa fa-xmark"></i>';
-								button.disabled = this.bearbeitungIsGesperrt;
+								button.disabled = this.planungDeadlinePast;
 								button.addEventListener('click', () =>
 									this.deleteSwLvs(cell.getRow().getIndex())
 								);
@@ -161,7 +161,7 @@ export default {
 				.setData(CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester))
-				.then(() => this.checkBearbeitungIsGesperrt() );
+				.then(() => this.checkIfPlanungDeadlinePast() );
 		},
 		editSwLvZuordnung(row){
 			// If selected row is a Quellkurs
@@ -188,12 +188,12 @@ export default {
 				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
-		async checkBearbeitungIsGesperrt(){
+		async checkIfPlanungDeadlinePast(){
 			await this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkIfBearbeitungIsGesperrt', {
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
 					studiensemester_kurzbz: this.selectedStudiensemester
 				})
-				.then((result) => this.bearbeitungIsGesperrt = result.data)
+				.then((result) => this.planungDeadlinePast = result.data)
 				.then(() => this.table.redraw(true) ) // Redraw the table to disable/enable action buttons
 				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
@@ -204,7 +204,7 @@ export default {
 			await this.loadAndSetStudiensemester();
 
 			// Check if Bearbeitung is gesperrt
-			await this.checkBearbeitungIsGesperrt();
+			await this.checkIfPlanungDeadlinePast();
 
 			// Set table data
 			this.table.setData(

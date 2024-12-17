@@ -71,28 +71,64 @@ class SoftwareLib
 		return success($result);
 	}
 
-	public function checkIfBearbeitungIsGesperrt($studiensemester_kurzbz)
+	/**
+	 * Check if the planning deadline of actual Studienjahr has expired.
+	 *
+	 * @param $studiensemester_kurzbz
+	 * @return bool
+	 */
+	public function isPlanningDeadlinePast($studiensemester_kurzbz = null)
 	{
-		// Get Startstudienjahr by Studiensemester
-		$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
-		$result = $this->_ci->StudiensemesterModel->getStudienjahrByStudiensemester($studiensemester_kurzbz);
-		$startstudienjahr = hasData($result) ? getData($result)->startstudienjahr : '';
+		$planungDeadline = $this->getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz);
+		if (isError($planungDeadline)) return getError($planungDeadline);
 
 		$today = new DateTime();
 		$today->setTime(0, 0, 0);
 
-		if ($this->_ci->config->item('bearbeitungssperre_datum'))
+		return getData($planungDeadline) < $today;
+	}
+
+	/**
+	 * Get Planungsdeadline of actual Studienjahr.
+	 *
+	 * @param $studiensemester_kurzbz
+	 * @return mixed
+	 */
+	public function getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz = null)
+	{
+		// Get Studienjahr by Studiensemester
+		if (is_string($studiensemester_kurzbz))
 		{
-			$bearbeitungssperreDatum = new DateTime();
-			$bearbeitungssperreDatum->setDate(
-				$startstudienjahr,
-				$this->_ci->config->item('bearbeitungssperre_datum')['month'],
-				$this->_ci->config->item('bearbeitungssperre_datum')['day']
-			);
-			$bearbeitungssperreDatum->setTime(0,0,0);
+			$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+			$result = $this->_ci->StudiensemesterModel->getStudienjahrByStudiensemester($studiensemester_kurzbz);
+			$startstudienjahr = hasData($result) ? getData($result)->startstudienjahr : '';
+		}
+		// Or get current Studienjahr
+		else
+		{
+			$this->_ci->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
+			$result = $this->_ci->StudienjahrModel->getCurrStudienjahr();
+			$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
+			$startstudienjahr = substr($studienjahr_kurzbz, 0, 4);
 		}
 
-		return $bearbeitungssperreDatum < $today;
+		// Get Planungsdeadline of requested Studienjahr
+		if ($this->_ci->config->item('planung_deadline'))
+		{
+			$planungDeadline = new DateTime();
+			$planungDeadline->setDate(
+				$startstudienjahr,
+				$this->_ci->config->item('planung_deadline')['month'],
+				$this->_ci->config->item('planung_deadline')['day']
+			);
+			$planungDeadline->setTime(0,0,0);
+			
+			return success($planungDeadline);
+		}
+		else
+		{
+			return error('missing config planung_deadline');
+		}
 	}
 
 	// JOBS & ALERTS

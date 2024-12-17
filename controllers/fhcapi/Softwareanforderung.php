@@ -33,7 +33,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
 				'getOtoboUrl' => 'extension/software_bestellen:rw',
-				'checkIfBearbeitungIsGesperrt' => 'extension/software_bestellen:rw'
+				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw'
 			)
 		);
 
@@ -285,7 +285,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
 
 		// Check if deletion is allowed
-		if ($this->softwarelib->checkIfBearbeitungIsGesperrt($studiensemester_kurzbz)) exit;
+		if ($this->softwarelib->isPlanningDeadlinePast($studiensemester_kurzbz)) exit;
 
 		// Get Lehrveranstaltung and Software by software_lv_id
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
@@ -389,9 +389,9 @@ class Softwareanforderung extends FHCAPI_Controller
 		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
 
 		// Check if deletion is allowed
-		$bearbeitungIsGesperrt = $this->softwarelib->checkIfBearbeitungIsGesperrt($studiensemester_kurzbz);
+		$planungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast($studiensemester_kurzbz);
 
-		if ($bearbeitungIsGesperrt) exit;	// There is a frontend check too, no more explanation needed.
+		if ($planungDeadlinePast) exit;	// There is a frontend check too, no more explanation needed.
 
 		// Get Lehrveranstaltung and Software by software_lv_id
 		$lehrveranstaltung_id = null;
@@ -526,8 +526,8 @@ class Softwareanforderung extends FHCAPI_Controller
 
 	}
 
-	public function checkIfBearbeitungIsGesperrt(){
-		$result = $this->softwarelib->checkIfBearbeitungIsGesperrt($this->input->post('studiensemester_kurzbz'));
+	public function isPlanningDeadlinePast(){
+		$result = $this->softwarelib->isPlanningDeadlinePast($this->input->post('studiensemester_kurzbz'));
 
 		$this->terminateWithSuccess($result); // return true or false
 	}
