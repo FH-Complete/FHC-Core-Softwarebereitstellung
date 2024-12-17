@@ -81,8 +81,62 @@ class Softwareverwaltung extends JOB_Controller
 	}
 
 	/**
-	 * Executes multiple Softwarebereitstellung tasks and sends a single mail to Softwarebeauftragte summarizing all
-	 * completed tasks.
+	 * Executes multiple messages and sends a single summarizing mail to Softwaremanager.
+	 */
+	public function execJobsAndMailToSoftwaremanager(){
+
+		$this->logInfo('Start execJobsAndMailToSoftwaremanager');
+
+		// Message collector
+		$allMessages = '';
+
+		// Check if Planungsdeadline of actual Studienjahr is passed
+		$isPlanungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast();
+
+		// Collect information only after planning deadline
+		if ($isPlanungDeadlinePast)
+		{
+			// 1. Task: Get Software-LV-Zuordnungen, that were inserted today by SWB.
+			// -------------------------------------------------------------------------------------------------------------
+			$result = $this->softwarelib->getNewSwLvsFrom('YESTERDAY');
+			$newSwLvs = hasData($result) ? getData($result) : [];
+
+			// Prepare msg string
+			$msg = $this->softwarelib->formatMsgNewSwLvs($newSwLvs);
+
+			// Add msg to msg collector
+			$allMessages.= $msg;
+
+
+			// 2. Task: Get Software-LV-Zuordnungen, that were changed today by SWB. (e.g. change of Lizenzanzahl)
+			// -------------------------------------------------------------------------------------------------------------
+			$result = $this->softwarelib->getChangedSwLvsFrom('YESTERDAY');
+			$changedSwLvs = hasData($result) ? getData($result) : [];
+
+			// Prepare msg string
+			$msg = $this->softwarelib->formatMsgChangedSwLvs($changedSwLvs);
+
+			// Add msg to msg collector
+			$allMessages.= $msg;
+		}
+
+		// Send email
+		// -------------------------------------------------------------------------------------------------------------
+		if ($allMessages !== '')
+		{
+			// Send email
+			$this->softwarelib->sendMailToSoftwaremanager($allMessages);
+
+			$this->logInfo('End execJobsAndMailToSoftwaremanager: Messages were sent by email.');
+		}
+		else
+		{
+			$this->logInfo('End execJobsAndMailToSoftwaremanager: No messages. No email sent.');
+		}
+	}
+
+	/**
+	 * Executes multiple messages and sends a single summarizing mail to Softwarebeauftragte.
 	 *
 	 * 1. task: Assign software to newly added standardized LVs whose LV templates are already linked to a software.
 	 *
