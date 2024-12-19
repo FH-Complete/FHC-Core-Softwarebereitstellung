@@ -88,6 +88,20 @@ class SoftwareLib
 		return getData($planungDeadline) < $today;
 	}
 
+	public function isTwoWeeksBeforePlanningDeadline($studiensemester_kurzbz = null)
+	{
+		$planungDeadline = $this->getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz);
+		if (isError($planungDeadline)) return getError($planungDeadline);
+		$planungDeadline = getData($planungDeadline);
+
+		$twoWeeksBeforeDeadline = $planungDeadline->sub(new DateInterval('P2W'));
+
+		$today = new DateTime();
+		$today->setTime(0, 0, 0);
+
+		return $today === $twoWeeksBeforeDeadline;
+	}
+
 	/**
 	 * Get Planungsdeadline of actual Studienjahr.
 	 *
@@ -252,7 +266,7 @@ class SoftwareLib
 	 * @param $groupedLvs	Lvs grouped by Fakultät of the LV Studiengang
 	 * @return array key: oe_kurzbz of Fakultät, value: html message like text and tables
 	 */
-	public function prepareMessagesNewlyAssignedStandardLvs($groupedLvs)
+	public function formatMsgNewlyAssignedStandardLvs($groupedLvs)
 	{
 		$messages = [];
 
@@ -260,7 +274,7 @@ class SoftwareLib
 		foreach ($groupedLvs as $oe_kurzbz => $items) {
 
 			// Start table tag
-			$table = '<table style="border-collapse: collapse;">';
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
 			$table .= '<tr>
 						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
 						<th style="border: 1px solid #000; padding: 8px;">Neue standardisierte LV</th>
@@ -284,6 +298,55 @@ class SoftwareLib
 				<p>
 					<b>Software für neue standardisierte LV angefordert. Zuordnung über Quellkurs.</b></br>
 					Bitte passen Sie im System die User-Anzahl entsprechend Ihrer Anforderung an.
+				</p>
+			";
+			$message .= $table;
+			$messages[] = ['oe_kurzbz' => $oe_kurzbz, 'message' => $message];
+		}
+
+		return $messages;
+	}
+
+	/**
+	 * Prepare email message regarding newly assigned standardisied Lvs.
+	 *
+	 * @param $groupedLvs	Lvs grouped by Fakultät of the LV Studiengang
+	 * @return array key: oe_kurzbz of Fakultät, value: html message like text and tables
+	 */
+	public function formatMsgSwLvsLizenzanzahl0($groupedLvs)
+	{
+		$messages = [];
+
+		// Loop through each group and prepare the emails
+		foreach ($groupedLvs as $oe_kurzbz => $items) {
+
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '<tr>
+						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+						<th style="border: 1px solid #000; padding: 8px;">Lehrveranstaltung</th>
+						<th style="border: 1px solid #000; padding: 8px;">Software</th>
+						<th style="border: 1px solid #000; padding: 8px;">User-Anzahl</th>
+					</tr>';
+
+			// Loop items in Fakultät
+			foreach ($items as $item) {
+				$table .= '<tr>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . strtoupper($item->stg_oe_kurzbz) . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->orgform_kurzbz . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->bezeichnung . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->software_kurzbz . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">0</td>';    // Set Lizenzanzahl 0
+				$table .= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+				<p>
+					<b>Lizenzpflichtige Software ohne User-Anzahl</b></br>
+					Bitte tragen Sie die angeforderte User-Anzahl ein.
 				</p>
 			";
 			$message .= $table;

@@ -152,11 +152,12 @@ class Softwareverwaltung extends JOB_Controller
 		$allMessages = [];
 
 		// 1. Task: Assign software to newly added standardized LVs
+		// -------------------------------------------------------------------------------------------------------------
 		$newlyAssignedLvs =  $this->softwarelib->handleUnassignedStandardLvs();
 
 		if (count($newlyAssignedLvs) > 0)
 		{
-			// Group unassigned Lvs
+			// Group newly assigned Lvs
 			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
 				$newlyAssignedLvs,
 				$studiengangToFakultaetMap
@@ -165,18 +166,52 @@ class Softwareverwaltung extends JOB_Controller
 			// Prepare and store messages
 			$allMessages = array_merge(
 				$allMessages,
-				$this->softwarelib->prepareMessagesNewlyAssignedStandardLvs($groupedLvsByFakultaet)
+				$this->softwarelib->formatMsgNewlyAssignedStandardLvs($groupedLvsByFakultaet)
 			);
 		}
 
-		// Group messages by Fakultät OE before sending mails
-		$messagesGroupedByFak = $this->softwarelib->groupMessagesByFakultaet($allMessages);
+		// 2. Task: Notify if Lizenzanzahl is still 0 two weeks before the planning deadline.
+		// -------------------------------------------------------------------------------------------------------------
+		$isTwoWeeksBeforeDeadline = $this->softwarelib->isTwoWeeksBeforePlanningDeadline();
+		
+		if ($isTwoWeeksBeforeDeadline)
+		{
+			$result = $this->SoftwareLvModel->getWhereLizenzanzahl0();
 
-		// Send emails grouped by Fakultät
-		foreach ($messagesGroupedByFak as $oe_kurzbz => $messages) {
-			$this->softwarelib->sendMailToSoftwarebeauftragte($oe_kurzbz, $messages);
+			if (hasData($result))
+			{
+				$swlvsLizAnz0 = getData($result);
+
+				// Group newly assigned Lvs
+				$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+					$swlvsLizAnz0,
+					$studiengangToFakultaetMap
+				);
+
+				$allMessages = array_merge(
+					$allMessages,
+					$this->softwarelib->formatMsgSwLvsLizenzanzahl0($groupedLvsByFakultaet)
+				);
+			}
 		}
 
-		$this->logInfo('End execJobsAndMailToSoftwarebeauftragte');
+		// Send email
+		// -------------------------------------------------------------------------------------------------------------
+		if (count($allMessages) > 0)
+		{
+			// Group messages by Fakultät OE before sending mails
+			$messagesGroupedByFak = $this->softwarelib->groupMessagesByFakultaet($allMessages);
+
+			// Send emails grouped by Fakultät
+			foreach ($messagesGroupedByFak as $oe_kurzbz => $messages) {
+				$this->softwarelib->sendMailToSoftwarebeauftragte($oe_kurzbz, $messages);
+			}
+
+			$this->logInfo('End execJobsAndMailToSoftwarebeauftragte: : Messages were sent by email.');
+		}
+		else
+		{
+			$this->logInfo('End execJobsAndMailToSoftwaremanager: No messages. No email sent.');
+		}
 	}
 }
