@@ -6,5 +6,5 @@ $config['otobo_url'] = 'https://services.technikum-wien.at/otobo/customer.pl?Act
 // Deadline pro Studienjahr, bis wann SW Zuordnungen bearbeitet oder gelöscht werden dürfen
 $config['planung_deadline'] = [
 	'day' => 30,
-	'month' => 3	// 3 = April
+	'month' => 4  // April
 ];
