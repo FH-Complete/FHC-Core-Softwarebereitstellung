@@ -310,6 +310,37 @@ class SoftwareLv_model extends DB_Model
 		return $this->execQuery($qry, [$studiensemester_kurzbz, $studiensemester_kurzbz]);
 	}
 
+	/**
+	 * Get SwLvs with lizenzpflichtige Software (not open source), where lizenzanzahl is 0
+	 * @return mixed
+	 */
+	public function getWhereLizenzanzahl0()
+	{
+		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
+		$result = $this->StudienjahrModel->getCurrStudienjahr();
+		$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
+
+		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$this->StudiensemesterModel->addSelect('studiensemester_kurzbz');
+		$result = $this->StudiensemesterModel->loadWhere(['studienjahr_kurzbz' => $studienjahr_kurzbz]);
+		$studiensemester = array_column(getData($result), 'studiensemester_kurzbz');
+
+		$qry = '
+			SELECT swlv.*, lv.*, sw.*, stg.studiengang_kz, stg.oe_kurzbz AS "stg_oe_kurzbz" -- OE of LV-Stg
+			FROM extension.tbl_software_lv swlv
+			JOIN lehre.tbl_lehrveranstaltung lv USING (lehrveranstaltung_id)
+			JOIN extension.tbl_software sw USING (software_id)
+			JOIN public.tbl_studiengang stg USING (studiengang_kz)
+			WHERE studiensemester_kurzbz IN ?
+			AND lizenzanzahl = 0
+			-- ignore open source software, as they are supposed to have 0
+			AND (sw.lizenzart != \'opensource\' OR sw.lizenzart IS NULL)
+			ORDER BY lv.studiengang_kz;;
+		';
+
+		return $this->execQuery($qry, [$studiensemester]);
+	}
+
 	private function _getLanguageIndex()
 	{
 		$this->load->model('system/Sprache_model', 'SpracheModel');
