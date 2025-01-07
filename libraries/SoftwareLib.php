@@ -610,4 +610,54 @@ class SoftwareLib
 
 		return $message;
 	}
+
+	/**
+	 * Format array of software with licenses close to expiration as table.
+	 * @param array | $swLicencesWillEnd
+	 * @return string
+	 */
+	public function formatMsgSwLicencesWillEnd($swLicencesWillEnd)
+	{
+		$message = '';
+
+		$today = new DateTime();
+		$today->add(new DateInterval('P10W'));
+		$in10WeeksDate = $today->format('d.m.Y');
+
+		if (is_array($swLicencesWillEnd) && count($swLicencesWillEnd) > 0)
+		{
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '<tr>
+							<th style="border: 1px solid #000; padding: 8px;">SW-ID</th>
+							<th style="border: 1px solid #000; padding: 8px;">SW-Typ</th>
+							<th style="border: 1px solid #000; padding: 8px;">SW-Kurzbezeichnung</th>
+							<th style="border: 1px solid #000; padding: 8px;">Lizenzlaufzeit</th>
+						</tr>';
+
+			// Loop items in Fakultät
+			foreach ($swLicencesWillEnd as $sw) {
+				$table.= '<tr>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_id. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->bezeichnung. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_kurzbz. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. (new DateTime($sw->lizenzlaufzeit))->format('d.m.Y'). '</td>';
+				$table.= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+					<p>
+					<b>SW-Lizenzlaufzeit endet in 10 Wochen</b><br>
+					 SW-Lizenzlaufzeit endet in 10 Wochen am ". $in10WeeksDate. ".
+					</p>
+				";
+			$message .= $table;
+
+			$message .= "<br>";
+		}
+
+		return $message;
+	}
 }
