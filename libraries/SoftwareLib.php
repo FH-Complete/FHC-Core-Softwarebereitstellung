@@ -430,21 +430,30 @@ class SoftwareLib
 	 */
 	public function sendMailToSoftwaremanager($messages)
 	{
-		// Get authorized uids
-		$this->_ci->load->model('system/Benutzerrolle_model', 'BenutzerrolleModel');
-		$result = $this->_ci->BenutzerrolleModel->getBenutzerByBerechtigung(
-			self::PERMISSION_SOFTWARE_VERWALTEN
-		);
-
-		// Continue if no authenticated user found
-		if (!hasData($result)) {
-			return;
-		}
-
 		// Create mail receiver
 		$to = [];
-		foreach (getData($result) as $authUser) {
-			$to[] = $authUser->uid . '@' . DOMAIN;
+
+		if ($this->_ci->config->item('email_softwaremanager'))
+		{
+			// Get email from config variable
+			$to[] = $this->_ci->config->item('email_softwaremanager');
+		}
+		else
+		{
+			// Get authorized uids
+			$this->_ci->load->model('system/Benutzerrolle_model', 'BenutzerrolleModel');
+			$result = $this->_ci->BenutzerrolleModel->getBenutzerByBerechtigung(
+				self::PERMISSION_SOFTWARE_VERWALTEN
+			);
+
+			// Continue if no authenticated user found
+			if (!hasData($result)) {
+				return;
+			}
+
+			foreach (getData($result) as $authUser) {
+				$to[] = $authUser->uid . '@' . DOMAIN;
+			}
 		}
 
 		// Set mail attributes

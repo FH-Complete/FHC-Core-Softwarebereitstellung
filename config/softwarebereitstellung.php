@@ -8,3 +8,5 @@ $config['planung_deadline'] = [
 	'day' => 30,
 	'month' => 4  // April
 ];
+
+$config['email_softwaremanager'] = 'licences@technikum-wien.at';
