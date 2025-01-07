@@ -277,6 +277,7 @@ class SoftwareLib
 			$table = '<table style="border-collapse: collapse; width: 100%;">';
 			$table .= '<tr>
 						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
 						<th style="border: 1px solid #000; padding: 8px;">Neue standardisierte LV</th>
 						<th style="border: 1px solid #000; padding: 8px;">Software</th>
 						<th style="border: 1px solid #000; padding: 8px;">User-Anzahl</th>
@@ -286,6 +287,7 @@ class SoftwareLib
 			foreach ($items as $item) {
 				$table .= '<tr>';
 				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->stg_oe_kurzbz . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->orgform_kurzbz . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->bezeichnung . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->software_kurzbz . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 8px;">0</td>';    // Set Lizenzanzahl 0
@@ -517,6 +519,7 @@ class SoftwareLib
 			$table .= '<tr>
 							<th style="border: 1px solid #000; padding: 8px;">Studiensemester</th> 
 							<th style="border: 1px solid #000; padding: 8px;">OE</th> 
+							<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
 							<th style="border: 1px solid #000; padding: 8px;">LV</th>
 							<th style="border: 1px solid #000; padding: 8px;">Software</th>
 							<th style="border: 1px solid #000; padding: 8px;">User-Anzahl</th>
@@ -527,6 +530,7 @@ class SoftwareLib
 				$table .= '<tr>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $newSwLv->studiensemester_kurzbz . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $newSwLv->oe_kurzbz . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $newSwLv->orgform_kurzbz . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $newSwLv->bezeichnung . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $newSwLv->software_kurzbz . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $newSwLv->lizenzanzahl . '</td>';
@@ -564,6 +568,7 @@ class SoftwareLib
 			$table .= '<tr>
 							<th style="border: 1px solid #000; padding: 8px;">Studiensemester</th> 
 							<th style="border: 1px solid #000; padding: 8px;">OE</th> 
+							<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
 							<th style="border: 1px solid #000; padding: 8px;">LV</th>
 							<th style="border: 1px solid #000; padding: 8px;">Software</th>
 							<th style="border: 1px solid #000; padding: 8px;">User-Anzahl</th>
@@ -574,6 +579,7 @@ class SoftwareLib
 				$table .= '<tr>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $changedSwLv->studiensemester_kurzbz . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $changedSwLv->oe_kurzbz . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $changedSwLv->orgform_kurzbz . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $changedSwLv->bezeichnung . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $changedSwLv->software_kurzbz . '</td>';
 				$table .= '<td style="border: 1px solid #000; padding: 4px;">' . $changedSwLv->lizenzanzahl . '</td>';

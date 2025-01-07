@@ -96,7 +96,7 @@ class Softwareverwaltung extends JOB_Controller
 		// Collect information only after planning deadline
 		if ($isPlanungDeadlinePast)
 		{
-			// 1. Task: Get Software-LV-Zuordnungen, that were inserted today by SWB.
+			// 1. Task: Get Software-LV-Zuordnungen, that were inserted yesterday by SWB.
 			// -------------------------------------------------------------------------------------------------------------
 			$result = $this->softwarelib->getNewSwLvsFrom('YESTERDAY');
 			$newSwLvs = hasData($result) ? getData($result) : [];
@@ -108,7 +108,7 @@ class Softwareverwaltung extends JOB_Controller
 			$allMessages.= $msg;
 
 
-			// 2. Task: Get Software-LV-Zuordnungen, that were changed today by SWB. (e.g. change of Lizenzanzahl)
+			// 2. Task: Get Software-LV-Zuordnungen, that were changed yesterday by SWB. (e.g. change of Lizenzanzahl)
 			// -------------------------------------------------------------------------------------------------------------
 			$result = $this->softwarelib->getChangedSwLvsFrom('YESTERDAY');
 			$changedSwLvs = hasData($result) ? getData($result) : [];
