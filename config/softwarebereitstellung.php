@@ -9,4 +9,4 @@ $config['planung_deadline'] = [
 	'month' => 4  // April
 ];
 
-$config['email_softwaremanager'] = 'licences@technikum-wien.at';
+$config['email_softwaremanager'] = 'licences@'. DOMAIN;
