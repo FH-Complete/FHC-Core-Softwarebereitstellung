@@ -33,7 +33,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
 				'getOtoboUrl' => 'extension/software_bestellen:rw',
-				'checkIfBearbeitungIsGesperrt' => 'extension/software_bestellen:rw'
+				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw'
 			)
 		);
 
@@ -69,8 +69,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
 		if(!$entitledOes) $entitledOes = [];
 
-		// Get all Software-Lehrveranstaltung-Zuordnungen
-		$result = $this->SoftwareLvModel->getSwLvs(
+		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
+		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studiensemester_kurzbz'),
 			$entitledOes,
 			null,
@@ -78,7 +78,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		);
 
 		// Return
-		$data = $this->getDataOrTerminateWithError($result);
+		$data = $this->getDataOrTerminateWithError($qkvLvs);
 		$this->terminateWithSuccess($data);
 	}
 
@@ -91,17 +91,40 @@ class Softwareanforderung extends FHCAPI_Controller
 		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
 		if(!$entitledOes) $entitledOes = [];
 
-		// Get all Software-Lehrveranstaltung-Zuordnungen
-		$result = $this->SoftwareLvModel->getSwLvs(
+		// Get SW-LV-Zuordnungen berechtigt by lvs' stg
+		$lvs = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studiensemester_kurzbz'),
 			null,
-			$entitledOes,
-			false
+			$entitledOes
 		);
 
+		$lvs = hasData($lvs) ? getData($lvs) : [];
+
+		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
+		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
+			$this->input->get('studiensemester_kurzbz'),
+			$entitledOes,
+			null,
+			true
+		);
+
+		$qkvLvs = hasData($qkvLvs) ? getData($qkvLvs) : [];
+
+		// Remove Lvs that were requested as Quellkursverantwortlicher (and appear in seperated table)
+		$idsToRemove = array_column($qkvLvs, 'software_lv_id');
+
+		foreach ($lvs as $key => $val) {
+			if (in_array($val->software_lv_id, $idsToRemove))
+			{
+				unset($lvs[$key]);
+			}
+		}
+
+		// Re-index the array
+		$lvs = array_values($lvs);
+
 		// Return
-		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data);
+		$this->terminateWithSuccess($lvs);
 	}
 
 	/**
@@ -262,7 +285,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
 
 		// Check if deletion is allowed
-		if ($this->softwarelib->checkIfBearbeitungIsGesperrt($studiensemester_kurzbz)) exit;
+		if ($this->softwarelib->isPlanningDeadlinePast($studiensemester_kurzbz)) exit;
 
 		// Get Lehrveranstaltung and Software by software_lv_id
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
@@ -366,9 +389,9 @@ class Softwareanforderung extends FHCAPI_Controller
 		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
 
 		// Check if deletion is allowed
-		$bearbeitungIsGesperrt = $this->softwarelib->checkIfBearbeitungIsGesperrt($studiensemester_kurzbz);
+		$planungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast($studiensemester_kurzbz);
 
-		if ($bearbeitungIsGesperrt) exit;	// There is a frontend check too, no more explanation needed.
+		if ($planungDeadlinePast) exit;	// There is a frontend check too, no more explanation needed.
 
 		// Get Lehrveranstaltung and Software by software_lv_id
 		$lehrveranstaltung_id = null;
@@ -503,8 +526,8 @@ class Softwareanforderung extends FHCAPI_Controller
 
 	}
 
-	public function checkIfBearbeitungIsGesperrt(){
-		$result = $this->softwarelib->checkIfBearbeitungIsGesperrt($this->input->post('studiensemester_kurzbz'));
+	public function isPlanningDeadlinePast(){
+		$result = $this->softwarelib->isPlanningDeadlinePast($this->input->post('studiensemester_kurzbz'));
 
 		$this->terminateWithSuccess($result); // return true or false
 	}

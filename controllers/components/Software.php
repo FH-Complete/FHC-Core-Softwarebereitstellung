@@ -8,6 +8,7 @@ if (! defined('BASEPATH')) exit('No direct script access allowed');
 class Software extends Auth_Controller
 {
 	private $_uid;
+	const NOT_ZUORDENBARE_STATI = ['endoflife', 'nichtverfuegbar'];
 
 	/**
 	 * Constructor
@@ -49,7 +50,7 @@ class Software extends Auth_Controller
 	// -----------------------------------------------------------------------------------------------------------------
 	// Public methods
 	public function getSoftwarelistData(){
-		$result = $this->SoftwareModel->getSoftwarelistData();
+		$result = $this->SoftwareModel->getSoftwarelistData(self::NOT_ZUORDENBARE_STATI);
 
 		// On error
 		if (isError($result)) $this->terminateWithJsonError(getError($result));

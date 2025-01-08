@@ -212,6 +212,10 @@ export default {
 					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
+		getSwOptionLabel(sw){
+			const version = sw.version ? sw.version : '-';
+			return `${sw.software_kurzbz} [Version: ${version}]`;
+		},
 		searchLv(event) {
 			if (event.query || !this.lvSuggestions.length) {
 				if (this.autocompleteAbortController)
@@ -439,7 +443,7 @@ export default {
 								v-model="selectedSw"
 								name="selectedSw"
 								label="Software *"
-								option-label="software_kurzbz"
+								:option-label="getSwOptionLabel"
 								:option-disabled="isSwSelected"
 								dropdown
 								multiple

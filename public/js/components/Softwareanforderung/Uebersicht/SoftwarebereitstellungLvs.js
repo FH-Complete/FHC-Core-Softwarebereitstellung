@@ -19,7 +19,7 @@ export default {
 			selectedStudiensemester: '',
 			totalLizenzanzahl: 0,
 			cbGroupStartOpen: true,	// checkbox group organisationseinheit start open
-			bearbeitungIsGesperrt: false
+			planungDeadlinePast: false
 		}
 	},
 	watch: {
@@ -64,7 +64,7 @@ export default {
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
 					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
 					{
-						title: 'Standardisiert',
+						title: 'Quellkurs-LV',
 						field: 'lehrveranstaltung_template_id',
 						formatter: function(cell) {
 							const value = cell.getValue();
@@ -85,6 +85,8 @@ export default {
 						width: 70,
 						hozAlign: 'center'
 					},
+					{title: 'Erstellt von', field: 'insertvon', headerFilter: true, visible: false},
+					{title: 'Erstellt am', field: 'insertamum', headerFilter: true, visible: false},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 270},
 					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
 					{title: 'SW-Typ Kurzbz', field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
@@ -95,9 +97,20 @@ export default {
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true, width: 200},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
-					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
+					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
+						formatter: (cell) => {
+							const { softwarestatus_kurzbz, softwarestatus_bezeichnung } = cell.getRow().getData();
+
+							// Format Softwarestatus Bezeichnung red if status is End of Life or Nicht verfuegbar
+							return (softwarestatus_kurzbz === 'endoflife' || softwarestatus_kurzbz === 'nichtverfuegbar')
+								? `<span class="text-danger">${softwarestatus_bezeichnung}</span>`
+								: softwarestatus_bezeichnung;
+						}
+					},
+					{title: 'Softwarestatus Kurzbz', field: 'softwarestatus_kurzbz', headerFilter: true, visible: false},
 					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true, width: 100,
-						hozAlign: 'right', frozen: true, editor:"number", editorParams:{
+						hozAlign: 'right', frozen: true, editor:"number",
+						editorParams:{
 							min:0,
 							max:100,
 							step:10,
@@ -106,7 +119,8 @@ export default {
 							},
 							selectContents:true,
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
-						}
+						},
+						editable: true,
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 80,
@@ -117,7 +131,7 @@ export default {
 							let button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-edit"></i>';
-							button.disabled = this.bearbeitungIsGesperrt;
+							button.disabled = this.planungDeadlinePast;
 							button.addEventListener('click', (event) =>
 								this.editSwLvZuordnung(cell.getRow())
 							);
@@ -126,7 +140,7 @@ export default {
 							button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
 							button.innerHTML = '<i class="fa fa-xmark"></i>';
-							button.disabled = this.bearbeitungIsGesperrt;
+							button.disabled = this.planungDeadlinePast;
 							button.addEventListener('click', () =>
 								this.deleteSwLvs(cell.getRow().getIndex())
 							);
@@ -193,7 +207,7 @@ export default {
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				))
-				.then(() => this.checkBearbeitungIsGesperrt());
+				.then(() => this.checkIfPlanungDeadlinePast());
 		},
 		openModalChangeLicense(){
 			let selectedData = this.table.getSelectedData();
@@ -235,12 +249,12 @@ export default {
 				this.$refs.softwareanforderungTable.reloadTable();
 			}
 		},
-		async checkBearbeitungIsGesperrt(){
+		async checkIfPlanungDeadlinePast(){
 			await this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkIfBearbeitungIsGesperrt', {
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
 					studiensemester_kurzbz: this.selectedStudiensemester
 				})
-				.then((result) => this.bearbeitungIsGesperrt = result.data)
+				.then((result) => this.planungDeadlinePast = result.data)
 				.then(() => this.table.redraw(true) ) // Redraw the table to disable/enable action buttons
 				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
@@ -250,7 +264,7 @@ export default {
 			// Await Studiensemester
 			await this.loadAndSetStudiensemester();
 
-			await this.checkBearbeitungIsGesperrt();
+			await this.checkIfPlanungDeadlinePast();
 
 			// Set table data
 			this.table.setData(

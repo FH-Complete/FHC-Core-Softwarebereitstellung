@@ -21,7 +21,7 @@ export default {
 			table: null,
 			studiensemester: [],
 			selectedStudiensemester: '',
-			bearbeitungIsGesperrt: false,
+			planungDeadlinePast: false,
 			cbDataTree: true, // checkbox display dataTree or not
 			cbDataTreeStartExpanded: false,	// checkbox expand dataTree or not
 			cbGroupStartOpen: true,	// checkbox group organisationseinheit start open
@@ -71,9 +71,21 @@ export default {
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true, width: 200},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
-					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true},
+					{title: 'Schreibberechtigt', field: 'stgOeBerechtigt', headerFilter: true, visible: false},
+					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
+						formatter: (cell) => {
+							const { softwarestatus_kurzbz, softwarestatus_bezeichnung } = cell.getRow().getData();
+
+							// Format Softwarestatus Bezeichnung red if status is End of Life or Nicht verfuegbar
+							return (softwarestatus_kurzbz === 'endoflife' || softwarestatus_kurzbz === 'nichtverfuegbar')
+								? `<span class="text-danger">${softwarestatus_bezeichnung}</span>`
+								: softwarestatus_bezeichnung;
+						}
+					},
+					{title: 'Softwarestatus Kurzbz', field: 'softwarestatus_kurzbz', headerFilter: true, visible: false},
 					{title: 'User-Anzahl', field: 'anzahl_lizenzen', headerFilter: true, width: 100,
-						hozAlign: 'right', frozen: true, editor:"number", editorParams:{
+						hozAlign: 'right', frozen: true, editor:"number",
+						editorParams: {
 							min:0,
 							max:100,
 							step:10,
@@ -82,6 +94,19 @@ export default {
 							},
 							selectContents:true,
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
+						},
+						editable: function(cell) {
+							const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
+
+							// Only editable if 'stgOeBerechtigt' is true
+							return stgOeBerechtigt;
+						},
+						tooltip: function(event, cell) {
+							const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
+
+							if (!stgOeBerechtigt) {
+								return self.$p.t('ui/nurLeseberechtigung');
+							}
 						}
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
@@ -97,7 +122,7 @@ export default {
 								let button = document.createElement('button');
 								button.className = 'btn btn-outline-secondary';
 								button.innerHTML = '<i class="fa fa-edit"></i>';
-								button.disabled = this.bearbeitungIsGesperrt;
+								button.disabled = this.planungDeadlinePast;
 								button.addEventListener('click', (event) =>
 									this.editSwLvZuordnung(cell.getRow())
 								);
@@ -106,7 +131,7 @@ export default {
 								button = document.createElement('button');
 								button.className = 'btn btn-outline-secondary';
 								button.innerHTML = '<i class="fa fa-xmark"></i>';
-								button.disabled = this.bearbeitungIsGesperrt;
+								button.disabled = this.planungDeadlinePast;
 								button.addEventListener('click', () =>
 									this.deleteSwLvs(cell.getRow().getIndex())
 								);
@@ -136,7 +161,7 @@ export default {
 				.setData(CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester))
-				.then(() => this.checkBearbeitungIsGesperrt() );
+				.then(() => this.checkIfPlanungDeadlinePast() );
 		},
 		editSwLvZuordnung(row){
 			// If selected row is a Quellkurs
@@ -163,12 +188,12 @@ export default {
 				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
-		async checkBearbeitungIsGesperrt(){
+		async checkIfPlanungDeadlinePast(){
 			await this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkIfBearbeitungIsGesperrt', {
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
 					studiensemester_kurzbz: this.selectedStudiensemester
 				})
-				.then((result) => this.bearbeitungIsGesperrt = result.data)
+				.then((result) => this.planungDeadlinePast = result.data)
 				.then(() => this.table.redraw(true) ) // Redraw the table to disable/enable action buttons
 				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
@@ -179,7 +204,7 @@ export default {
 			await this.loadAndSetStudiensemester();
 
 			// Check if Bearbeitung is gesperrt
-			await this.checkBearbeitungIsGesperrt();
+			await this.checkIfPlanungDeadlinePast();
 
 			// Set table data
 			this.table.setData(
@@ -247,6 +272,7 @@ export default {
 						item.softwaretyp_kurzbz = null;
 						item.softwaretyp_bezeichnung = null;
 						item.softwarestatus_bezeichnung = null;
+						item.softwarestatus_kurzbz = null;
 					} else {
 						// Mark duplicate Quellkurse for deletion later
 						toDelete.push(itemIdx);
@@ -295,6 +321,27 @@ export default {
 					toDelete.push(index);  
 				}
 			});
+
+			// Flag if berechtigt on Lvs' Stg OE (for further Schreib- or only Leseberechtigung on Lizenzanzahl)
+			this._flagBerechtigtOnStgOe(data);
+		},
+		_flagBerechtigtOnStgOe(swlvs){
+			let params = {
+				studiensemester_kurzbz: this.selectedStudiensemester,
+				lv_ids: swlvs.map(swlv => swlv.lehrveranstaltung_id)
+			}
+
+			this.$fhcApi
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', params)
+				.then (result =>
+				{
+					const data = result.data;
+					swlvs.forEach(swlv => {
+						const match = data.find(item => item.studiengang_kz === swlv.studiengang_kz);
+						swlv.stgOeBerechtigt = !match ? false : true;
+					});
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungVerwaltungTable.tabulator !== null && this.$refs.softwareanforderungVerwaltungTable.tabulator !== undefined)

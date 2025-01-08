@@ -159,6 +159,10 @@ export default {
 					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
+		getSwOptionLabel(sw){
+			const version = sw.version ? sw.version : '-';
+			return `${sw.software_kurzbz} [Version: ${version}]`;
+		},
 		resetForm(){
 			this.$refs.form.clearValidation();
 			this.selectedStudiensemester = this.studiensemester.length > 0 ? this.studiensemester[0].studiensemester_kurzbz : '';
@@ -222,7 +226,7 @@ export default {
 								v-model="selectedSw"
 								name="selectedSw"
 								label="Software *"
-								option-label="software_kurzbz"
+								:option-label="getSwOptionLabel"
 								dropdown
 								forceSelection
 								required

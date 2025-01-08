@@ -17,8 +17,10 @@ class Software_model extends DB_Model
 	 * Get initial table data.
 	 * @return mixed
 	 */
-	public function getSoftwarelistData()
+	public function getSoftwarelistData($exclStatusArr = null)
 	{
+		$params = [];
+
 		$query= "
 			SELECT * FROM (
 				SELECT
@@ -65,10 +67,17 @@ class Software_model extends DB_Model
 					LEFT JOIN extension.tbl_software sw_parent ON sw.software_id_parent = sw_parent.software_id
 				ORDER BY
 					sw.software_id DESC, sw_swstatus.datum DESC, sw_swstatus.software_status_id DESC
-			) software
-			ORDER BY software_kurzbz, version DESC NULLS LAST, software_id DESC";
+			) software";
 
-		return $this->execQuery($query);
+		 	if (is_array($exclStatusArr))
+			{
+				$query.= "  WHERE softwarestatus_kurzbz NOT IN ?";
+				$params[]= $exclStatusArr;
+			}
+
+			$query.= " ORDER BY software_kurzbz, version DESC NULLS LAST, software_id DESC";
+
+		return $this->execQuery($query, $params);
 	}
 
 	/**
@@ -318,7 +327,7 @@ class Software_model extends DB_Model
 		);
 	}
 
-	public function getAutocompleteSuggestions($eventQuery, $filterSoftwarestatusKurzbzArr = null){
+	public function getAutocompleteSuggestions($eventQuery, $exclStatusArr = null){
 		$params[] = '%' . $eventQuery . '%';
 
 		$qry = '
@@ -328,14 +337,26 @@ class Software_model extends DB_Model
 			WHERE software_kurzbz ILIKE ? ';
 
 		/* filter by input string */
-		if (is_array($filterSoftwarestatusKurzbzArr)) {
+		if (is_array($exclStatusArr)) {
 			$qry.= ' AND swstat.software_id NOT IN (
-				  SELECT software_id
-				  FROM extension.tbl_software_softwarestatus
-				  WHERE softwarestatus_kurzbz IN ?
+				SELECT
+				  software_id
+				FROM
+				  (
+					SELECT
+					  DISTINCT ON (software_id) software_id,
+					  softwarestatus_kurzbz
+					FROM
+					  extension.tbl_software_softwarestatus
+					ORDER BY
+					  software_id,
+					  software_status_id DESC
+				  ) ordered_subquery
+				WHERE
+				  softwarestatus_kurzbz IN ?
 			  ) ';
 
-			$params[] = $filterSoftwarestatusKurzbzArr;
+			$params[] = $exclStatusArr;
 		}
 
 		$qry.='	

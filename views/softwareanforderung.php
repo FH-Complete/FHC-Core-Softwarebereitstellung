@@ -1,6 +1,6 @@
 <?php
 	$includesArray = array(
-		'title' => 'Softwareanforderung',
+		'title' => 'Softwarebereitstellung',
 		'vue3' => true,
 		'axios027' => true,
 		'bootstrap5' => true,

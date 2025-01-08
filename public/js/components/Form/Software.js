@@ -380,6 +380,14 @@ export const SoftwareForm = {
 		},
 		setLizenzanzahl(){
 			this.software.anzahl_lizenzen = this.lizenzenSumByStudienjahr;
+		},
+		onChangeLizenzart(){
+			if (this.software.lizenzart === 'opensource')
+			{
+				this.software.anzahl_lizenzen = 0;
+				this.selKostentraegerOE = null;
+				this.software.lizenzkosten = null;
+			}
 		}
 	},
 	template: `
@@ -523,6 +531,7 @@ export const SoftwareForm = {
 					v-model="software.lizenzart"
 					name="lizenzart"
 					:label="$p.t('global/lizenzart')"
+					@change="onChangeLizenzart"
 				>
 				<option v-for="softwarelizenztyp in softwarelizenztypen" 
 					:key="softwarelizenztyp.softwarelizenztyp_kurzbz"

@@ -65,7 +65,7 @@ export default {
 					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
 					{title: this.$p.t('global/lizenzKosten'), field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},
-					{title: 'ID', field: 'software_id', headerFilter: true},
+					{title: 'Software-ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
 					{title: this.$p.t('global/uebergeordneteSoftware'), field: 'software_kurzbz_parent', headerFilter: true},
 					{title: this.$p.t('global/insertamum'), field: 'insertamum', hozAlign:"center", headerFilter: true},

@@ -21,68 +21,79 @@ class Softwareverwaltung extends JOB_Controller
 	}
 
 	/**
-	 * Job to send email notifications for software licenses approaching expiration within 6 weeks.
+	 * Executes multiple messages and sends a single summarizing mail to Softwaremanager.
 	 */
-	public function sendMailSoftwareLizenzlaufzeitEnde(){
+	public function execJobsAndMailToSoftwaremanager(){
 
-		$this->logInfo('Start Job sendMailSoftwareLizenzlaufzeitEnde');
+		$this->logInfo('Start execJobsAndMailToSoftwaremanager');
 
-		// Get Software, where Lizenzlaufzeit ends in 6 weeks from now
-		$result = $this->_ci->SoftwareModel->getSoftwareLizenzlaufzeitendeInInterval('6 WEEKS');
+		// Message collector
+		$allMessages = '';
 
-		if (isError($result))
+		// Check if Planungsdeadline of actual Studienjahr is passed
+		$isPlanungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast();
+
+		// Collect information only after planning deadline
+		if ($isPlanungDeadlinePast)
 		{
-			$this->logError(getError($result));
+			// Task: Get Software-LV-Zuordnungen, that were inserted yesterday by SWB.
+			// ---------------------------------------------------------------------------------------------------------
+			$result = $this->softwarelib->getNewSwLvsFrom('YESTERDAY');
+			if (isError($result)) $this->logError(getError($result));
+
+			$newSwLvs = hasData($result) ? getData($result) : [];
+
+			// Prepare msg string
+			$msg = $this->softwarelib->formatMsgNewSwLvs($newSwLvs);
+
+			// Add msg to msg collector
+			$allMessages.= $msg;
+
+
+			// Task: Get Software-LV-Zuordnungen, that were changed yesterday by SWB. (e.g. change of Lizenzanzahl)
+			// ---------------------------------------------------------------------------------------------------------
+			$result = $this->softwarelib->getChangedSwLvsFrom('YESTERDAY');
+			if (isError($result)) $this->logError(getError($result));
+
+			$changedSwLvs = hasData($result) ? getData($result) : [];
+
+			// Prepare msg string
+			$msg = $this->softwarelib->formatMsgChangedSwLvs($changedSwLvs);
+
+			// Add msg to msg collector
+			$allMessages.= $msg;
 		}
 
-		if (!hasData($result))
+		// Task: Get Software, where Lizenzlaufzeit ends in 10 weeks from now
+		// -------------------------------------------------------------------------------------------------------------
+		$result = $this->_ci->SoftwareModel->getSoftwareLizenzlaufzeitendeInInterval('10 WEEKS');
+		if (isError($result)) $this->logError(getError($result));
+
+		$swLicencesWillEnd = hasData($result) ? getData($result) : [];
+
+		// Prepare msg string
+		$msg = $this->softwarelib->formatMsgSwLicencesWillEnd($swLicencesWillEnd);
+
+		// Add msg to msg collector
+		$allMessages.= $msg;
+
+		// Send email
+		// -------------------------------------------------------------------------------------------------------------
+		if ($allMessages !== '')
 		{
-			$this->logInfo("Kein mail versendet, da keine SW-Lizenzen in 6 Wochen enden.");
-		}
+			// Send email
+			$this->softwarelib->sendMailToSoftwaremanager($allMessages);
 
-		// If SW was found...
-		if (hasData($result))
+			$this->logInfo('End execJobsAndMailToSoftwaremanager: Messages were sent by email.');
+		}
+		else
 		{
-			$today = new DateTime();
-			$today->add(new DateInterval('P6W'));
-			$in6WeeksDate = $today->format('d.m.Y');
-
-			// Start table tag
-			$table = '<table>';
-			$table.= '<tr><th>SW-ID</th><th>SW-Typ</th><th>SW-Kurzbezeichnung</th><th>Lizenzlaufzeit</th></tr>';
-
-			// Loop Software
-			foreach (getData($result) as $sw) {
-				$table.= '<tr>';
-				$table.= '<td>'. $sw->software_id. '</td>';
-				$table.= '<td>'. $sw->bezeichnung. '</td>';
-				$table.= '<td>'. $sw->software_kurzbz. '</td>';
-				$table.= '<td>'. (new DateTime($sw->lizenzlaufzeit))->format('d.m.Y'). '</td>';
-				$table.= '</tr>';
-			}
-			// Close table tag
-			$table.= '</table>';
-
-			// Mail attritutes
-			$to = 'licences@'. DOMAIN;
-			$subject = "SW-Lizenzlaufzeit endet in 6 Wochen am ". $in6WeeksDate. " (SW-Anzahl: ". count(getData($result)). ")";
-			$message = "SW-Lizenzlaufzeit endet in 6 Wochen am ". $in6WeeksDate. " (SW-Anzahl: ". count(getData($result)). ")";
-			$message.= $table;
-
-			// Additional headers
-			$headers = "MIME-Version: 1.0" . "\r\n";
-			$headers.= "Content-type:text/html;charset=UTF-8" . "\r\n";
-
-			// Send mail
-			mail($to, $subject, $message, $headers);
+			$this->logInfo('End execJobsAndMailToSoftwaremanager: No messages. No email sent.');
 		}
-
-		$this->logInfo('Ende Job sendMailSoftwareLizenzlaufzeitEnde');
 	}
 
 	/**
-	 * Executes multiple Softwarebereitstellung tasks and sends a single mail to Softwarebeauftragte summarizing all
-	 * completed tasks.
+	 * Executes multiple messages and sends a single summarizing mail to Softwarebeauftragte.
 	 *
 	 * 1. task: Assign software to newly added standardized LVs whose LV templates are already linked to a software.
 	 *
@@ -97,12 +108,13 @@ class Softwareverwaltung extends JOB_Controller
 		// Prepare to collect all messages
 		$allMessages = [];
 
-		// 1. Task: Assign software to newly added standardized LVs
+		// Task: Assign software to newly added standardized LVs
+		// -------------------------------------------------------------------------------------------------------------
 		$newlyAssignedLvs =  $this->softwarelib->handleUnassignedStandardLvs();
 
 		if (count($newlyAssignedLvs) > 0)
 		{
-			// Group unassigned Lvs
+			// Group newly assigned Lvs
 			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
 				$newlyAssignedLvs,
 				$studiengangToFakultaetMap
@@ -111,18 +123,52 @@ class Softwareverwaltung extends JOB_Controller
 			// Prepare and store messages
 			$allMessages = array_merge(
 				$allMessages,
-				$this->softwarelib->prepareMessagesNewlyAssignedStandardLvs($groupedLvsByFakultaet)
+				$this->softwarelib->formatMsgNewlyAssignedStandardLvs($groupedLvsByFakultaet)
 			);
 		}
 
-		// Group messages by Fakultät OE before sending mails
-		$messagesGroupedByFak = $this->softwarelib->groupMessagesByFakultaet($allMessages);
+		// Task: Notify if Lizenzanzahl is still 0 two weeks before the planning deadline.
+		// -------------------------------------------------------------------------------------------------------------
+		$isTwoWeeksBeforeDeadline = $this->softwarelib->isTwoWeeksBeforePlanningDeadline();
+		
+		if ($isTwoWeeksBeforeDeadline)
+		{
+			$result = $this->SoftwareLvModel->getWhereLizenzanzahl0();
 
-		// Send emails grouped by Fakultät
-		foreach ($messagesGroupedByFak as $oe_kurzbz => $messages) {
-			$this->softwarelib->sendMailToSoftwarebeauftragte($oe_kurzbz, $messages);
+			if (hasData($result))
+			{
+				$swlvsLizAnz0 = getData($result);
+
+				// Group newly assigned Lvs
+				$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+					$swlvsLizAnz0,
+					$studiengangToFakultaetMap
+				);
+
+				$allMessages = array_merge(
+					$allMessages,
+					$this->softwarelib->formatMsgSwLvsLizenzanzahl0($groupedLvsByFakultaet)
+				);
+			}
 		}
 
-		$this->logInfo('End execJobsAndMailToSoftwarebeauftragte');
+		// Send email
+		// -------------------------------------------------------------------------------------------------------------
+		if (count($allMessages) > 0)
+		{
+			// Group messages by Fakultät OE before sending mails
+			$messagesGroupedByFak = $this->softwarelib->groupMessagesByFakultaet($allMessages);
+
+			// Send emails grouped by Fakultät
+			foreach ($messagesGroupedByFak as $oe_kurzbz => $messages) {
+				$this->softwarelib->sendMailToSoftwarebeauftragte($oe_kurzbz, $messages);
+			}
+
+			$this->logInfo('End execJobsAndMailToSoftwarebeauftragte: : Messages were sent by email.');
+		}
+		else
+		{
+			$this->logInfo('End execJobsAndMailToSoftwaremanager: No messages. No email sent.');
+		}
 	}
 }
