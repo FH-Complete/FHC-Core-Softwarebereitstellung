@@ -145,9 +145,12 @@ class SoftwareLib
 		}
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------
 	// JOBS & ALERTS
 	// -----------------------------------------------------------------------------------------------------------------
 
+	// Job Funktionen für Softwarebeauftragte
+	//------------------------------------------------------------------------------------------------------------------
 	/**
 	 * Load all Studiengang OEs and add corresponding Fakultät OE.
 	 *
@@ -359,6 +362,53 @@ class SoftwareLib
 	}
 
 	/**
+	 * Prepare email message regarding newly assigned standardisied Lvs.
+	 *
+	 * @param $groupedLvs	Lvs grouped by Fakultät of the LV Studiengang
+	 * @return array key: oe_kurzbz of Fakultät, value: html message like text and tables
+	 */
+	public function formatMsgExpiredSwStatSwLvs($groupedLvs)
+	{
+		$messages = [];
+
+		// Loop through each group and prepare the emails
+		foreach ($groupedLvs as $oe_kurzbz => $items) {
+
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '<tr>
+						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+						<th style="border: 1px solid #000; padding: 8px;">Lehrveranstaltung</th>
+						<th style="border: 1px solid #000; padding: 8px;">Software</th>
+					</tr>';
+
+			// Loop items in Fakultät
+			foreach ($items as $item) {
+				$table .= '<tr>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . strtoupper($item->stg_oe_kurzbz) . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->orgform_kurzbz . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->bezeichnung . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->software_kurzbz . '</td>';
+				$table .= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+				<p>
+					<b>Softwarebestellungen (bald) nicht mehr möglich.</b></br>
+					Der Softwarestatus wurde für folgende SW-Bestellungen geändert und kann nicht mehr erneut bestellt werden.
+				</p>
+			";
+			$message .= $table;
+			$messages[] = ['oe_kurzbz' => $oe_kurzbz, 'message' => $message];
+		}
+
+		return $messages;
+	}
+
+	/**
 	 * Group messages by Fakultät.
 	 *
 	 * @param $messages Must have key: oe_kurzbz of Fakultät, value: html message like text and tables.
@@ -421,6 +471,10 @@ class SoftwareLib
 		// Send mail
 		mail($to, $subject, $message, $headers);
 	}
+
+
+	// Job Funktionen für Softwarebeauftragte
+	//------------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * Send mail to Softwaremanager.

@@ -152,6 +152,27 @@ class Softwareverwaltung extends JOB_Controller
 			}
 		}
 
+		// Task: Notify if SW Status of SwLvs was set to 'End of Life' or 'Nicht verfügbar' yesterday.
+		// -------------------------------------------------------------------------------------------------------------
+		$result = $this->SoftwareLvModel->getExpiredSwStatusSwLvs('YESTERDAY');
+		if (isError($result)) $this->logError(getError($result));
+
+		if (hasData($result))
+		{
+			$expiredSwStatSwLvs = getData($result);
+
+			// Group newly assigned Lvs
+			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+				$expiredSwStatSwLvs,
+				$studiengangToFakultaetMap
+			);
+
+			$allMessages = array_merge(
+				$allMessages,
+				$this->softwarelib->formatMsgExpiredSwStatSwLvs($groupedLvsByFakultaet)
+			);
+		}
+
 		// Send email
 		// -------------------------------------------------------------------------------------------------------------
 		if (count($allMessages) > 0)

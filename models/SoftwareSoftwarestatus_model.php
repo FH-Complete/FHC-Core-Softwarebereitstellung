@@ -13,15 +13,42 @@ class SoftwareSoftwarestatus_model extends DB_Model
 	}
 
 	/**
-	 * Get last Softwarestatus.
+	 * Get last Softwarestatus by Software ID or for all Software. Can be restricted by date additionally.
 	 *
 	 * @param $software_id integer
 	 * @return mixed
 	 */
-	public function getLastSoftwarestatus($software_id){
-		$this->addOrder('datum, software_status_id', 'DESC'); // software_status_id important if many changes at same date
-		$this->addLimit(1);
-		return $this->loadWhere(array('software_id' => $software_id));
+	public function getLastSoftwarestatus($software_id = null, $date = null){
+
+		if (is_numeric($software_id))
+		{
+			$this->addOrder('datum, software_status_id', 'DESC'); // software_status_id important if many changes at same date
+			$this->addLimit(1);
+			return $this->loadWhere(array('software_id' => $software_id));
+		}
+		else
+		{
+			$qry = '
+				SELECT
+				  DISTINCT ON (software_id) *
+				FROM
+				  extension.tbl_software_softwarestatus
+				WHERE 1 = 1
+			';
+
+			if (!is_null($date))
+			{
+				$qry.= " AND datum = DATE '" . $date . "'";
+			}
+
+			$qry.= '	
+				ORDER BY
+				  software_id,
+				  software_status_id DESC
+			';
+
+			return $this->execQuery($qry);
+		}
 	}
 
 

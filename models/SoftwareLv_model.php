@@ -341,6 +341,66 @@ class SoftwareLv_model extends DB_Model
 		return $this->execQuery($qry, [$studiensemester]);
 	}
 
+	/**
+	 * Get SwLvs entries where the Softwarestatus was changed to 'End of Life' or 'Nicht verfügbar' yesterday.
+	 *
+	 * @param string $date Can be 'TODAY', 'YESTERDAY' or '2025-01-10'
+	 */
+	public function getExpiredSwStatusSwLvs($date = 'YESTERDAY')
+	{
+		// Get expired softwarestatus from config
+		$expiredSwStatus = [];
+		if ($this->config->item('expired_sw_status') && is_array($this->config->item('expired_sw_status')))
+		{
+			$expiredSwStatus = $this->config->item('expired_sw_status');
+		}
+
+		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
+		$result = $this->StudienjahrModel->getCurrStudienjahr();
+		$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
+
+		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$this->StudiensemesterModel->addSelect('studiensemester_kurzbz');
+		$result = $this->StudiensemesterModel->loadWhere(['studienjahr_kurzbz' => $studienjahr_kurzbz]);
+		$studiensemester = array_column(getData($result), 'studiensemester_kurzbz');
+
+		$qry = '
+			-- Get SW where status was changed to endoflife or nichtverfuegbar yesterday
+			WITH latest_expired_status AS (
+			  	SELECT DISTINCT ON (software_id) software_id, softwarestatus_kurzbz
+			  	FROM extension.tbl_software_softwarestatus
+			  	WHERE datum = ?
+				AND softwarestatus_kurzbz IN ?
+			  	ORDER BY software_id, software_status_id DESC
+			)
+
+			-- Get SwLvs, where SW will expire
+			SELECT DISTINCT ON (swlv.software_id, swlv.lehrveranstaltung_id, swlv.studiensemester_kurzbz)
+			  sw.software_kurzbz,
+			  lv.bezeichnung,
+			  lv.orgform_kurzbz,
+			  lv.oe_kurzbz,
+			  stg.oe_kurzbz AS "stg_oe_kurzbz",
+			  swstat.softwarestatus_kurzbz
+			FROM extension.tbl_software_lv swlv
+			  JOIN extension.tbl_software sw USING (software_id)
+			  JOIN lehre.tbl_lehrveranstaltung lv USING (lehrveranstaltung_id)
+			  JOIN public.tbl_studiengang stg USING (studiengang_kz)
+			  JOIN extension.tbl_software_softwarestatus swswstat USING (software_id)
+			  JOIN extension.tbl_softwarestatus swstat USING (softwarestatus_kurzbz)
+			  -- Join to SW where status was changed to endoflife or nichtverfuegbar yesterday
+			  JOIN latest_expired_status ls ON swlv.software_id = ls.software_id
+			  	AND swstat.softwarestatus_kurzbz = ls.softwarestatus_kurzbz
+			WHERE
+			  -- Filter only Winter- and Sommersemester of actual Studienjahr
+			  swlv.studiensemester_kurzbz IN ?
+			  -- Filter only type Lehrveranstaltung (not templates)
+			  AND lv.lehrtyp_kurzbz = \'lv\';
+		';
+
+		return $this->execQuery($qry, [$date, $expiredSwStatus, $studiensemester]);
+	}
+
 	private function _getLanguageIndex()
 	{
 		$this->load->model('system/Sprache_model', 'SpracheModel');

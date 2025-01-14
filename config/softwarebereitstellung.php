@@ -10,3 +10,8 @@ $config['planung_deadline'] = [
 ];
 
 $config['email_softwaremanager'] = 'licences@'. DOMAIN;
+
+$config['expired_sw_status'] = [
+	'endoflife',
+	'nichtverfuegbar'
+];
