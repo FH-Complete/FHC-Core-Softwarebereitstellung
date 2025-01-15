@@ -413,6 +413,29 @@ class Software_model extends DB_Model
 		);
 	}
 
+	/**
+	 * Get SW entries where Lizenzlaufzeit has ended on given date.
+	 *
+	 * @param string $date Can be 'TODAY', 'YESTERDAY' or '2025-01-10'
+	 */
+	public function getSoftwareLizenzAbgelaufen($date = 'YESTERDAY')
+	{
+		$this->addSelect('
+			software_id,
+			swt.bezeichnung[(' . $this->_getLanguageIndex() . ')],
+			software_kurzbz,
+			lizenzart,
+			lizenzlaufzeit'
+		);
+		$this->addJoin('extension.tbl_softwaretyp swt', 'softwaretyp_kurzbz');
+
+		return $this->loadWhere("
+			(lizenzart IS NULL OR lizenzart != 'opensource') AND
+			lizenzlaufzeit = DATE '" . $date . "'
+		"
+		);
+	}
+
 	private function _getLanguageIndex()
 	{
 		$this->load->model('system/Sprache_model', 'SpracheModel');

@@ -714,4 +714,53 @@ class SoftwareLib
 
 		return $message;
 	}
+
+	/**
+	 * Format array of software with licenses close to expiration as table.
+	 * @param array | $swLicencesEnded
+	 * @return string
+	 */
+	public function formatMsgSwLicencesEnded($swLicencesEnded)
+	{
+		$message = '';
+
+		if (is_array($swLicencesEnded) && count($swLicencesEnded) > 0)
+		{
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '<tr>
+							<th style="border: 1px solid #000; padding: 8px;">SW-ID</th>
+							<th style="border: 1px solid #000; padding: 8px;">SW-Typ</th>
+							<th style="border: 1px solid #000; padding: 8px;">SW-Kurzbezeichnung</th>
+							<th style="border: 1px solid #000; padding: 8px;">Lizenzart</th>
+							<th style="border: 1px solid #000; padding: 8px;">Lizenzlaufzeit</th>
+						</tr>';
+
+			// Loop items in Fakultät
+			foreach ($swLicencesEnded as $sw) {
+				$table.= '<tr>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_id. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->bezeichnung. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_kurzbz. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->lizenzart. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. (new DateTime($sw->lizenzlaufzeit))->format('d.m.Y'). '</td>';
+				$table.= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+					<p>
+					<b>Lizenzlaufzeit für lizenzpflichtige SW abgelaufen</b><br>
+					Prüfen Sie, ob es aktive Anforderungen durch die Lehre gibt.<br>
+					Die Lizenzlaufzeit muss entsprechend verlängert, oder die SW abbestellt werden.
+					</p>
+				";
+			$message .= $table;
+
+			$message .= "<br>";
+		}
+
+		return $message;
+	}
 }
