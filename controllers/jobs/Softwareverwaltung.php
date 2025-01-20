@@ -62,8 +62,8 @@ class Softwareverwaltung extends JOB_Controller
 
 			// Mail attritutes
 			$to = 'licences@'. DOMAIN;
-			$subject = "SW-Lizenzlaufzeit endet in 6 Wochen am ". $in6WeeksDate. " (SW-Anzahl: ". count(getData($result)). ")";
-			$message = "SW-Lizenzlaufzeit endet in 6 Wochen am ". $in6WeeksDate. " (SW-Anzahl: ". count(getData($result)). ")";
+			$subject = "SW-Lizenzlaufzeit endet in 6 Wochen am ". $in6WeeksDate. " (SW-Anzahl: ". numberOfElements(getData($result)). ")";
+			$message = "SW-Lizenzlaufzeit endet in 6 Wochen am ". $in6WeeksDate. " (SW-Anzahl: ". numberOfElements(getData($result)). ")";
 			$message.= $table;
 
 			// Additional headers
