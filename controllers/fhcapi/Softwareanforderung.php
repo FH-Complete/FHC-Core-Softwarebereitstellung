@@ -321,26 +321,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		// If is Quellkurs
 		if ($isTemplate)
 		{
-			// Get zugehörige Lv-Sw-Zuordnungen
-			$this->LehrveranstaltungModel->addSelect('lehrveranstaltung_id');
-			$result = $this->LehrveranstaltungModel->loadWhere([
-				'lehrveranstaltung_template_id' => $lehrveranstaltung_id
-			]);
-
-			$assignedLvIds = hasData($result) ? getData($result) : [];
-
-			// Get software_lv_id from zugehörige Lv-Sw-Zuordnungen
-			if (count($assignedLvIds) > 0)
-			{
-				$this->SoftwareLvModel->addSelect('software_lv_id');
-				$result = $this->SoftwareLvModel->loadWhere('
-					lehrveranstaltung_id IN (' . implode(', ',
-						array_column($assignedLvIds, 'lehrveranstaltung_id')) . ') AND
-					software_id = '. $this->db->escape($software_id). ' AND
-					studiensemester_kurzbz = '. $this->db->escape($studiensemester_kurzbz)
-				);
-
-				$assignedSwLvIds = hasData($result) ? getData($result) : [];
+			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
+			$assignedSwLvs = hasData($result) ? getData($result) : [];
 
 				// Store software_lv_ids for update
 				$updateSoftwareLvIds = array_merge(
@@ -413,26 +395,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		// If is Quellkurs
 		if ($isTemplate)
 		{
-			// Get zugehörige Lv-Sw-Zuordnungen
-			$this->LehrveranstaltungModel->addSelect('lehrveranstaltung_id');
-			$result = $this->LehrveranstaltungModel->loadWhere([
-				'lehrveranstaltung_template_id' => $lehrveranstaltung_id
-			]);
-
-			$assignedLvIds = hasData($result) ? getData($result) : [];
-
-			// Get software_lv_id from zugehörige Lv-Sw-Zuordnungen
-			if (count($assignedLvIds) > 0)
-			{
-				$this->SoftwareLvModel->addSelect('software_lv_id');
-				$result = $this->SoftwareLvModel->loadWhere('
-					lehrveranstaltung_id IN (' . implode(', ',
-						array_column($assignedLvIds, 'lehrveranstaltung_id')) . ') AND
-					software_id = '. $this->db->escape($software_id). ' AND
-					studiensemester_kurzbz = '. $this->db->escape($studiensemester_kurzbz)
-				);
-
-				$assignedSwLvIds = hasData($result) ? getData($result) : [];
+			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
+			$assignedSwLvs = hasData($result) ? getData($result) : [];
 
 				// Store software_lv_ids for deletion
 				$deleteSoftwareLvIds = array_merge(

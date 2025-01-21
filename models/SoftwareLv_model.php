@@ -151,6 +151,38 @@ class SoftwareLv_model extends DB_Model
 	}
 
 	/**
+	 * Get all Software-Lehrveranstaltungs-Zuordnungen of given Template.
+	 * Returns all assigned SwLvs - not Quellkurs itself.
+	 *
+	 * @param $lehrveranstaltung_template_id
+	 * @param $software_id
+	 * @param $studiensemester_kurzbz
+	 */
+	public function getSwLvsByTemplate($lehrveranstaltung_template_id, $software_id, $studiensemester_kurzbz)
+	{
+		// Get zugehörige Lv-Sw-Zuordnungen
+		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
+		$this->LehrveranstaltungModel->addSelect('lehrveranstaltung_id');
+		$result = $this->LehrveranstaltungModel->loadWhere([
+			'lehrveranstaltung_template_id' => $lehrveranstaltung_template_id
+		]);
+
+		if(hasData($result))
+		{
+			$this->addSelect('software_lv_id, lehrveranstaltung_id, software_id, studiensemester_kurzbz, studiengang_kz, stg.oe_kurzbz AS "stg_oe_kurzbz", lv.bezeichnung');
+			$this->addJoin('lehre.tbl_lehrveranstaltung lv', 'lehrveranstaltung_id');
+			$this->addJoin('public.tbl_studiengang stg', 'studiengang_kz');
+			return $this->loadWhere('
+				lehrtyp_kurzbz = \'lv\' AND
+				lehrveranstaltung_id IN (' . implode(', ',
+				array_column(getData($result), 'lehrveranstaltung_id')) . ') AND
+				software_id = ' . $this->db->escape($software_id) . ' AND
+				studiensemester_kurzbz = ' . $this->db->escape($studiensemester_kurzbz)
+			);
+		}
+	}
+
+	/**
 	 * Save multiple Software-Lehrveranstaltungs-Zuordnungen
 	 * @param $batch
 	 * @return mixed
