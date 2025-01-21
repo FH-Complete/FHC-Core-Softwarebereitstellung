@@ -324,11 +324,26 @@ class Softwareanforderung extends FHCAPI_Controller
 			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
 			$assignedSwLvs = hasData($result) ? getData($result) : [];
 
-				// Store software_lv_ids for update
-				$updateSoftwareLvIds = array_merge(
-					[$this->input->post('software_lv_id')], // template
-					array_column($assignedSwLvIds, 'software_lv_id') // zugehörige lvs
-				);
+			// Store software_lv_ids for update
+			$updateSoftwareLvIds = array_merge(
+				[$this->input->post('software_lv_id')], // template
+				array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
+			);
+
+			// Send mail to other Softwarebeauftragte concerned
+			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
+			$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+			$msg = $this->softwarelib->formatMsgQuellkursSwLvEdited($lehrveranstaltung_id, $software_id, $updated_software_id);		// Format message
+
+			foreach (array_keys($grouped) as $fak_oe_kurzbz)
+			{
+				// If not the users own Fakultät
+				if (!in_array($fak_oe_kurzbz, $entitledOes))
+				{
+					// Send mail to other concerned SWB
+					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
+				}
 			}
 		}
 		// Else is not a Quellkurs. Its a single Lehrveranstaltung.
@@ -398,11 +413,26 @@ class Softwareanforderung extends FHCAPI_Controller
 			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
 			$assignedSwLvs = hasData($result) ? getData($result) : [];
 
-				// Store software_lv_ids for deletion
-				$deleteSoftwareLvIds = array_merge(
-					[$this->input->post('software_lv_id')], // template
-					array_column($assignedSwLvIds, 'software_lv_id') // zugehörige lvs
-				);
+			// Store software_lv_ids for deletion
+			$deleteSoftwareLvIds = array_merge(
+				[$this->input->post('software_lv_id')], // template
+				array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
+			);
+
+			// Send mail to other Softwarebeauftragte concerned
+			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
+			$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+			$msg = $this->softwarelib->formatMsgQuellkursSwLvDeleted($lehrveranstaltung_id, $software_id);		// Format message
+
+			foreach (array_keys($grouped) as $fak_oe_kurzbz)
+			{
+				// If not the users own Fakultät
+				if (!in_array($fak_oe_kurzbz, $entitledOes))
+				{
+					// Send mail to other concerned SWB
+					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
+				}
 			}
 		}
 		// Else is not a Quellkurs. Its a single Lehrveranstaltung.

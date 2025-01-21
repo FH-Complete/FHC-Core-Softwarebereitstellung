@@ -409,6 +409,38 @@ class SoftwareLib
 	}
 
 	/**
+	 * Prepare email message for edited Quellkurs SwLv (when SW is changed or updated to higher version).
+	 *
+	 * @param $lehrveranstaltung_id
+	 * @param $old_software_id
+	 * @param $updated_software_id
+	 * @return string
+	 */
+	public function formatMsgQuellkursSwLvEdited($lehrveranstaltung_id, $old_software_id, $updated_software_id){
+		$lvBezeichnung = $this->_getLvBezeichnung($lehrveranstaltung_id);
+		$oldSwKurzbzAndVersion = $this->_getSwKurzbzAndVersion($old_software_id);
+		$updatedSwKurzbzAndVersion = $this->_getSwKurzbzAndVersion($updated_software_id);
+
+		return "<p><b>". 'Softwarebestellung von Softwarebeauftragten über den Quellkurs geändert'. "</b></p>".
+			'Software geändert für LV '. $lvBezeichnung. ': '. $oldSwKurzbzAndVersion. ' GEÄNDERT ZU '. $updatedSwKurzbzAndVersion;
+	}
+
+	/**
+	 * Prepare email message for deleted Quellkurs SwLv.
+	 *
+	 * @param $lehrveranstaltung_id
+	 * @param $deleted_software_id
+	 * @return string
+	 */
+	public function formatMsgQuellkursSwLvDeleted($lehrveranstaltung_id, $deleted_software_id){
+		$lvBezeichnung = $this->_getLvBezeichnung($lehrveranstaltung_id);
+		$deletedSwKurzbzAndVersion = $this->_getSwKurzbzAndVersion($deleted_software_id);
+
+		return "<p><b>". 'Softwarebestellung von Softwarebeauftragten über den Quellkurs gelöscht'. "</b></p>".
+			'Softwarebestellung gelöscht für LV '. $lvBezeichnung. ' + Software '. $deletedSwKurzbzAndVersion;
+	}
+
+	/**
 	 * Group messages by Fakultät.
 	 *
 	 * @param $messages Must have key: oe_kurzbz of Fakultät, value: html message like text and tables.
@@ -762,5 +794,34 @@ class SoftwareLib
 		}
 
 		return $message;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// PRIVATE FUNCTIONS
+	// -----------------------------------------------------------------------------------------------------------------
+	/**
+	 * Get Software Bezeichnung and Version by given Software.
+	 *
+	 * @param $software_id
+	 * @return string	Returns like this: Software ABC [Version: 1.1]
+	 */
+	private function _getSwKurzbzAndVersion($software_id){
+		$this->_ci->SoftwareModel->addSelect('software_kurzbz, version');
+		$result = $this->_ci->SoftwareModel->load($software_id);
+
+		return hasData($result) ? getData($result)[0]->software_kurzbz. ' [Version: '. getData($result)[0]->version. ']' : '';
+	}
+
+	/**
+	 * Get Lehrveranstaltung Bezeichnung by given Lehrveranstaltung.
+	 *
+	 * @param $lehrveranstaltung_id
+	 * @return string
+	 */
+	private function _getLvBezeichnung($lehrveranstaltung_id){
+		$this->_ci->LehrveranstaltungModel->addSelect('bezeichnung');
+		$result = $this->_ci->LehrveranstaltungModel->load($lehrveranstaltung_id);
+
+		return hasData($result) ? getData($result)[0]->bezeichnung : '';
 	}
 }
