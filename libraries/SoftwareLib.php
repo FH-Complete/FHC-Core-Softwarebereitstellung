@@ -254,6 +254,7 @@ class SoftwareLib
 		foreach ($lv_arr as $item) {
 			foreach ($stg_oe_arr as $stg_oe) {
 				if ($item->stg_oe_kurzbz === $stg_oe->oe_kurzbz) {
+					// Add FAK OE of lvs' stg
 					$item->stg_fak_oe_kurzbz = $stg_oe->stg_fak_oe_kurzbz;
 				}
 			}
@@ -313,7 +314,7 @@ class SoftwareLib
 	}
 
 	/**
-	 * Prepare email message regarding newly assigned standardisied Lvs.
+	 * Prepare email message regarding SwLvs with Lizenzanzahl 0.
 	 *
 	 * @param $groupedLvs	Lvs grouped by Fakultät of the LV Studiengang
 	 * @return array key: oe_kurzbz of Fakultät, value: html message like text and tables
@@ -362,7 +363,7 @@ class SoftwareLib
 	}
 
 	/**
-	 * Prepare email message regarding newly assigned standardisied Lvs.
+	 * Prepare email message regarding SwLvs with Expired Status like 'end of life' and 'nicht verfügbar'.
 	 *
 	 * @param $groupedLvs	Lvs grouped by Fakultät of the LV Studiengang
 	 * @return array key: oe_kurzbz of Fakultät, value: html message like text and tables
@@ -466,7 +467,7 @@ class SoftwareLib
 	/**
 	 * Send mail to Softwarebeauftragte.
 	 *
-	 * @param $oe_kurzbz
+	 * @param string $oe_kurzbz	oe_kurzbz of Fakultät
 	 * @param $messages
 	 */
 	public function sendMailToSoftwarebeauftragte($oe_kurzbz, $messages)
@@ -505,56 +506,8 @@ class SoftwareLib
 	}
 
 
-	// Job Funktionen für Softwarebeauftragte
+	// Job Funktionen für Softwaremanager
 	//------------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Send mail to Softwaremanager.
-	 *
-	 * @param $oe_kurzbz
-	 * @param $messages
-	 */
-	public function sendMailToSoftwaremanager($messages)
-	{
-		// Create mail receiver
-		$to = [];
-
-		if ($this->_ci->config->item('email_softwaremanager'))
-		{
-			// Get email from config variable
-			$to[] = $this->_ci->config->item('email_softwaremanager');
-		}
-		else
-		{
-			// Get authorized uids
-			$this->_ci->load->model('system/Benutzerrolle_model', 'BenutzerrolleModel');
-			$result = $this->_ci->BenutzerrolleModel->getBenutzerByBerechtigung(
-				self::PERMISSION_SOFTWARE_VERWALTEN
-			);
-
-			// Continue if no authenticated user found
-			if (!hasData($result)) {
-				return;
-			}
-
-			foreach (getData($result) as $authUser) {
-				$to[] = $authUser->uid . '@' . DOMAIN;
-			}
-		}
-
-		// Set mail attributes
-		$to = implode(',', $to);
-		$subject = "Softwarebereitstellung - Updates";
-		$message = is_array($messages) ? implode('<br>', $messages) : $messages;
-
-		// Additional headers
-		$headers = "MIME-Version: 1.0" . "\r\n";
-		$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-
-		// Send mail
-		mail($to, $subject, $message, $headers);
-	}
-
 	/**
 	 * Get new SwLvs that were inserted today.
 	 * Only of type 'lv' (no templates).
@@ -794,6 +747,53 @@ class SoftwareLib
 		}
 
 		return $message;
+	}
+
+	/**
+	 * Send mail to Softwaremanager.
+	 *
+	 * @param $oe_kurzbz
+	 * @param $messages
+	 */
+	public function sendMailToSoftwaremanager($messages)
+	{
+		// Create mail receiver
+		$to = [];
+
+		if ($this->_ci->config->item('email_softwaremanager'))
+		{
+			// Get email from config variable
+			$to[] = $this->_ci->config->item('email_softwaremanager');
+		}
+		else
+		{
+			// Get authorized uids
+			$this->_ci->load->model('system/Benutzerrolle_model', 'BenutzerrolleModel');
+			$result = $this->_ci->BenutzerrolleModel->getBenutzerByBerechtigung(
+				self::PERMISSION_SOFTWARE_VERWALTEN
+			);
+
+			// Continue if no authenticated user found
+			if (!hasData($result)) {
+				return;
+			}
+
+			foreach (getData($result) as $authUser) {
+				$to[] = $authUser->uid . '@' . DOMAIN;
+			}
+		}
+
+		// Set mail attributes
+		$to = implode(',', $to);
+		$subject = "Softwarebereitstellung - Updates";
+		$message = is_array($messages) ? implode('<br>', $messages) : $messages;
+
+		// Additional headers
+		$headers = "MIME-Version: 1.0" . "\r\n";
+		$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+		// Send mail
+		mail($to, $subject, $message, $headers);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------

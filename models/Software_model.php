@@ -234,7 +234,6 @@ class Software_model extends DB_Model
 		return $this->execQuery($query, array($software_id));
 	}
 
-
 	/**
 	 * Get all children software of given software.
 	 *

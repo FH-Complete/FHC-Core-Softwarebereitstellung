@@ -51,7 +51,6 @@ class SoftwareSoftwarestatus_model extends DB_Model
 		}
 	}
 
-
 	/**
 	 * Insert Softwarestatus after check to avoid double entries.
 	 * Inserts only if last softwarestatus is different from given softwarestatus (avoid double entries).

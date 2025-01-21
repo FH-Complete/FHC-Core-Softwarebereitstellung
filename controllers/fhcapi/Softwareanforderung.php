@@ -290,12 +290,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Get Lehrveranstaltung and Software by software_lv_id
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
 		$result = $this->SoftwareLvModel->load($software_lv_id);
-
-		if (hasData($result))
-		{
-			$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
-			$software_id = getData($result)[0]->software_id;
-		}
+		$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
+		$software_id = getData($result)[0]->software_id;
 
 		// Check if posted SW LV Zuordnungen already exists
 		$result = $this->_checkAndGetExistingSwLvs([
