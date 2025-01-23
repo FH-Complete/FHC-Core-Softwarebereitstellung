@@ -87,14 +87,14 @@ export default {
 						hozAlign: 'right', frozen: true, editor:"number",
 						editorParams: {
 							min:0,
-							max:100,
-							step:10,
+							max:999,
 							elementAttributes:{
 								maxlength:"3",
 							},
 							selectContents:true,
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
 						},
+						validator: ["min:0", "maxLength:3", "integer"],
 						editable: function(cell) {
 							const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
 
