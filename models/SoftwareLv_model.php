@@ -380,13 +380,6 @@ class SoftwareLv_model extends DB_Model
 	 */
 	public function getExpiredSwStatusSwLvs($date = 'YESTERDAY')
 	{
-		// Get expired softwarestatus from config
-		$expiredSwStatus = [];
-		if ($this->config->item('expired_sw_status') && is_array($this->config->item('expired_sw_status')))
-		{
-			$expiredSwStatus = $this->config->item('expired_sw_status');
-		}
-
 		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
 		$result = $this->StudienjahrModel->getCurrStudienjahr();
 		$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
@@ -430,7 +423,9 @@ class SoftwareLv_model extends DB_Model
 			  AND lv.lehrtyp_kurzbz = \'lv\';
 		';
 
-		return $this->execQuery($qry, [$date, $expiredSwStatus, $studiensemester]);
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+
+		return $this->execQuery($qry, [$date, Softwarestatus_model::STATUSES_EXPIRED, $studiensemester]);
 	}
 
 	private function _getLanguageIndex()
