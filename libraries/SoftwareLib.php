@@ -88,6 +88,12 @@ class SoftwareLib
 		return getData($planungDeadline) < $today;
 	}
 
+	/**
+	 * Check if today is exactly 2 weeks before Planning Deadline.
+	 *
+	 * @param null $studiensemester_kurzbz
+	 * @return bool
+	 */
 	public function isTwoWeeksBeforePlanningDeadline($studiensemester_kurzbz = null)
 	{
 		$planungDeadline = $this->getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz);
@@ -722,7 +728,7 @@ class SoftwareLib
 	}
 
 	/**
-	 * Format array of software with licenses close to expiration as table.
+	 * Format array of software with licenses ended as table.
 	 * @param array | $swLicencesEnded
 	 * @return string
 	 */

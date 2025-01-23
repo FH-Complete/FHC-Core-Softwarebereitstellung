@@ -16,7 +16,6 @@ class Softwareverwaltung extends JOB_Controller
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
-
 		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
 	}
 
@@ -33,7 +32,7 @@ class Softwareverwaltung extends JOB_Controller
 		// Check if Planungsdeadline of actual Studienjahr is passed
 		$isPlanungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast();
 
-		// Collect information only after planning deadline
+		// Execute tasks only after planning deadline
 		if ($isPlanungDeadlinePast)
 		{
 			// Task: Get Software-LV-Zuordnungen, that were inserted yesterday by SWB.
@@ -106,7 +105,7 @@ class Softwareverwaltung extends JOB_Controller
 		// Add msg to msg collector
 		$allMessages.= $msg;
 
-		// Task: Get licensed Software (not open source), where Lizenzlaufzeit has end and Lizenzanzahl is 0
+		// Task: Get licensed Software (not open source), where Lizenzlaufzeit has end
 		// -------------------------------------------------------------------------------------------------------------
 		$result = $this->_ci->SoftwareModel->getSoftwareLizenzAbgelaufen('YESTERDAY');
 		if (isError($result)) $this->logError(getError($result));

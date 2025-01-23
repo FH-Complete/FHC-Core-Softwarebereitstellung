@@ -13,9 +13,11 @@ class SoftwareSoftwarestatus_model extends DB_Model
 	}
 
 	/**
-	 * Get last Softwarestatus by Software ID or for all Software. Can be restricted by date additionally.
+	 * Get last Softwarestatus by Software ID(s) or for all Software. Can be filtered by Date and Softwarestatus.
 	 *
-	 * @param $software_id integer
+	 * @param null | integer | array $software_id
+	 * @param null | string $date Can be e.g. 'YESTERDAY' or '2025-01-01'
+	 * @param null | array $softwarestatus_kurzbz
 	 * @return mixed
 	 */
 	public function getLastSoftwarestatus($software_id = null, $date = null, $softwarestatus_kurzbz = null)
@@ -114,4 +116,14 @@ class SoftwareSoftwarestatus_model extends DB_Model
 
 		return success();
     }
+
+	private function _getLanguageIndex()
+	{
+		$this->load->model('system/Sprache_model', 'SpracheModel');
+		$this->SpracheModel->addSelect('index');
+		$result = $this->SpracheModel->loadWhere(array('sprache' => getUserLanguage()));
+
+		// Return language index
+		return hasData($result) ? getData($result)[0]->index : 1;
+	}
 }
