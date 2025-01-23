@@ -18,37 +18,54 @@ class SoftwareSoftwarestatus_model extends DB_Model
 	 * @param $software_id integer
 	 * @return mixed
 	 */
-	public function getLastSoftwarestatus($software_id = null, $date = null){
+	public function getLastSoftwarestatus($software_id = null, $date = null, $softwarestatus_kurzbz = null)
+	{
+		$params = [];
+
+		$qry = '
+			SELECT
+			  	swswstat.*,
+			  	swstat.softwarestatus_kurzbz,
+			  	swstat.bezeichnung [(' . $this->_getLanguageIndex() . ')] AS softwarestatus_bezeichnung
+			FROM
+			  	extension.tbl_software_softwarestatus swswstat
+			  	JOIN extension.tbl_softwarestatus swstat USING (softwarestatus_kurzbz)
+			WHERE
+			  	(
+					swswstat.software_id,
+					swswstat.software_status_id
+			  	) 	IN (
+					SELECT
+					  software_id,
+					  MAX(software_status_id)
+					FROM
+					  extension.tbl_software_softwarestatus
+					GROUP BY
+					  software_id
+			  )
+		';
+
+		if (is_array($softwarestatus_kurzbz)){
+			$qry.= ' AND softwarestatus_kurzbz IN ?';
+			$params[]= $softwarestatus_kurzbz;
+		}
 
 		if (is_numeric($software_id))
 		{
-			$this->addOrder('datum, software_status_id', 'DESC'); // software_status_id important if many changes at same date
-			$this->addLimit(1);
-			return $this->loadWhere(array('software_id' => $software_id));
+			$qry.= ' AND software_id = ?';
+			$params[]= $software_id;
 		}
-		else
-		{
-			$qry = '
-				SELECT
-				  DISTINCT ON (software_id) *
-				FROM
-				  extension.tbl_software_softwarestatus
-				WHERE 1 = 1
-			';
-
-			if (!is_null($date))
-			{
-				$qry.= " AND datum = DATE '" . $date . "'";
-			}
-
-			$qry.= '	
-				ORDER BY
-				  software_id,
-				  software_status_id DESC
-			';
-
-			return $this->execQuery($qry);
+		elseif (is_array($software_id)){
+			$qry.= ' AND software_id IN ?';
+			$params[]= $software_id;
 		}
+
+		if (!is_null($date)){
+			$qry.= ' AND datum = DATE ?';
+			$params[]= $date;
+		}
+
+		return $this->execQuery($qry, $params);
 	}
 
 	/**
