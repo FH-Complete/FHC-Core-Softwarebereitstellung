@@ -64,6 +64,35 @@ class Softwareverwaltung extends JOB_Controller
 			$allMessages.= $msg;
 		}
 
+		// Check if today is 2 weeks before start of upcoming Studiensemester
+		$isTwoWeeksBeforeNextSemesterstart = $this->_ci->softwarelib->isTwoWeeksBeforeNextSemesterstart();
+
+		// Execute tasks only if 2 weeks before next Studiensemester
+		if ($isTwoWeeksBeforeNextSemesterstart)
+		{
+			// Task: Get software not installed yet but needed soon in upcoming Studiensemester
+			// ---------------------------------------------------------------------------------------------------------
+			$this->_ci->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+			$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+
+			$result = $this->_ci->StudiensemesterModel->getNext();
+			$nextSem = getData($result)[0];
+
+			$result = $this->_ci->SoftwareModel->getSoftwareByStatusAndSemester(
+				$nextSem->studiensemester_kurzbz,
+				Softwarestatus_model::STATUSES_BEFORE_INSTALLATION
+			);
+			if (isError($result)) $this->logError(getError($result));
+
+			$uninstalledSw = hasData($result) ? getData($result) : [];
+
+			// Prepare msg string
+			$msg = $this->softwarelib->formatMsgUninstalledSw($uninstalledSw);
+
+			// Add msg to msg collector
+			$allMessages.= $msg;
+		}
+
 		// Task: Get Software, where Lizenzlaufzeit ends in 10 weeks from now
 		// -------------------------------------------------------------------------------------------------------------
 		$result = $this->_ci->SoftwareModel->getSoftwareLizenzlaufzeitendeInInterval('10 WEEKS');

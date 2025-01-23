@@ -103,6 +103,27 @@ class SoftwareLib
 	}
 
 	/**
+	 * Check if today is exactly 2 weeks before upcoming Studiensemester starts.
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function isTwoWeeksBeforeNextSemesterstart()
+	{
+		$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$result = $this->_ci->StudiensemesterModel->getNext();
+		$nextSem = getData($result)[0];
+
+		$nextSemStart = new DateTime($nextSem->start);
+		$twoWeeksBeforeNextSemStart = $nextSemStart->sub(new DateInterval('P2W'));
+
+		$today = new DateTime();
+		$today->setTime(0, 0, 0);
+
+		return $today === $twoWeeksBeforeNextSemStart;
+	}
+
+	/**
 	 * Get Planungsdeadline of actual Studienjahr.
 	 *
 	 * @param $studiensemester_kurzbz
@@ -739,6 +760,55 @@ class SoftwareLib
 					<b>Lizenzlaufzeit für lizenzpflichtige SW abgelaufen</b><br>
 					Prüfen Sie, ob es aktive Anforderungen durch die Lehre gibt.<br>
 					Die Lizenzlaufzeit muss entsprechend verlängert, oder die SW abbestellt werden.
+					</p>
+				";
+			$message .= $table;
+
+			$message .= "<br>";
+		}
+
+		return $message;
+	}
+
+	/**
+	 * Format array of uninstalled software as table.
+	 *
+	 * @param array | $swLicencesEnded
+	 * @return string
+	 */
+	public function formatMsgUninstalledSw($uninstalledSw)
+	{
+		$message = '';
+
+		if (is_array($uninstalledSw) && count($uninstalledSw) > 0)
+		{
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '
+				<tr>
+					<th style="border: 1px solid #000; padding: 8px;">SW-ID</th>
+					<th style="border: 1px solid #000; padding: 8px;">SW-Kurzbezeichnung</th>
+					<th style="border: 1px solid #000; padding: 8px;">Version</th>
+					<th style="border: 1px solid #000; padding: 8px;">Softwarestatus</th>
+				</tr>';
+
+			// Loop items in Fakultät
+			foreach ($uninstalledSw as $sw) {
+				$table.= '<tr>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_id. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_kurzbz. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->version. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->softwarestatus_bezeichnung. '</td>';
+				$table.= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+					<p>
+					<b>Bestellte SW muss für kommendes Studiensemester installiert werden</b><br>
+					Im kommenden Studiensemester ist Software bestellt, wo der Status noch nicht 'Verfügbar' ist.<br>
+					Prüfen Sie, ob die Software schon installiert wurde und/oder ändern Sie den Status.
 					</p>
 				";
 			$message .= $table;
