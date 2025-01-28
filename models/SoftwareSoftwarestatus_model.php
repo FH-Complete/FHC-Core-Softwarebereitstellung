@@ -13,17 +13,62 @@ class SoftwareSoftwarestatus_model extends DB_Model
 	}
 
 	/**
-	 * Get last Softwarestatus.
+	 * Get last Softwarestatus by Software ID(s) or for all Software. Can be filtered by Date and Softwarestatus.
 	 *
-	 * @param $software_id integer
+	 * @param null | integer | array $software_id
+	 * @param null | string $date Can be e.g. 'YESTERDAY' or '2025-01-01'
+	 * @param null | array $softwarestatus_kurzbz
 	 * @return mixed
 	 */
-	public function getLastSoftwarestatus($software_id){
-		$this->addOrder('datum, software_status_id', 'DESC'); // software_status_id important if many changes at same date
-		$this->addLimit(1);
-		return $this->loadWhere(array('software_id' => $software_id));
-	}
+	public function getLastSoftwarestatus($software_id = null, $date = null, $softwarestatus_kurzbz = null)
+	{
+		$params = [];
 
+		$qry = '
+			SELECT
+			  	swswstat.*,
+			  	swstat.softwarestatus_kurzbz,
+			  	swstat.bezeichnung [(' . $this->_getLanguageIndex() . ')] AS softwarestatus_bezeichnung
+			FROM
+			  	extension.tbl_software_softwarestatus swswstat
+			  	JOIN extension.tbl_softwarestatus swstat USING (softwarestatus_kurzbz)
+			WHERE
+			  	(
+					swswstat.software_id,
+					swswstat.software_status_id
+			  	) 	IN (
+					SELECT
+					  software_id,
+					  MAX(software_status_id)
+					FROM
+					  extension.tbl_software_softwarestatus
+					GROUP BY
+					  software_id
+			  )
+		';
+
+		if (is_array($softwarestatus_kurzbz)){
+			$qry.= ' AND softwarestatus_kurzbz IN ?';
+			$params[]= $softwarestatus_kurzbz;
+		}
+
+		if (is_numeric($software_id))
+		{
+			$qry.= ' AND software_id = ?';
+			$params[]= $software_id;
+		}
+		elseif (is_array($software_id)){
+			$qry.= ' AND software_id IN ?';
+			$params[]= $software_id;
+		}
+
+		if (!is_null($date)){
+			$qry.= ' AND datum = DATE ?';
+			$params[]= $date;
+		}
+
+		return $this->execQuery($qry, $params);
+	}
 
 	/**
 	 * Insert Softwarestatus after check to avoid double entries.
@@ -71,4 +116,14 @@ class SoftwareSoftwarestatus_model extends DB_Model
 
 		return success();
     }
+
+	private function _getLanguageIndex()
+	{
+		$this->load->model('system/Sprache_model', 'SpracheModel');
+		$this->SpracheModel->addSelect('index');
+		$result = $this->SpracheModel->loadWhere(array('sprache' => getUserLanguage()));
+
+		// Return language index
+		return hasData($result) ? getData($result)[0]->index : 1;
+	}
 }

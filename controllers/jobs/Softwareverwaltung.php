@@ -16,7 +16,6 @@ class Softwareverwaltung extends JOB_Controller
 
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
-
 		$this->load->library('extensions/FHC-Core-Softwarebereitstellung/SoftwareLib');
 	}
 
@@ -33,7 +32,7 @@ class Softwareverwaltung extends JOB_Controller
 		// Check if Planungsdeadline of actual Studienjahr is passed
 		$isPlanungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast();
 
-		// Collect information only after planning deadline
+		// Execute tasks only after planning deadline
 		if ($isPlanungDeadlinePast)
 		{
 			// Task: Get Software-LV-Zuordnungen, that were inserted yesterday by SWB.
@@ -64,6 +63,35 @@ class Softwareverwaltung extends JOB_Controller
 			$allMessages.= $msg;
 		}
 
+		// Check if today is 2 weeks before start of upcoming Studiensemester
+		$isTwoWeeksBeforeNextSemesterstart = $this->_ci->softwarelib->isTwoWeeksBeforeNextSemesterstart();
+
+		// Execute tasks only if 2 weeks before next Studiensemester
+		if ($isTwoWeeksBeforeNextSemesterstart)
+		{
+			// Task: Get software not installed yet but needed soon in upcoming Studiensemester
+			// ---------------------------------------------------------------------------------------------------------
+			$this->_ci->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+			$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+
+			$result = $this->_ci->StudiensemesterModel->getNext();
+			$nextSem = getData($result)[0];
+
+			$result = $this->_ci->SoftwareModel->getSoftwareByStatusAndSemester(
+				$nextSem->studiensemester_kurzbz,
+				Softwarestatus_model::STATUSES_BEFORE_INSTALLATION
+			);
+			if (isError($result)) $this->logError(getError($result));
+
+			$uninstalledSw = hasData($result) ? getData($result) : [];
+
+			// Prepare msg string
+			$msg = $this->softwarelib->formatMsgUninstalledSw($uninstalledSw);
+
+			// Add msg to msg collector
+			$allMessages.= $msg;
+		}
+
 		// Task: Get Software, where Lizenzlaufzeit ends in 10 weeks from now
 		// -------------------------------------------------------------------------------------------------------------
 		$result = $this->_ci->SoftwareModel->getSoftwareLizenzlaufzeitendeInInterval('10 WEEKS');
@@ -73,6 +101,19 @@ class Softwareverwaltung extends JOB_Controller
 
 		// Prepare msg string
 		$msg = $this->softwarelib->formatMsgSwLicencesWillEnd($swLicencesWillEnd);
+
+		// Add msg to msg collector
+		$allMessages.= $msg;
+
+		// Task: Get licensed Software (not open source), where Lizenzlaufzeit has end
+		// -------------------------------------------------------------------------------------------------------------
+		$result = $this->_ci->SoftwareModel->getSoftwareLizenzAbgelaufen('YESTERDAY');
+		if (isError($result)) $this->logError(getError($result));
+
+		$swLicencesEnded = hasData($result) ? getData($result) : [];
+
+		// Prepare msg string
+		$msg = $this->softwarelib->formatMsgSwLicencesEnded($swLicencesEnded);
 
 		// Add msg to msg collector
 		$allMessages.= $msg;
@@ -150,6 +191,27 @@ class Softwareverwaltung extends JOB_Controller
 					$this->softwarelib->formatMsgSwLvsLizenzanzahl0($groupedLvsByFakultaet)
 				);
 			}
+		}
+
+		// Task: Notify if SW Status of SwLvs was set to 'End of Life' or 'Nicht verfügbar' yesterday.
+		// -------------------------------------------------------------------------------------------------------------
+		$result = $this->SoftwareLvModel->getExpiredSwStatusSwLvs('YESTERDAY');
+		if (isError($result)) $this->logError(getError($result));
+
+		if (hasData($result))
+		{
+			$expiredSwStatSwLvs = getData($result);
+
+			// Group newly assigned Lvs
+			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+				$expiredSwStatSwLvs,
+				$studiengangToFakultaetMap
+			);
+
+			$allMessages = array_merge(
+				$allMessages,
+				$this->softwarelib->formatMsgExpiredSwStatSwLvs($groupedLvsByFakultaet)
+			);
 		}
 
 		// Send email

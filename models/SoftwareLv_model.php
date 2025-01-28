@@ -151,6 +151,38 @@ class SoftwareLv_model extends DB_Model
 	}
 
 	/**
+	 * Get all Software-Lehrveranstaltungs-Zuordnungen of given Template.
+	 * Returns all assigned SwLvs - not Quellkurs itself.
+	 *
+	 * @param $lehrveranstaltung_template_id
+	 * @param $software_id
+	 * @param $studiensemester_kurzbz
+	 */
+	public function getSwLvsByTemplate($lehrveranstaltung_template_id, $software_id, $studiensemester_kurzbz)
+	{
+		// Get zugehörige Lv-Sw-Zuordnungen
+		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
+		$this->LehrveranstaltungModel->addSelect('lehrveranstaltung_id');
+		$result = $this->LehrveranstaltungModel->loadWhere([
+			'lehrveranstaltung_template_id' => $lehrveranstaltung_template_id
+		]);
+
+		if(hasData($result))
+		{
+			$this->addSelect('software_lv_id, lehrveranstaltung_id, software_id, studiensemester_kurzbz, studiengang_kz, stg.oe_kurzbz AS "stg_oe_kurzbz", lv.bezeichnung');
+			$this->addJoin('lehre.tbl_lehrveranstaltung lv', 'lehrveranstaltung_id');
+			$this->addJoin('public.tbl_studiengang stg', 'studiengang_kz');
+			return $this->loadWhere('
+				lehrtyp_kurzbz = \'lv\' AND
+				lehrveranstaltung_id IN (' . implode(', ',
+				array_column(getData($result), 'lehrveranstaltung_id')) . ') AND
+				software_id = ' . $this->db->escape($software_id) . ' AND
+				studiensemester_kurzbz = ' . $this->db->escape($studiensemester_kurzbz)
+			);
+		}
+	}
+
+	/**
 	 * Save multiple Software-Lehrveranstaltungs-Zuordnungen
 	 * @param $batch
 	 * @return mixed
@@ -339,6 +371,61 @@ class SoftwareLv_model extends DB_Model
 		';
 
 		return $this->execQuery($qry, [$studiensemester]);
+	}
+
+	/**
+	 * Get SwLvs entries where the Softwarestatus was changed to 'End of Life' or 'Nicht verfügbar' yesterday.
+	 *
+	 * @param string $date Can be 'TODAY', 'YESTERDAY' or '2025-01-10'
+	 */
+	public function getExpiredSwStatusSwLvs($date = 'YESTERDAY')
+	{
+		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
+		$result = $this->StudienjahrModel->getCurrStudienjahr();
+		$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
+
+		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$this->StudiensemesterModel->addSelect('studiensemester_kurzbz');
+		$result = $this->StudiensemesterModel->loadWhere(['studienjahr_kurzbz' => $studienjahr_kurzbz]);
+		$studiensemester = array_column(getData($result), 'studiensemester_kurzbz');
+
+		$qry = '
+			-- Get SW where status was changed to endoflife or nichtverfuegbar yesterday
+			WITH latest_expired_status AS (
+			  	SELECT DISTINCT ON (software_id) software_id, softwarestatus_kurzbz
+			  	FROM extension.tbl_software_softwarestatus
+			  	WHERE datum = ?
+				AND softwarestatus_kurzbz IN ?
+			  	ORDER BY software_id, software_status_id DESC
+			)
+
+			-- Get SwLvs, where SW will expire
+			SELECT DISTINCT ON (swlv.software_id, swlv.lehrveranstaltung_id, swlv.studiensemester_kurzbz)
+			  sw.software_kurzbz,
+			  lv.bezeichnung,
+			  lv.orgform_kurzbz,
+			  lv.oe_kurzbz,
+			  stg.oe_kurzbz AS "stg_oe_kurzbz",
+			  swstat.softwarestatus_kurzbz
+			FROM extension.tbl_software_lv swlv
+			  JOIN extension.tbl_software sw USING (software_id)
+			  JOIN lehre.tbl_lehrveranstaltung lv USING (lehrveranstaltung_id)
+			  JOIN public.tbl_studiengang stg USING (studiengang_kz)
+			  JOIN extension.tbl_software_softwarestatus swswstat USING (software_id)
+			  JOIN extension.tbl_softwarestatus swstat USING (softwarestatus_kurzbz)
+			  -- Join to SW where status was changed to endoflife or nichtverfuegbar yesterday
+			  JOIN latest_expired_status ls ON swlv.software_id = ls.software_id
+			  	AND swstat.softwarestatus_kurzbz = ls.softwarestatus_kurzbz
+			WHERE
+			  -- Filter only Winter- and Sommersemester of actual Studienjahr
+			  swlv.studiensemester_kurzbz IN ?
+			  -- Filter only type Lehrveranstaltung (not templates)
+			  AND lv.lehrtyp_kurzbz = \'lv\';
+		';
+
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarestatus_model', 'SoftwarestatusModel');
+
+		return $this->execQuery($qry, [$date, Softwarestatus_model::STATUSES_EXPIRED, $studiensemester]);
 	}
 
 	private function _getLanguageIndex()

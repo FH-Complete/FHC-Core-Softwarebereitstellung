@@ -88,6 +88,12 @@ class SoftwareLib
 		return getData($planungDeadline) < $today;
 	}
 
+	/**
+	 * Check if today is exactly 2 weeks before Planning Deadline.
+	 *
+	 * @param null $studiensemester_kurzbz
+	 * @return bool
+	 */
 	public function isTwoWeeksBeforePlanningDeadline($studiensemester_kurzbz = null)
 	{
 		$planungDeadline = $this->getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz);
@@ -100,6 +106,27 @@ class SoftwareLib
 		$today->setTime(0, 0, 0);
 
 		return $today === $twoWeeksBeforeDeadline;
+	}
+
+	/**
+	 * Check if today is exactly 2 weeks before upcoming Studiensemester starts.
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function isTwoWeeksBeforeNextSemesterstart()
+	{
+		$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+		$result = $this->_ci->StudiensemesterModel->getNext();
+		$nextSem = getData($result)[0];
+
+		$nextSemStart = new DateTime($nextSem->start);
+		$twoWeeksBeforeNextSemStart = $nextSemStart->sub(new DateInterval('P2W'));
+
+		$today = new DateTime();
+		$today->setTime(0, 0, 0);
+
+		return $today === $twoWeeksBeforeNextSemStart;
 	}
 
 	/**
@@ -145,9 +172,12 @@ class SoftwareLib
 		}
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------
 	// JOBS & ALERTS
 	// -----------------------------------------------------------------------------------------------------------------
 
+	// Job Funktionen für Softwarebeauftragte
+	//------------------------------------------------------------------------------------------------------------------
 	/**
 	 * Load all Studiengang OEs and add corresponding Fakultät OE.
 	 *
@@ -251,6 +281,7 @@ class SoftwareLib
 		foreach ($lv_arr as $item) {
 			foreach ($stg_oe_arr as $stg_oe) {
 				if ($item->stg_oe_kurzbz === $stg_oe->oe_kurzbz) {
+					// Add FAK OE of lvs' stg
 					$item->stg_fak_oe_kurzbz = $stg_oe->stg_fak_oe_kurzbz;
 				}
 			}
@@ -310,7 +341,7 @@ class SoftwareLib
 	}
 
 	/**
-	 * Prepare email message regarding newly assigned standardisied Lvs.
+	 * Prepare email message regarding SwLvs with Lizenzanzahl 0.
 	 *
 	 * @param $groupedLvs	Lvs grouped by Fakultät of the LV Studiengang
 	 * @return array key: oe_kurzbz of Fakultät, value: html message like text and tables
@@ -359,6 +390,85 @@ class SoftwareLib
 	}
 
 	/**
+	 * Prepare email message regarding SwLvs with Expired Status like 'end of life' and 'nicht verfügbar'.
+	 *
+	 * @param $groupedLvs	Lvs grouped by Fakultät of the LV Studiengang
+	 * @return array key: oe_kurzbz of Fakultät, value: html message like text and tables
+	 */
+	public function formatMsgExpiredSwStatSwLvs($groupedLvs)
+	{
+		$messages = [];
+
+		// Loop through each group and prepare the emails
+		foreach ($groupedLvs as $oe_kurzbz => $items) {
+
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '<tr>
+						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+						<th style="border: 1px solid #000; padding: 8px;">Lehrveranstaltung</th>
+						<th style="border: 1px solid #000; padding: 8px;">Software</th>
+					</tr>';
+
+			// Loop items in Fakultät
+			foreach ($items as $item) {
+				$table .= '<tr>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . strtoupper($item->stg_oe_kurzbz) . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->orgform_kurzbz . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->bezeichnung . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->software_kurzbz . '</td>';
+				$table .= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+				<p>
+					<b>Softwarebestellungen (bald) nicht mehr möglich.</b></br>
+					Der Softwarestatus wurde für folgende SW-Bestellungen geändert und kann nicht mehr erneut bestellt werden.
+				</p>
+			";
+			$message .= $table;
+			$messages[] = ['oe_kurzbz' => $oe_kurzbz, 'message' => $message];
+		}
+
+		return $messages;
+	}
+
+	/**
+	 * Prepare email message for edited Quellkurs SwLv (when SW is changed or updated to higher version).
+	 *
+	 * @param $lehrveranstaltung_id
+	 * @param $old_software_id
+	 * @param $updated_software_id
+	 * @return string
+	 */
+	public function formatMsgQuellkursSwLvEdited($lehrveranstaltung_id, $old_software_id, $updated_software_id){
+		$lvBezeichnung = $this->_getLvBezeichnung($lehrveranstaltung_id);
+		$oldSwKurzbzAndVersion = $this->_getSwKurzbzAndVersion($old_software_id);
+		$updatedSwKurzbzAndVersion = $this->_getSwKurzbzAndVersion($updated_software_id);
+
+		return "<p><b>". 'Softwarebestellung von Softwarebeauftragten über den Quellkurs geändert'. "</b></p>".
+			'Software geändert für LV '. $lvBezeichnung. ': '. $oldSwKurzbzAndVersion. ' GEÄNDERT ZU '. $updatedSwKurzbzAndVersion;
+	}
+
+	/**
+	 * Prepare email message for deleted Quellkurs SwLv.
+	 *
+	 * @param $lehrveranstaltung_id
+	 * @param $deleted_software_id
+	 * @return string
+	 */
+	public function formatMsgQuellkursSwLvDeleted($lehrveranstaltung_id, $deleted_software_id){
+		$lvBezeichnung = $this->_getLvBezeichnung($lehrveranstaltung_id);
+		$deletedSwKurzbzAndVersion = $this->_getSwKurzbzAndVersion($deleted_software_id);
+
+		return "<p><b>". 'Softwarebestellung von Softwarebeauftragten über den Quellkurs gelöscht'. "</b></p>".
+			'Softwarebestellung gelöscht für LV '. $lvBezeichnung. ' + Software '. $deletedSwKurzbzAndVersion;
+	}
+
+	/**
 	 * Group messages by Fakultät.
 	 *
 	 * @param $messages Must have key: oe_kurzbz of Fakultät, value: html message like text and tables.
@@ -384,7 +494,7 @@ class SoftwareLib
 	/**
 	 * Send mail to Softwarebeauftragte.
 	 *
-	 * @param $oe_kurzbz
+	 * @param string $oe_kurzbz	oe_kurzbz of Fakultät
 	 * @param $messages
 	 */
 	public function sendMailToSoftwarebeauftragte($oe_kurzbz, $messages)
@@ -422,53 +532,9 @@ class SoftwareLib
 		mail($to, $subject, $message, $headers);
 	}
 
-	/**
-	 * Send mail to Softwaremanager.
-	 *
-	 * @param $oe_kurzbz
-	 * @param $messages
-	 */
-	public function sendMailToSoftwaremanager($messages)
-	{
-		// Create mail receiver
-		$to = [];
 
-		if ($this->_ci->config->item('email_softwaremanager'))
-		{
-			// Get email from config variable
-			$to[] = $this->_ci->config->item('email_softwaremanager');
-		}
-		else
-		{
-			// Get authorized uids
-			$this->_ci->load->model('system/Benutzerrolle_model', 'BenutzerrolleModel');
-			$result = $this->_ci->BenutzerrolleModel->getBenutzerByBerechtigung(
-				self::PERMISSION_SOFTWARE_VERWALTEN
-			);
-
-			// Continue if no authenticated user found
-			if (!hasData($result)) {
-				return;
-			}
-
-			foreach (getData($result) as $authUser) {
-				$to[] = $authUser->uid . '@' . DOMAIN;
-			}
-		}
-
-		// Set mail attributes
-		$to = implode(',', $to);
-		$subject = "Softwarebereitstellung - Updates";
-		$message = is_array($messages) ? implode('<br>', $messages) : $messages;
-
-		// Additional headers
-		$headers = "MIME-Version: 1.0" . "\r\n";
-		$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-
-		// Send mail
-		mail($to, $subject, $message, $headers);
-	}
-
+	// Job Funktionen für Softwaremanager
+	//------------------------------------------------------------------------------------------------------------------
 	/**
 	 * Get new SwLvs that were inserted today.
 	 * Only of type 'lv' (no templates).
@@ -659,5 +725,179 @@ class SoftwareLib
 		}
 
 		return $message;
+	}
+
+	/**
+	 * Format array of software with licenses ended as table.
+	 * @param array | $swLicencesEnded
+	 * @return string
+	 */
+	public function formatMsgSwLicencesEnded($swLicencesEnded)
+	{
+		$message = '';
+
+		if (is_array($swLicencesEnded) && count($swLicencesEnded) > 0)
+		{
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '<tr>
+							<th style="border: 1px solid #000; padding: 8px;">SW-ID</th>
+							<th style="border: 1px solid #000; padding: 8px;">SW-Typ</th>
+							<th style="border: 1px solid #000; padding: 8px;">SW-Kurzbezeichnung</th>
+							<th style="border: 1px solid #000; padding: 8px;">Lizenzart</th>
+							<th style="border: 1px solid #000; padding: 8px;">Lizenzlaufzeit</th>
+						</tr>';
+
+			// Loop items in Fakultät
+			foreach ($swLicencesEnded as $sw) {
+				$table.= '<tr>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_id. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->bezeichnung. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_kurzbz. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->lizenzart. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. (new DateTime($sw->lizenzlaufzeit))->format('d.m.Y'). '</td>';
+				$table.= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+					<p>
+					<b>Lizenzlaufzeit für lizenzpflichtige SW abgelaufen</b><br>
+					Prüfen Sie, ob es aktive Anforderungen durch die Lehre gibt.<br>
+					Die Lizenzlaufzeit muss entsprechend verlängert, oder die SW abbestellt werden.
+					</p>
+				";
+			$message .= $table;
+
+			$message .= "<br>";
+		}
+
+		return $message;
+	}
+
+	/**
+	 * Format array of uninstalled software as table.
+	 *
+	 * @param array | $swLicencesEnded
+	 * @return string
+	 */
+	public function formatMsgUninstalledSw($uninstalledSw)
+	{
+		$message = '';
+
+		if (is_array($uninstalledSw) && count($uninstalledSw) > 0)
+		{
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '
+				<tr>
+					<th style="border: 1px solid #000; padding: 8px;">SW-ID</th>
+					<th style="border: 1px solid #000; padding: 8px;">SW-Kurzbezeichnung</th>
+					<th style="border: 1px solid #000; padding: 8px;">Version</th>
+					<th style="border: 1px solid #000; padding: 8px;">Softwarestatus</th>
+				</tr>';
+
+			// Loop items in Fakultät
+			foreach ($uninstalledSw as $sw) {
+				$table.= '<tr>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_id. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->software_kurzbz. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->version. '</td>';
+				$table.= '<td style="border: 1px solid #000; padding: 4px;">'. $sw->softwarestatus_bezeichnung. '</td>';
+				$table.= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+					<p>
+					<b>Bestellte SW muss für kommendes Studiensemester installiert werden</b><br>
+					Im kommenden Studiensemester ist Software bestellt, wo der Status noch nicht 'Verfügbar' ist.<br>
+					Prüfen Sie, ob die Software schon installiert wurde und/oder ändern Sie den Status.
+					</p>
+				";
+			$message .= $table;
+
+			$message .= "<br>";
+		}
+
+		return $message;
+	}
+
+	/**
+	 * Send mail to Softwaremanager.
+	 *
+	 * @param $oe_kurzbz
+	 * @param $messages
+	 */
+	public function sendMailToSoftwaremanager($messages)
+	{
+		// Create mail receiver
+		$to = [];
+
+		if ($this->_ci->config->item('email_softwaremanager'))
+		{
+			// Get email from config variable
+			$to[] = $this->_ci->config->item('email_softwaremanager');
+		}
+		else
+		{
+			// Get authorized uids
+			$this->_ci->load->model('system/Benutzerrolle_model', 'BenutzerrolleModel');
+			$result = $this->_ci->BenutzerrolleModel->getBenutzerByBerechtigung(
+				self::PERMISSION_SOFTWARE_VERWALTEN
+			);
+
+			// Continue if no authenticated user found
+			if (!hasData($result)) {
+				return;
+			}
+
+			foreach (getData($result) as $authUser) {
+				$to[] = $authUser->uid . '@' . DOMAIN;
+			}
+		}
+
+		// Set mail attributes
+		$to = implode(',', $to);
+		$subject = "Softwarebereitstellung - Updates";
+		$message = is_array($messages) ? implode('<br>', $messages) : $messages;
+
+		// Additional headers
+		$headers = "MIME-Version: 1.0" . "\r\n";
+		$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+		// Send mail
+		mail($to, $subject, $message, $headers);
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// PRIVATE FUNCTIONS
+	// -----------------------------------------------------------------------------------------------------------------
+	/**
+	 * Get Software Bezeichnung and Version by given Software.
+	 *
+	 * @param $software_id
+	 * @return string	Returns like this: Software ABC [Version: 1.1]
+	 */
+	private function _getSwKurzbzAndVersion($software_id){
+		$this->_ci->SoftwareModel->addSelect('software_kurzbz, version');
+		$result = $this->_ci->SoftwareModel->load($software_id);
+
+		return hasData($result) ? getData($result)[0]->software_kurzbz. ' [Version: '. getData($result)[0]->version. ']' : '';
+	}
+
+	/**
+	 * Get Lehrveranstaltung Bezeichnung by given Lehrveranstaltung.
+	 *
+	 * @param $lehrveranstaltung_id
+	 * @return string
+	 */
+	private function _getLvBezeichnung($lehrveranstaltung_id){
+		$this->_ci->LehrveranstaltungModel->addSelect('bezeichnung');
+		$result = $this->_ci->LehrveranstaltungModel->load($lehrveranstaltung_id);
+
+		return hasData($result) ? getData($result)[0]->bezeichnung : '';
 	}
 }

@@ -234,7 +234,6 @@ class Software_model extends DB_Model
 		return $this->execQuery($query, array($software_id));
 	}
 
-
 	/**
 	 * Get all children software of given software.
 	 *
@@ -411,6 +410,99 @@ class Software_model extends DB_Model
 		return $this->loadWhere(
 			'lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE'
 		);
+	}
+
+	/**
+	 * Get SW entries where Lizenzlaufzeit has ended on given date.
+	 *
+	 * @param string $date Can be 'TODAY', 'YESTERDAY' or '2025-01-10'
+	 */
+	public function getSoftwareLizenzAbgelaufen($date = 'YESTERDAY')
+	{
+		$this->addSelect('
+			software_id,
+			swt.bezeichnung[(' . $this->_getLanguageIndex() . ')],
+			software_kurzbz,
+			lizenzart,
+			lizenzlaufzeit'
+		);
+		$this->addJoin('extension.tbl_softwaretyp swt', 'softwaretyp_kurzbz');
+
+		return $this->loadWhere("
+			(lizenzart IS NULL OR lizenzart != 'opensource') AND
+			lizenzlaufzeit = DATE '" . $date . "'
+		"
+		);
+	}
+
+	/**
+	 * Get Software with its last Softwarestatus, that is requested on given Studiensemester.
+	 * Can be filtered by given Softwarestatus Array.
+	 *
+	 * @param $studiensemester_kurzbz
+	 * @param null | array $softwarestatus_kurzbz
+	 * @return mixed
+	 */
+	public function getSoftwareByStatusAndSemester($studiensemester_kurzbz, $softwarestatus_kurzbz = null)
+	{
+		$params = [];
+
+		$qry = '
+			-- Find swlvs requested on given studiensemester
+			WITH requested_sw AS (
+			  SELECT
+				DISTINCT swlv.software_id
+			  FROM
+				extension.tbl_software_lv swlv
+			  WHERE
+				swlv.studiensemester_kurzbz = ?
+			),
+			
+			-- Get all sw with its latest status			
+			latest_status AS (
+  				SELECT
+					swswstat.software_id,
+					swstat.softwarestatus_kurzbz,
+					swstat.bezeichnung [(' . $this->_getLanguageIndex() . ')] AS softwarestatus_bezeichnung
+			  	FROM
+					extension.tbl_software_softwarestatus swswstat
+					JOIN extension.tbl_softwarestatus swstat USING (softwarestatus_kurzbz)
+			  	WHERE (swswstat.software_id, swswstat.software_status_id) IN (
+					SELECT
+						software_id,
+						MAX(software_status_id)
+					FROM
+						extension.tbl_software_softwarestatus
+					GROUP BY
+						software_id
+				)
+			)
+			
+			-- Join requested_sw with latest_status and filter by the given status
+			SELECT
+				sw.software_id,
+				sw.software_kurzbz,
+				sw.version,
+				latest_status.softwarestatus_kurzbz,
+				latest_status.softwarestatus_bezeichnung
+			FROM
+				extension.tbl_software sw
+				JOIN requested_sw ON sw.software_id = requested_sw.software_id
+				JOIN latest_status ON latest_status.software_id = sw.software_id
+			WHERE
+				1 = 1
+		';
+
+		// Add Studiensemester
+		$params[]= $studiensemester_kurzbz;
+
+		// Add Status
+		if (is_array($softwarestatus_kurzbz)){
+			$qry.= ' AND softwarestatus_kurzbz IN ?';
+			$params[]= $softwarestatus_kurzbz;
+		}
+
+		return $this->execQuery($qry, $params);
 	}
 
 	private function _getLanguageIndex()

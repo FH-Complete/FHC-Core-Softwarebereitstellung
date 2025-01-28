@@ -290,12 +290,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Get Lehrveranstaltung and Software by software_lv_id
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
 		$result = $this->SoftwareLvModel->load($software_lv_id);
-
-		if (hasData($result))
-		{
-			$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
-			$software_id = getData($result)[0]->software_id;
-		}
+		$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
+		$software_id = getData($result)[0]->software_id;
 
 		// Check if posted SW LV Zuordnungen already exists
 		$result = $this->_checkAndGetExistingSwLvs([
@@ -321,32 +317,29 @@ class Softwareanforderung extends FHCAPI_Controller
 		// If is Quellkurs
 		if ($isTemplate)
 		{
-			// Get zugehörige Lv-Sw-Zuordnungen
-			$this->LehrveranstaltungModel->addSelect('lehrveranstaltung_id');
-			$result = $this->LehrveranstaltungModel->loadWhere([
-				'lehrveranstaltung_template_id' => $lehrveranstaltung_id
-			]);
+			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
+			$assignedSwLvs = hasData($result) ? getData($result) : [];
 
-			$assignedLvIds = hasData($result) ? getData($result) : [];
+			// Store software_lv_ids for update
+			$updateSoftwareLvIds = array_merge(
+				[$this->input->post('software_lv_id')], // template
+				array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
+			);
 
-			// Get software_lv_id from zugehörige Lv-Sw-Zuordnungen
-			if (count($assignedLvIds) > 0)
+			// Send mail to other Softwarebeauftragte concerned
+			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
+			$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+			$msg = $this->softwarelib->formatMsgQuellkursSwLvEdited($lehrveranstaltung_id, $software_id, $updated_software_id);		// Format message
+
+			foreach (array_keys($grouped) as $fak_oe_kurzbz)
 			{
-				$this->SoftwareLvModel->addSelect('software_lv_id');
-				$result = $this->SoftwareLvModel->loadWhere('
-					lehrveranstaltung_id IN (' . implode(', ',
-						array_column($assignedLvIds, 'lehrveranstaltung_id')) . ') AND
-					software_id = '. $this->db->escape($software_id). ' AND
-					studiensemester_kurzbz = '. $this->db->escape($studiensemester_kurzbz)
-				);
-
-				$assignedSwLvIds = hasData($result) ? getData($result) : [];
-
-				// Store software_lv_ids for update
-				$updateSoftwareLvIds = array_merge(
-					[$this->input->post('software_lv_id')], // template
-					array_column($assignedSwLvIds, 'software_lv_id') // zugehörige lvs
-				);
+				// If not the users own Fakultät
+				if (!in_array($fak_oe_kurzbz, $entitledOes))
+				{
+					// Send mail to other concerned SWB
+					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
+				}
 			}
 		}
 		// Else is not a Quellkurs. Its a single Lehrveranstaltung.
@@ -413,32 +406,29 @@ class Softwareanforderung extends FHCAPI_Controller
 		// If is Quellkurs
 		if ($isTemplate)
 		{
-			// Get zugehörige Lv-Sw-Zuordnungen
-			$this->LehrveranstaltungModel->addSelect('lehrveranstaltung_id');
-			$result = $this->LehrveranstaltungModel->loadWhere([
-				'lehrveranstaltung_template_id' => $lehrveranstaltung_id
-			]);
+			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
+			$assignedSwLvs = hasData($result) ? getData($result) : [];
 
-			$assignedLvIds = hasData($result) ? getData($result) : [];
+			// Store software_lv_ids for deletion
+			$deleteSoftwareLvIds = array_merge(
+				[$this->input->post('software_lv_id')], // template
+				array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
+			);
 
-			// Get software_lv_id from zugehörige Lv-Sw-Zuordnungen
-			if (count($assignedLvIds) > 0)
+			// Send mail to other Softwarebeauftragte concerned
+			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
+			$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+			$msg = $this->softwarelib->formatMsgQuellkursSwLvDeleted($lehrveranstaltung_id, $software_id);		// Format message
+
+			foreach (array_keys($grouped) as $fak_oe_kurzbz)
 			{
-				$this->SoftwareLvModel->addSelect('software_lv_id');
-				$result = $this->SoftwareLvModel->loadWhere('
-					lehrveranstaltung_id IN (' . implode(', ',
-						array_column($assignedLvIds, 'lehrveranstaltung_id')) . ') AND
-					software_id = '. $this->db->escape($software_id). ' AND
-					studiensemester_kurzbz = '. $this->db->escape($studiensemester_kurzbz)
-				);
-
-				$assignedSwLvIds = hasData($result) ? getData($result) : [];
-
-				// Store software_lv_ids for deletion
-				$deleteSoftwareLvIds = array_merge(
-					[$this->input->post('software_lv_id')], // template
-					array_column($assignedSwLvIds, 'software_lv_id') // zugehörige lvs
-				);
+				// If not the users own Fakultät
+				if (!in_array($fak_oe_kurzbz, $entitledOes))
+				{
+					// Send mail to other concerned SWB
+					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
+				}
 			}
 		}
 		// Else is not a Quellkurs. Its a single Lehrveranstaltung.

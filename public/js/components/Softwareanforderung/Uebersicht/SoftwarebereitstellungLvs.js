@@ -11,12 +11,15 @@ export default {
 		SoftwarelizenzanforderungForm,
 		SoftwareaenderungForm
 	},
-	inject: ['STUDIENSEMESTER_DROPDOWN_STARTDATE'],
+	props: {
+		selectedStudiensemester: {
+			type: '',
+			required: true
+		}
+	},
 	data: function() {
 		return {
 			table: null,	// tabulator instance
-			studiensemester: [],
-			selectedStudiensemester: '',
 			totalLizenzanzahl: 0,
 			cbGroupStartOpen: true,	// checkbox group organisationseinheit start open
 			planungDeadlinePast: false
@@ -26,6 +29,12 @@ export default {
 		cbGroupStartOpen(newVal){
 			this.table.setGroupStartOpen(newVal);
 			this.table.setData();
+		},
+		selectedStudiensemester(newVal) {
+			if(newVal) {
+				this.resetTableData();
+				this.checkIfPlanungDeadlinePast();
+			}
 		}
 	},
 	computed: {
@@ -112,14 +121,14 @@ export default {
 						hozAlign: 'right', frozen: true, editor:"number",
 						editorParams:{
 							min:0,
-							max:100,
-							step:10,
+							max:999,
 							elementAttributes:{
 								maxlength:"3",
 							},
 							selectContents:true,
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
 						},
+						validator: ["min:0", "maxLength:3", "integer"],
 						editable: true,
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
@@ -155,14 +164,6 @@ export default {
 		}
 	},
 	methods: {
-		async loadAndSetStudiensemester(){
-			const result = await this.$fhcApi
-				.get('api/frontend/v1/organisation/Studiensemester/getAll', {start: this.STUDIENSEMESTER_DROPDOWN_STARTDATE})
-				.then( result => this.studiensemester = result.data )
-				.then( () => this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getAktNext') ) // Get actual Studiensemester
-				.then( result =>  this.selectedStudiensemester = result.data[0].studiensemester_kurzbz ) // Preselect Studiensemester
-				.catch(error => this.$fhcAlert.handleSystemError(error) );
-		},
 		setTotalLizenzanzahl(data){
 			this.totalLizenzanzahl = data.reduce((sum, row) => sum + row.anzahl_lizenzen, 0);
 			
@@ -200,14 +201,14 @@ export default {
 				.then(() => this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert')))
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
-		onChangeStudiensemester(){
-			// Reset table data
-			this.table
-				.setData(CoreRESTClient._generateRouterURI(
+		resetTableData(){
+			if (this.selectedStudiensemester) {
+				// Reset table data
+				this.table.setData(CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				))
-				.then(() => this.checkIfPlanungDeadlinePast());
+			}
 		},
 		openModalChangeLicense(){
 			let selectedData = this.table.getSelectedData();
@@ -249,8 +250,8 @@ export default {
 				this.$refs.softwareanforderungTable.reloadTable();
 			}
 		},
-		async checkIfPlanungDeadlinePast(){
-			await this.$fhcApi
+		checkIfPlanungDeadlinePast(){
+			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
 					studiensemester_kurzbz: this.selectedStudiensemester
 				})
@@ -261,51 +262,21 @@ export default {
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungTable.tabulator;
 
-			// Await Studiensemester
-			await this.loadAndSetStudiensemester();
-
-			await this.checkIfPlanungDeadlinePast();
-
-			// Set table data
-			this.table.setData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			);
-
-			// Await phrases categories
-			await this.$p.loadCategory(['global', 'lehre']);
-
 			// Replace column titles with phrasen
+			await this.$p.loadCategory(['global', 'lehre']);
 			this.table.updateColumnDefinition('lv_bezeichnung', {title: this.$p.t('lehre', 'lehrveranstaltung')});
 			this.table.updateColumnDefinition('orgform_kurzbz', {title: this.$p.t('lehre', 'organisationsform')});
 			this.table.updateColumnDefinition('softwaretyp_kurzbz', {title: this.$p.t('global', 'softwaretypKurzbz')});
 			this.table.updateColumnDefinition('studiensemester_kurzbz', {title: this.$p.t('lehre', 'studiensemester')});
 			this.table.updateColumnDefinition('softwaretyp_bezeichnung', {title: this.$p.t('global', 'softwaretyp')});
 			this.table.updateColumnDefinition('anzahl_lizenzen', {title: this.$p.t('global', 'userAnzahl')});
-
 		}
 	},
 	template: `
 <div class="softwareanforderung overflow-hidden">
 	<!-- Title and Studiensemester Dropdown-->
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/softwarebereitstellungSubtitle') }} - Für einzelne LVs</div>
-		<div class="col-2 ms-auto">
-			<core-form-input
-				type="select"
-				v-model="selectedStudiensemester"
-				name="studiensemester"
-				@change="onChangeStudiensemester">
-				<option 
-				v-for="(studSem, index) in studiensemester"
-				:key="index" 
-				:value="studSem.studiensemester_kurzbz">
-					{{studSem.studiensemester_kurzbz}}
-				</option>
-			</core-form-input>
-		</div>
+		<div class="col-12 h4">Meine LV-Softwarebestellungen {{ selectedStudiensemester }}</div> 
 	</div>
 	<!-- Table-->
 	<div class="row mb-5">
@@ -323,7 +294,7 @@ export default {
 				]"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
 				<template v-slot:actions>
-					<button class="btn btn-primary" @click="openModalChangeLicense">{{ $p.t('global/userAnzahlAendern') }}</button>
+			<!--		<button class="btn btn-primary" @click="openModalChangeLicense">{{ $p.t('global/userAnzahlAendern') }}</button>-->
 					<button class="btn btn-outline-secondary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
 						{{ $p.t('ui/aktion') }}
 					</button>
