@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import CoreFormInput from "../../../../../../js/components/Form/Input.js";
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareaenderungForm from "../../Form/Softwareaenderung.js";
 
@@ -10,15 +9,12 @@ const parentIdField = 'lehrveranstaltung_template_id';
 export default {
 	components: {
 		CoreFilterCmpt,
-		CoreFormInput,
 		SoftwareaenderungForm
 	},
-	props: {
-		selectedStudiensemester: {
-			type: '',
-			required: true
-		}
-	},
+	inject: [
+		'selectedStudiensemester',
+		'currentTab'
+	],
 	data: function() {
 		return {
 			table: null,
@@ -34,8 +30,17 @@ export default {
 			this.table.setData();
 		},
 		selectedStudiensemester(newVal) {
-			if(newVal) {
-				this.resetTableData();
+			console.log(newVal);
+			console.log(this.currentTab);
+			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
+				this.replaceTableData();
+				this.checkIfPlanungDeadlinePast();
+			}
+		},
+		currentTab(newVal) {
+			console.log(newVal);
+			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudiensemester && this.table) {
+				this.replaceTableData();
 				this.checkIfPlanungDeadlinePast();
 			}
 		}
@@ -154,14 +159,17 @@ export default {
 		}
 	},
 	methods: {
-		resetTableData(){
-			if (this.selectedStudiensemester) {
-				// Reset table data
-				this.table.setData(CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				))
-			}
+		setTableData(){
+			this.table.setData(CoreRESTClient._generateRouterURI(
+				'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
+				'?studiensemester_kurzbz=' + this.selectedStudiensemester
+			))
+		},
+		replaceTableData(){
+			this.table.replaceData(CoreRESTClient._generateRouterURI(
+				'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
+				'?studiensemester_kurzbz=' + this.selectedStudiensemester
+			))
 		},
 		editSwLvZuordnung(row){
 			// If selected row is a Quellkurs
@@ -199,6 +207,7 @@ export default {
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungVerwaltungTable.tabulator;
+			this.setTableData();
 
 			// Replace column titles with phrasen
 			await this.$p.loadCategory(['lehre']);
@@ -346,30 +355,34 @@ export default {
 	</div>
 	<div class="row mb-5">
 		<div class="col">
-			<core-filter-cmpt
-				ref="softwareanforderungVerwaltungTable"
-				uniqueId="softwareanforderungVerwaltungTable"
-				table-only
-				reload
-				:side-menu="false"
-				:tabulator-options="tabulatorOptions"
-				:tabulator-events="[
-					{event: 'tableBuilt', handler: onTableBuilt},
-					{event: 'rowClick', handler: onRowClick},
-					{event: 'cellEdited', handler: onCellEdited}
-				]">
-				<template v-slot:actions>
-					<div class="form-check form-check-inline ms-3">
-						<input
-							class="form-check-input"
-							type="checkbox"
-							v-model="cbDataTreeStartExpanded"
-							:checked="cbDataTreeStartExpanded"
-							@change="reloadTabulator">
-						<label class="form-check-label">Templates {{ $p.t('global/aufgeklappt') }}</label>
-					</div>
-				</template>
-			</core-filter-cmpt>						
+			<div class="card bg-light p-2">
+				<div class="card-body">
+					<core-filter-cmpt
+						ref="softwareanforderungVerwaltungTable"
+						uniqueId="softwareanforderungVerwaltungTable"
+						table-only
+						reload
+						:side-menu="false"
+						:tabulator-options="tabulatorOptions"
+						:tabulator-events="[
+							{event: 'tableBuilt', handler: onTableBuilt},
+							{event: 'rowClick', handler: onRowClick},
+							{event: 'cellEdited', handler: onCellEdited}
+						]">
+						<template v-slot:actions>
+							<div class="form-check form-check-inline ms-3">
+								<input
+									class="form-check-input"
+									type="checkbox"
+									v-model="cbDataTreeStartExpanded"
+									:checked="cbDataTreeStartExpanded"
+									@change="reloadTabulator">
+								<label class="form-check-label">Templates {{ $p.t('global/aufgeklappt') }}</label>
+							</div>
+						</template>
+					</core-filter-cmpt>		
+				</div>
+			</div>				
 		</div>
 	</div>
 </div>

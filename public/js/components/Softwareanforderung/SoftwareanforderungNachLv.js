@@ -1,20 +1,31 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
 
 export default {
 	components: {
 		CoreFilterCmpt,
-		CoreFormInput,
 		SoftwareanforderungForm
 	},
-	inject: ['STUDIENSEMESTER_DROPDOWN_STARTDATE'],
+	inject: [
+		'selectedStudiensemester',
+		'currentTab'
+	],
 	data: function() {
 		return {
 			table: null,
-			studiensemester: [],
-			selectedStudiensemester: ''
+		}
+	},
+	watch: {
+		selectedStudiensemester(newVal) {
+			if(newVal && this.currentTab === "softwareanforderungNachLv" && this.table) {
+				this.setTableData();
+			}
+		},
+		currentTab(newVal) {
+			if (newVal === 'softwareanforderungNachLv' && this.selectedStudiensemester && this.table) {
+				this.setTableData();
+			}
 		}
 	},
 	computed: {
@@ -74,14 +85,6 @@ export default {
 		}
 	},
 	methods: {
-		async loadAndSetStudiensemester(){
-			const result = await this.$fhcApi
-				.get('api/frontend/v1/organisation/Studiensemester/getAll', {start: this.STUDIENSEMESTER_DROPDOWN_STARTDATE})
-				.then( result => this.studiensemester = result.data )
-				.then( () => this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getAktNext') ) // Get actual Studiensemester
-				.then( result =>  this.selectedStudiensemester = result.data[0].studiensemester_kurzbz ) // Preselect Studiensemester
-				.catch( error => this.$fhcAlert.handleSystemError(error) );
-		},
 		openSoftwareanforderungForm(){
 			let selectedData = this.table.getSelectedData();
 
@@ -97,29 +100,26 @@ export default {
 			// Deselect all rows
 			this.table.deselectRow();
 		},
-		onChangeStudiensemester(){
-			// Reset table data
+		setTableData(){
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
 					'?studiensemester_kurzbz=' + this.selectedStudiensemester
 				),
-			);
+			)
+		},
+		replaceTableData(){
+			this.table.replaceData(
+				CoreRESTClient._generateRouterURI(
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
+					'?studiensemester_kurzbz=' + this.selectedStudiensemester
+				),
+			)
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungNachLvTable.tabulator;
 
-			// Await Studiensemester
-			await this.loadAndSetStudiensemester();
-
-			// Set table data
-			this.table.setData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			);
-
+			this.setTableData();
 			// Await phrases categories
 			await this.$p.loadCategory(['lehre']);
 
@@ -132,21 +132,7 @@ export default {
 	template: `
 <div class="softwareanforderungNachLv overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-10 h4">{{ $p.t('global/swAnforderungFuerEinzelneLvs') }}</div>
-		<div class="col-2 ms-auto">
-			<core-form-input
-				type="select"
-				v-model="selectedStudiensemester"
-				name="studiensemester"
-				@change="onChangeStudiensemester">
-				<option 
-				v-for="(studSem, index) in studiensemester"
-				:key="index" 
-				:value="studSem.studiensemester_kurzbz">
-					{{studSem.studiensemester_kurzbz}}
-				</option>
-			</core-form-input>
-		</div>
+		<div class="col-12 h4">Software bestellen für einzelne LVs {{ selectedStudiensemester }} </div>
 	</div>
 	<div class="row mb-5">
 		<div class="col">
