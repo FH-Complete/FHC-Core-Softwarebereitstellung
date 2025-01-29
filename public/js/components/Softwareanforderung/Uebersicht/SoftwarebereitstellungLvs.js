@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import CoreFormInput from "../../../../../../js/components/Form/Input.js";
 import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwarelizenzanforderungForm from "../../Form/Softwarelizenzanforderung.js";
 import SoftwareaenderungForm from "../../Form/Softwareaenderung.js";
@@ -7,16 +6,13 @@ import SoftwareaenderungForm from "../../Form/Softwareaenderung.js";
 export default {
 	components: {
 		CoreFilterCmpt,
-		CoreFormInput,
 		SoftwarelizenzanforderungForm,
 		SoftwareaenderungForm
 	},
-	props: {
-		selectedStudiensemester: {
-			type: '',
-			required: true
-		}
-	},
+	inject: [
+		'selectedStudiensemester',
+		'currentTab'
+	],
 	data: function() {
 		return {
 			table: null,	// tabulator instance
@@ -31,8 +27,14 @@ export default {
 			this.table.setData();
 		},
 		selectedStudiensemester(newVal) {
-			if(newVal) {
-				this.resetTableData();
+			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
+				this.setTableData();
+				this.checkIfPlanungDeadlinePast();
+			}
+		},
+		currentTab(newVal) {
+			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudiensemester && this.table) {
+				this.replaceTableData();
 				this.checkIfPlanungDeadlinePast();
 			}
 		}
@@ -201,14 +203,17 @@ export default {
 				.then(() => this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert')))
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
-		resetTableData(){
-			if (this.selectedStudiensemester) {
-				// Reset table data
-				this.table.setData(CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				))
-			}
+		setTableData(){
+			this.table.setData(CoreRESTClient._generateRouterURI(
+				'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
+				'?studiensemester_kurzbz=' + this.selectedStudiensemester
+			))
+		},
+		replaceTableData(){
+			this.table.replaceData(CoreRESTClient._generateRouterURI(
+				'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
+				'?studiensemester_kurzbz=' + this.selectedStudiensemester
+			))
 		},
 		openModalChangeLicense(){
 			let selectedData = this.table.getSelectedData();
@@ -261,6 +266,7 @@ export default {
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungTable.tabulator;
+			this.setTableData();
 
 			// Replace column titles with phrasen
 			await this.$p.loadCategory(['global', 'lehre']);
@@ -281,7 +287,9 @@ export default {
 	<!-- Table-->
 	<div class="row mb-5">
 		<div class="col">
-			<core-filter-cmpt
+			<div class="card bg-light p-2">
+				<div class="card-body">
+					<core-filter-cmpt
 				ref="softwareanforderungTable"
 				uniqueId="softwareanforderungTable"
 				table-only
@@ -314,8 +322,9 @@ export default {
 						<label class="form-check-label">{{ $p.t('global/aufgeklappt') }}</label>
 					</div>
 				</template>		
-			</core-filter-cmpt>		
-		
+			</core-filter-cmpt>
+				</div>
+			</div>		
 		</div>
 	</div>
 	
