@@ -134,14 +134,14 @@ export default {
 						editable: true,
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
-						width: 80,
+						width: 120,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
 
 							let button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
-							button.innerHTML = '<i class="fa fa-edit"></i>';
+							button.innerHTML = this.$p.t('global/swAendern');
 							button.disabled = this.planungDeadlinePast;
 							button.addEventListener('click', (event) =>
 								this.editSwLvZuordnung(cell.getRow())
