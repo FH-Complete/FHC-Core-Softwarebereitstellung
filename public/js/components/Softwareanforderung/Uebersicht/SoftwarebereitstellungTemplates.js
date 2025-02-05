@@ -59,7 +59,7 @@ export default {
 				index: 'software_lv_id',
 				groupBy: 'lv_oe_bezeichnung',
 				dataTree: self.cbDataTree,
-				dataTreeStartExpanded: [true, self.cbDataTreeStartExpanded],
+				dataTreeStartExpanded: [self.cbDataTreeStartExpanded],
 				dataTreeChildIndent: 15, //indent child rows by 15 px
 				dataTreeSelectPropagate:true, //propagate selection events from parent rows to children
 				persistence:{
@@ -234,107 +234,76 @@ export default {
 					.catch((error) => this.$fhcAlert.handleSystemError(error));
 			}
 		},
-		prepDataTreeData(data){
-			let toDelete = []; 	// Array to track indices of items to delete from top level
-			const uniqueQuellkurse = new Set();  // Set to track unique Quellkurse
+		async prepDataTreeData(data){
+			let structuredData = [];
+			let qkSwParentLevel = new Set();	// Quellkurs + Software pair
 
-			// Loop data
-			for (let itemIdx = 0; itemIdx < data.length; itemIdx++) {
-				let item = data[itemIdx];
+			// Await the extra flag if user is entitled to edit Lizenzanzahl (LV must be entitled by STG OE)
+			await this._flagBerechtigtOnStgOe(data);
 
-				// Check if the item is a top-level Quellkurs (type 'tpl') or has no parent
-				if (item.lehrtyp_kurzbz === 'tpl' || !item[parentIdField]) {
-
-					// Ensure each Quellkurs is unique
-					if (!uniqueQuellkurse.has(item.lehrveranstaltung_id)) {
-						uniqueQuellkurse.add(item.lehrveranstaltung_id);  // Track unique Quellkurse
-
-						// Initialize _children array for top-level Quellkurs
-						item._children = [];
-
-						// Populate software entries as children of the Quellkurs
-						this._append2ndLvl_SwQuellkursZuordnung(data, item, toDelete);
-
-						// Clean up unnecessary fields for Quellkurs level
-						item.software_lv_id = null;
-						item.stg_typ_kurzbz = null;
-						item.semester = null;
-						item.software_id = null;
-						item.software_kurzbz = null;
-						item.version = null;
-						item.softwaretyp_kurzbz = null;
-						item.softwaretyp_bezeichnung = null;
-						item.softwarestatus_bezeichnung = null;
-						item.softwarestatus_kurzbz = null;
-					} else {
-						// Mark duplicate Quellkurse for deletion later
-						toDelete.push(itemIdx);
-					}
-				}
-			}
-
-			// Filter out duplicate Quellkurse and incorrectly top level placed children
-			return data.filter((_, index) => !toDelete.includes(index));
-		},
-		_append2ndLvl_SwQuellkursZuordnung(data, parentTpl, toDelete) {
+			// Iterate over the data array
 			data.forEach((item, index) => {
+				// Only process valid Quellkurs + Software pairs
+				if (item.lehrtyp_kurzbz === 'tpl' && item.software_id !== null) {
+					let parentKey = `${item.lehrveranstaltung_id}-${item.software_id}`;
 
-				// If the current item matches the Quellkurs
-				if (item[idField] === parentTpl[idField]) {
+					// Ensure each Quellkurs + Software pair is unique
+					if (!qkSwParentLevel.has(parentKey)) {
+						qkSwParentLevel.add(parentKey); // Track Quellkurs-Software pairs
 
-					// Check if the sw-template entry already exists under the parent Quellkurs
-					let swTplChild = parentTpl._children.find(c => c.software_id  === item.software_id );
-
-					// If not found, create a new sw-template entry
-					if (!swTplChild) {
-						swTplChild = {
+						let parentItem = {
 							...item,
-							_children: []
+							_children: []  // Initialize children array
 						};
 
-						// Add the sw-template entry as a child of the Quellkurs
-						parentTpl._children.push(swTplChild);
+						// Remove unnecessary fields at Quellkurs + Software level  // TODO check ob nötig
+						parentItem.software_lv_id = null;
+						parentItem.stg_typ_kurzbz = null;
+						parentItem.semester = null;
+						parentItem.softwarestatus_bezeichnung = null;
+						parentItem.softwarestatus_kurzbz = null;
+
+						// Attach Zuordnungen (assignments) directly under this parent
+						this._appendSwLvZuordnung(data, parentItem);
+
+						structuredData.push(parentItem); // Add to final structured data
 					}
-
-					/// Call to add all LV-SW Zuordnungen that are assigend to the Quellkurs
-					this._append3rdLvl_SwLvZuordnung(data, swTplChild, toDelete);
-				}
-			});
-		},
-		_append3rdLvl_SwLvZuordnung(data, swTplChild, toDelete) {
-			data.forEach((item, index) => {
-				// If item matches the current software entry
-				if (item[parentIdField] === swTplChild[idField] &&
-					item.software_id === swTplChild.software_id) {
-
-					// Add item as a child of the software entry
-					swTplChild._children.push(item);  // Add LV as a child
-
-					// Mark the index for deletion
-					toDelete.push(index);  
 				}
 			});
 
-			// Flag if berechtigt on Lvs' Stg OE (for further Schreib- or only Leseberechtigung on Lizenzanzahl)
-			this._flagBerechtigtOnStgOe(data);
+			return structuredData;
 		},
-		_flagBerechtigtOnStgOe(swlvs){
+		_appendSwLvZuordnung (data, parentItem) {
+			//Attach LV-SW Zuordnungen directly under the Quellkurs + Software parent
+			data.forEach((item) => {
+				// If the current item is a software assignment related to the parent
+				if (item[parentIdField] === parentItem[idField] &&
+					item.software_id === parentItem.software_id) {
+
+					parentItem._children.push({...item}); // Add as child
+				}
+			});
+		},
+		async _flagBerechtigtOnStgOe(swlvs){
 			let params = {
 				studiensemester_kurzbz: this.selectedStudiensemester,
 				lv_ids: swlvs.map(swlv => swlv.lehrveranstaltung_id)
 			}
 
-			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', params)
-				.then (result =>
-				{
-					const data = result.data;
-					swlvs.forEach(swlv => {
-						const match = data.find(item => item.studiengang_kz === swlv.studiengang_kz);
-						swlv.stgOeBerechtigt = !match ? false : true;
-					});
-				})
-				.catch(error => this.$fhcAlert.handleSystemError(error) );
+			return new Promise((resolve, reject) => {
+				this.$fhcApi
+					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', params)
+					.then (result =>
+					{
+						const data = result.data;
+						swlvs.forEach(swlv => {
+							const match = data.find(item => item.studiengang_kz === swlv.studiengang_kz);
+							swlv.stgOeBerechtigt = !match ? false : true;
+						});
+						resolve(); // Resolve the Promise when done
+					})
+					.catch(error => this.$fhcAlert.handleSystemError(error) );
+			});
 		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungVerwaltungTable.tabulator !== null && this.$refs.softwareanforderungVerwaltungTable.tabulator !== undefined)
