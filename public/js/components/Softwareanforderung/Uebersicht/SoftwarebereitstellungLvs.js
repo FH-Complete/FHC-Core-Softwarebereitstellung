@@ -29,13 +29,11 @@ export default {
 		selectedStudiensemester(newVal) {
 			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
 				this.setTableData();
-				this.checkIfPlanungDeadlinePast();
 			}
 		},
 		currentTab(newVal) {
 			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudiensemester && this.table) {
 				this.replaceTableData();
-				this.checkIfPlanungDeadlinePast();
 			}
 		}
 	},
@@ -52,10 +50,8 @@ export default {
 				autoResize:false, // prevent auto resizing of table
 				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'software_lv_id',
-				groupBy: ["stg_bezeichnung", "stg_typ_bezeichnung"],
+				groupBy: 'lv_oe_bezeichnung',
 				groupToggleElement:"header", //toggle group on click anywhere in the group header
-				groupClosedShowCalcs:true, //show column calculations when a group is closed
-				groupStartOpen: self.cbGroupStartOpen,
 				selectable: true,
 				selectableRangeMode: 'click',
 				persistence:{
@@ -92,20 +88,20 @@ export default {
 									? (rowValue !== null && rowValue !== undefined && rowValue !== "") // Show numbers
 									: (rowValue === null || rowValue === ""); // Show null
 						},
-						visible: true,
+						visible: false,
 						width: 70,
 						hozAlign: 'center'
 					},
 					{title: 'Erstellt von', field: 'insertvon', headerFilter: true, visible: false},
 					{title: 'Erstellt am', field: 'insertamum', headerFilter: true, visible: false},
-					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 270},
+					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 300},
 					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
 					{title: 'SW-Typ Kurzbz', field: 'softwaretyp_kurzbz', headerFilter: true, visible: false},
 					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, visible: false, },
 					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 70},
 					{title: 'Semester', field: 'semester', headerFilter: true, hozAlign: 'right', width: 50},
-					{title: 'LE-Gruppen', field: 'lehreinheitgruppen_bezeichnung', headerFilter: true, width: 200},
-					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true, width: 200},
+					{title: 'LE-Gruppen', field: 'lehreinheitgruppen_bezeichnung', headerFilter: true, width: 200, visible: false},
+					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true, width: 200, visible: false},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
@@ -134,14 +130,14 @@ export default {
 						editable: true,
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
-						width: 80,
+						width: 120,
 						formatter: (cell, formatterParams, onRendered) => {
 							let container = document.createElement('div');
 							container.className = "d-flex gap-2";
 
 							let button = document.createElement('button');
 							button.className = 'btn btn-outline-secondary';
-							button.innerHTML = '<i class="fa fa-edit"></i>';
+							button.innerHTML = 'SW ändern';
 							button.disabled = this.planungDeadlinePast;
 							button.addEventListener('click', (event) =>
 								this.editSwLvZuordnung(cell.getRow())
@@ -204,16 +200,33 @@ export default {
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
 		setTableData(){
-			this.table.setData(CoreRESTClient._generateRouterURI(
-				'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
-				'?studiensemester_kurzbz=' + this.selectedStudiensemester
-			))
+			if(this.selectedStudiensemester)
+				this.$fhcApi
+					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
+						studiensemester_kurzbz: this.selectedStudiensemester
+					})
+					.then((result) => this.planungDeadlinePast = result.data)
+					.then(() => {
+						this.table.setData(CoreRESTClient._generateRouterURI(
+								'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
+								'?studiensemester_kurzbz=' + this.selectedStudiensemester
+							))
+					})
+					.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
 		replaceTableData(){
-			this.table.replaceData(CoreRESTClient._generateRouterURI(
-				'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
-				'?studiensemester_kurzbz=' + this.selectedStudiensemester
-			))
+			this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
+					studiensemester_kurzbz: this.selectedStudiensemester
+				})
+				.then((result) => this.planungDeadlinePast = result.data)
+				.then(() => {
+					this.table.replaceData(CoreRESTClient._generateRouterURI(
+						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
+						'?studiensemester_kurzbz=' + this.selectedStudiensemester
+					))
+				})
+				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
 		openModalChangeLicense(){
 			let selectedData = this.table.getSelectedData();
@@ -254,15 +267,6 @@ export default {
 				}
 				this.$refs.softwareanforderungTable.reloadTable();
 			}
-		},
-		checkIfPlanungDeadlinePast(){
-			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
-					studiensemester_kurzbz: this.selectedStudiensemester
-				})
-				.then((result) => this.planungDeadlinePast = result.data)
-				.then(() => this.table.redraw(true) ) // Redraw the table to disable/enable action buttons
-				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungTable.tabulator;
@@ -319,7 +323,7 @@ export default {
 							class="form-check-input"
 							type="checkbox"
 							v-model="cbGroupStartOpen">
-						<label class="form-check-label">{{ $p.t('global/aufgeklappt') }}</label>
+						<label class="form-check-label">Kompetenzfelder {{ $p.t('global/aufgeklappt') }}</label>
 					</div>
 				</template>		
 			</core-filter-cmpt>

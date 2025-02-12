@@ -48,3 +48,9 @@ EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
 COMMENT ON TABLE extension.tbl_software_lv IS 'Zuordnung von Software zu Lehrveranstaltung und Studiensemester';
+
+DO $$
+BEGIN
+ALTER TABLE extension.tbl_software_lv ADD COLUMN IF NOT EXISTS abbestelltamum TIMESTAMP;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;

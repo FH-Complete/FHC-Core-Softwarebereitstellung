@@ -27,13 +27,15 @@ class Softwareanforderung extends FHCAPI_Controller
 				'getLvsForTplRequests' => 'extension/software_bestellen:rw',
 				'saveSwRequestByLvs' => 'extension/software_bestellen:rw',
 				'saveSwRequestByTpl' => 'extension/software_bestellen:rw',
+				'abbestellenSwLvs' => 'extension/software_bestellen:rw',
 				'updateLizenzanzahl' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
 				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
 				'getOtoboUrl' => 'extension/software_bestellen:rw',
-				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw'
+				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw',
+				'sendMailToSoftwarebeauftragte' => 'extension/software_bestellen:rw'
 			)
 		);
 
@@ -368,6 +370,54 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// On success
 		$this->terminateWithSuccess();
+	}
+
+	public function abbestellenSwLvs(){
+		$software_lv_ids = $this->input->post('data');
+
+		if ($software_lv_ids) {
+			// Abbestellen batch
+			$result = $this->SoftwareLvModel->abbestellenBatch($software_lv_ids);
+
+			// On error
+			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+
+			// On success
+			$this->terminateWithSuccess(getData($result));
+		}
+	}
+
+	public function sendMailToSoftwarebeauftragte()
+	{
+		$software_lv_ids = $this->input->post('data');
+
+		$this->SoftwareLvModel->addSelect('lv.lehrveranstaltung_id, lv.bezeichnung, lv.orgform_kurzbz, sw.software_kurzbz, stg.oe_kurzbz AS "stg_oe_kurzbz"');
+		$this->SoftwareLvModel->addJoin('lehre.tbl_lehrveranstaltung AS lv', 'lehrveranstaltung_id');
+		$this->SoftwareLvModel->addJoin('public.tbl_studiengang AS stg', 'studiengang_kz');
+		$this->SoftwareLvModel->addJoin('extension.tbl_software AS sw', 'software_id');
+		$result = $this->SoftwareLvModel->loadWhere('software_lv_id IN ('. implode(', ', $software_lv_ids). ') AND lehrtyp_kurzbz = \'lv\'');
+		$data = getData($result);
+
+		// Send mail to other Softwarebeauftragte concerned
+		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+		$grouped = $this->softwarelib->groupLvsByFakultaet($data, $studiengangToFakultaetMap);
+		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+		$msg = $this->softwarelib->formatMsgAbbestellteSwLvs($grouped);		// Format message
+
+		if (count($msg) > 0)
+		{
+			// Group messages by Fakultät OE before sending mails
+			$messagesGroupedByFak = $this->softwarelib->groupMessagesByFakultaet($msg);
+
+			// Send emails grouped by Fakultät
+			foreach ($messagesGroupedByFak as $fak_oe_kurzbz => $message) {
+
+				// If not the users own Fakultät
+				if (!in_array($fak_oe_kurzbz, $entitledOes)) {
+					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $message);
+				}
+			}
+		}
 	}
 
 	/**

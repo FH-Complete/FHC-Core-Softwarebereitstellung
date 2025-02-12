@@ -468,6 +468,47 @@ class SoftwareLib
 			'Softwarebestellung gelöscht für LV '. $lvBezeichnung. ' + Software '. $deletedSwKurzbzAndVersion;
 	}
 
+	public function formatMsgAbbestellteSwLvs($groupedData)
+	{
+		$messages = [];
+		// Loop through each group and prepare the emails
+		foreach ($groupedData as $oe_kurzbz => $items) {
+
+			// Start table tag
+			$table = '<table style="border-collapse: collapse; width: 100%;">';
+			$table .= '<tr>
+						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+						<th style="border: 1px solid #000; padding: 8px;">Lehrveranstaltung</th>
+						<th style="border: 1px solid #000; padding: 8px;">Software</th>
+					</tr>';
+
+			// Loop items in Fakultät
+			foreach ($items as $item) {
+				$table .= '<tr>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . strtoupper($item->stg_oe_kurzbz) . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->orgform_kurzbz . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->bezeichnung . '</td>';
+				$table .= '<td style="border: 1px solid #000; padding: 8px;">' . $item->software_kurzbz . '</td>';
+				$table .= '</tr>';
+			}
+			// Close table tag
+			$table .= '</table>';
+
+			$message = "
+				<p>
+					<b>Softwarebestellungen wurden abbestellt</b></br>
+					Folgende SW-Bestellungen wurden abbestellt:.
+				</p>
+			";
+			$message .= $table;
+			$messages[] = ['oe_kurzbz' => $oe_kurzbz, 'message' => $message];
+
+		}
+
+		return $messages;
+	}
+
 	/**
 	 * Group messages by Fakultät.
 	 *
