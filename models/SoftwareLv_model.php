@@ -35,7 +35,8 @@ class SoftwareLv_model extends DB_Model
 				swlv.insertvon,
 				swlv.insertamum::date,
 				swlv.updatevon,
-				swlv.updateamum::date,  
+				swlv.updateamum::date, 
+				swlv.abbestelltamum, 
                 lv.orgform_kurzbz,
 				lv.semester,   
                 lv.bezeichnung AS "lv_bezeichnung", 
@@ -73,6 +74,7 @@ class SoftwareLv_model extends DB_Model
 					) AS uniqueLehreinheitgruppen_bezeichnung
 				) AS lehreinheitgruppen_bezeichnung,
                 stg.studiengang_kz,
+                stg.oe_kurzbz AS "stg_oe_kurzbz",
                 upper(stg.typ || stg.kurzbz) AS "stg_typ_kurzbz",    
                 stg.bezeichnung AS "stg_bezeichnung", 
                 stgtyp.bezeichnung AS "stg_typ_bezeichnung",
@@ -243,6 +245,54 @@ class SoftwareLv_model extends DB_Model
 		else
 		{
 			return error($this->db->error(), EXIT_DATABASE);
+		}
+	}
+
+	public function abbestellenBatch($software_lv_ids)
+	{
+		// Check class properties
+		if (is_null($this->dbTable)) return error('The given database table name is not valid', EXIT_MODEL);
+
+		// Fetch all rows with the given software_lv_ids where abbestelltamum is NOT NULL
+		$this->db->where_in('software_lv_id', $software_lv_ids);
+		$this->db->where('abbestelltamum IS NOT NULL'); // Only get already updated rows
+		$existingRows = $this->db->get($this->dbTable)->result_array();
+		$existingIds = array_column($existingRows, 'software_lv_id');
+
+		// Remove rows from the batch that are already updated
+		$batch = array_filter($software_lv_ids, function ($software_lv_id) use ($existingIds) {
+			return !in_array($software_lv_id, $existingIds);
+		});
+
+		// Reindex the array to ensure there are no gaps after filtering
+		$batch = array_values($batch);
+
+		// If the batch has rows to update, perform the update
+		if (!empty($batch)) {
+			// Add 'abbestelltamaum' to each entry in the batch
+			$updateData = [];
+			foreach ($batch as $software_lv_id) {
+				$updateData[] = [
+					'software_lv_id' => $software_lv_id,
+					'abbestelltamum' => date('Y-m-d H:i:s')
+				];
+			}
+
+			// Bestellte data
+			$result = $this->db->update_batch($this->dbTable, $updateData, 'software_lv_id');
+
+			if ($result) {
+				$this->db->where_in('software_lv_id', $batch);
+				$abbestelltRows = $this->db->get($this->dbTable)->result_array();
+
+				return success($abbestelltRows);
+			} else {
+				return error($this->db->error(), EXIT_DATABASE);
+			}
+		}
+
+		else {
+			return success([]); // No rows to update
 		}
 	}
 
