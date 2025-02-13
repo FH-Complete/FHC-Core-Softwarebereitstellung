@@ -415,7 +415,7 @@ export default {
 						 	<core-form-input
 								v-model="selectedTemplate.lv_bezeichnung"
 								name="selectedTemplate"
-								:label="$p.t('global/standardLvTemplate')"
+								:label="$p.t('global/quellkurs')"
 								readonly
 								>
 							</core-form-input>
