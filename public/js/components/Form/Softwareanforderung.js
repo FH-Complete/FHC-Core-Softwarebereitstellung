@@ -458,11 +458,12 @@ export default {
 						</div>
 					</div>
 					<div class="fhc-hr mt-n-3" v-if="isLvSwRowsVisible"></div>
-					<div class="row-col" v-if="isLvSwRowsVisible && requestModus == 'tpl'">
+					<!-- // NOTE: Keep in case of later necessity. -->
+					<!--<div class="row-col" v-if="isLvSwRowsVisible && requestModus == 'tpl'">
 						<div class="alert alert-info" role="alert">
 							Bitte geben Sie die User-Anzahl an; für Lehrveranstaltungen außerhalb Ihres Kompetenzbereichs wird die User-Anzahl auf 0 gesetzt, und die Softwarebeauftragten werden informiert, um diese anzupassen.	
 						</div>
-					</div>
+					</div>-->
 					<div class="row" v-if="isLvSwRowsVisible" v-for="(fd, index) in formData" :key="index">
 							<div class="col-2 mb-2">
 								<core-form-input
@@ -472,7 +473,11 @@ export default {
 									class="form-control-sm"
 									readonly>
 								</core-form-input>
-								<div class="form-text text-danger" v-if="!fd.stgOeBerechtigt">{{ $p.t('ui/nurLeseberechtigung') }}</div>
+								<!--<div class="form-text text-danger" v-if="!fd.stgOeBerechtigt">{{ $p.t('ui/nurLeseberechtigung') }}</div>-->
+								<div class="form-text text-primary" v-if="!fd.stgOeBerechtigt">
+									 <i class="fa fa-info-circle" aria-hidden="true"></i>
+									 STG anderer Fakultät
+								 </div>
 							</div>
 							<div class="col-4 mb-2">
 								<core-form-input
@@ -493,13 +498,15 @@ export default {
 								</core-form-input>
 							</div>
 							<div class="col-2 mb-2">
+							<!-- // NOTE: Keep and change below in case of later necessity. -->
+							<!--:disabled="fd.zuordnungExists || !fd.stgOeBerechtigt"-->
 							<core-form-input
 								type="number"
 								v-model="fd.lizenzanzahl"
 								:name="'lizenzanzahl' + index"
 								class="form-control-sm"
 								:label="index === 0 ? $p.t('global', 'userAnzahl') : ''"
-								:disabled="fd.zuordnungExists || !fd.stgOeBerechtigt"
+								:disabled="fd.zuordnungExists"
 								:tabindex="index + 1">
 							</core-form-input>
 							<div class="form-text text-danger" v-if="fd.zuordnungExists">{{ $p.t('global/bereitsAngefordert') }}</div>

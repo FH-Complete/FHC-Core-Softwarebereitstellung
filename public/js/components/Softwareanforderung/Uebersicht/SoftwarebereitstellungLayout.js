@@ -28,8 +28,9 @@ export default {
 	<core-base-layout>
 		<template #main>			
 			<softwarebereitstellung-templates></softwarebereitstellung-templates>	
-				
-			<softwarebereitstellung-lvs></softwarebereitstellung-lvs>						
+			
+			<!--// NOTE: Keep in case of later necessity. -->
+			<!--<softwarebereitstellung-lvs></softwarebereitstellung-lvs>		-->				
 		</template>
 	</core-base-layout>
 	`

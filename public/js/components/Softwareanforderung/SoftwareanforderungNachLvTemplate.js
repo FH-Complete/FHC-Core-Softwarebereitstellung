@@ -130,10 +130,10 @@ export default {
 
 				// Select lv template row and its children lvs (due to option setting datatree propagate)
 				row.select();
-
-				// Expand to show the selected children lvs
-				row.treeExpand();
 			}
+		},
+		onRowDblClick(e, row) {
+			row.treeToggle();
 		},
 		prepDataTreeData(data){
 			let toDelete = [];
@@ -215,7 +215,8 @@ export default {
 				:tabulator-options="tabulatorOptions"
 				:tabulator-events="[
 					{event: 'tableBuilt', handler: onTableBuilt},
-					{event: 'rowClick', handler: onRowClick}
+					{event: 'rowClick', handler: onRowClick},
+					{event: 'rowDblClick', handler: onRowDblClick}
 				]">
 				<template v-slot:actions>
 					<button class="btn btn-primary" @click="openSoftwareanforderungForm()">SW für Quellkurs anfordern</button>
@@ -226,7 +227,7 @@ export default {
 							v-model="cbDataTreeStartExpanded"
 							:checked="cbDataTreeStartExpanded"
 							@change="reloadTabulator">
-						<label class="form-check-label">Templates {{ $p.t('global/aufgeklappt') }}</label>
+						<label class="form-check-label">Quellkurse {{ $p.t('global/aufgeklappt') }}</label>
 					</div>
 				</template>
 			</core-filter-cmpt>						

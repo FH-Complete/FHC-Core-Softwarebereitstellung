@@ -127,19 +127,20 @@ export default {
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
 						},
 						validator: ["min:0", "maxLength:3", "integer"],
-						editable: function(cell) {
-							const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
-
-							// Only editable if 'stgOeBerechtigt' is true
-							return stgOeBerechtigt;
-						},
-						tooltip: function(event, cell) {
-							const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
-
-							if (!stgOeBerechtigt) {
-								return self.$p.t('ui/nurLeseberechtigung');
-							}
-						}
+						// NOTE: Keep in case of later necessity.
+						// editable: function(cell) {
+						// 	const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
+						//
+						// 	// Only editable if 'stgOeBerechtigt' is true
+						// 	return stgOeBerechtigt;
+						// },
+						// tooltip: function(event, cell) {
+						// 	const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
+						//
+						// 	if (!stgOeBerechtigt) {
+						// 		return self.$p.t('ui/nurLeseberechtigung');
+						// 	}
+						// }
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 120,
@@ -416,8 +417,8 @@ export default {
 	</div>
 	<div class="row mb-5">
 		<div class="col">
-			<div class="card bg-light p-2">
-				<div class="card-body">
+	<!--		<div class="card bg-light p-2">
+				<div class="card-body">-->
 					<core-filter-cmpt
 						ref="softwareanforderungVerwaltungTable"
 						uniqueId="softwareanforderungVerwaltungTable"
@@ -464,8 +465,8 @@ export default {
 							</div>
 						</template>
 					</core-filter-cmpt>		
-				</div>
-			</div>				
+	<!--			</div>
+			</div>	-->			
 		</div>
 	</div>
 </div>

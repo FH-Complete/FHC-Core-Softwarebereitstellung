@@ -32,8 +32,6 @@ export default {
 				},
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: self.cbDataTreeStartExpanded,
-				selectable: true,
-				selectableRangeMode: 'click',
 				layout: 'fitColumns',
 				autoResize:false, // prevent auto resizing of table
 				resizableColumnFit:true, //maintain the fit of columns when resizing
@@ -42,13 +40,14 @@ export default {
 					filter: false, //persist filter sorting
 				},
 				columns: [
-					{
-						formatter: 'rowSelection',
-						titleFormatter: 'rowSelection',
-						titleFormatterParams: { rowRange: "active"},
-						width: 70,
-						frozen: true
-					},
+					// NOTE: Keep in case of later necessity.
+					// {
+					// 	formatter: 'rowSelection',
+					// 	titleFormatter: 'rowSelection',
+					// 	titleFormatterParams: { rowRange: "active"},
+					// 	width: 70,
+					// 	frozen: true
+					// },
 					{title: 'ID', field: 'software_id', headerFilter: true, visible: false, frozen: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
 						frozen: true,
@@ -205,11 +204,9 @@ export default {
 	template: `
 <div class="softwareanforderungNachSw overflow-hidden">
 	<div class="row d-flex my-3 align-items-center">
-		<div class="col-sm-9 col-md-10 h4">{{ $p.t('global/swAnforderungUeberAuswahlVonSw') }}</div>
+		<div class="col-sm-9 col-md-10 h4">{{ $p.t('global/softwareliste') }}</div>
 		<div class="col-sm-3 col-md-2 d-flex justify-content-end">
-		<!-- TODO phrase exists, but not breaking line properly -->
-		<!--<button class="btn btn-secondary text-start ms-auto" @click="">{{ $p.t('global/swNichtGefundenHierBestellen') }}</button>--> 
-			<button class="btn btn-secondary text-start" @click="openOtoboLink">Software nicht gefunden?<br>Hier bei IT-Services bestellen</button>
+			<button class="btn btn-primary text-start" @click="openOtoboLink">Software nicht gefunden?<br>Hier bei IT-Services bestellen</button>
 		</div>
 	</div>
 	<div class="row mb-5">
@@ -221,7 +218,10 @@ export default {
 				:side-menu="false"
 				:tabulator-options="tabulatorOptions">
 				<template v-slot:actions>
+<!--
+					// NOTE: Keep in case of later necessity. 
 					<button class="btn btn-primary" @click="openSoftwareanforderungForm()">{{ $p.t('global/swFuerLvAnfordern') }}</button>
+-->
 					<div class="form-check form-check-inline">
 						<input
 							class="form-check-input"

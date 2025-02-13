@@ -47,12 +47,13 @@ export default {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachQuellkurs')),
 					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLvTemplate.js'
 				},
-				softwareanforderungNachLv: {
-					title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
-				},
+				// NOTE: Keep in case of later necessity.
+				// softwareanforderungNachLv: {
+				// 	title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
+				// 	component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
+				// },
 				softwareanforderungNachSw: {
-					title: Vue.computed(() => this.$p.t('global/anforderungNachSw')),
+					title: Vue.computed(() => this.$p.t('global/softwareliste')),
 					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachSw.js'
 				},
 				softwaresuche: {
