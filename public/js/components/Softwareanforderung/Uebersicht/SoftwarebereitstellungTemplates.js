@@ -66,9 +66,13 @@ export default {
 				selectable: true,
 				selectableRangeMode: 'click',
 				selectableCheck: function (row) {
-					return  self.vorrueckenActivated
-						? row.getData().lehrtyp_kurzbz === 'tpl' && row.getData().abbestelltamum === null
-						: row.getData().lehrtyp_kurzbz === 'tpl';
+					let data = row.getData();
+					return self.vorrueckenActivated
+						? data.lehrtyp_kurzbz === 'tpl' && (
+							data.abbestelltamum === null ||
+							data.softwarestatus_kurzbz === 'endoflife' ||
+							data.softwarestatus_kurzbz === 'nichtverfuegbar')
+						: data.lehrtyp_kurzbz === 'tpl';
 				},
 				rowFormatter: function(row) {
 					const data = row.getData();
@@ -80,15 +84,20 @@ export default {
 						if (checkbox && data.lehrtyp_kurzbz !== 'tpl') checkbox.style.display = "none";
 					}
 
-					// Adjust row styles based on `vorrueckenActivated` and `abbestelltamum`
+					// Format text color and pointer events for different states
 					const rowElement = row.getElement();
-					const isDisabled = self.vorrueckenActivated && data.abbestelltamum !== null;
+					const isDisabled = self.vorrueckenActivated && (
+						data.abbestelltamum !== null ||
+						data.softwarestatus_kurzbz === 'endoflife' ||
+						data.softwarestatus_kurzbz === 'nichtverfuegbar'
+					)
 
-					rowElement.style.color = isDisabled ? "grey" : "black";
+					rowElement.classList.remove("tabulator-unselectable"); // Ensure class doesn't interfere
+					rowElement.style.color = self.vorrueckenActivated && isDisabled ? "grey" : "black";
 					rowElement.style.pointerEvents = isDisabled ? "none" : "auto";
 				},
 				columns: [
-					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 300},
+					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 350},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
@@ -251,14 +260,18 @@ export default {
 				title: this.vorrueckStudiensemester,
 				field: 'vorrueckStudiensemester',
 				formatter: (cell, formatterParams, onRendered)=> {
-					let value = cell.getValue();
-					if (cell.getRow().getData().abbestelltamum  !== null && cell.getRow().getData().lehrtyp_kurzbz === 'tpl') {
-						//return `<span class="badge bg-danger">Abbestellt ab ${this.vorrueckStudiensemester}</span>`;
+					let data = cell.getRow().getData();
+					if (data.lehrtyp_kurzbz === 'tpl' && data.abbestelltamum !== null) {
 						return `<span class="badge bg-danger">Abbestellt</span>`;
+					}
+					else if (data.lehrtyp_kurzbz === 'tpl' && (
+						data.softwarestatus_kurzbz === 'endoflife' ||
+						data.softwarestatus_kurzbz === 'nichtverfuegbar'
+					)){
+						return `<span class="badge bg-danger">Nicht bestellbar</span>`;
 					}
 					return "";
 				},
-				hozAlign: "center",
 				headerSort: false,
 				width: 170
 			})
