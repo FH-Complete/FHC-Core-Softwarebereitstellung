@@ -28,14 +28,16 @@ export default {
 	},
 	provide() {
 		return {
-			selectedStudiensemester: Vue.computed(() => this.selectedStudiensemester),
+			selectedStudienjahr: Vue.computed(() => this.selectedStudienjahr),
 			currentTab: Vue.computed(() => this.currentTab),
 			changeTab: tab => {
 				this.$refs.tabs.change(tab);
 			},
 		};
 	},
-	inject: ['STUDIENSEMESTER_DROPDOWN_STARTDATE'],
+	inject: [
+		'STUDIENJAHR_DROPDOWN_STARTDATE'
+	],
 	data() {
 		return {
 			tabs: {
@@ -47,11 +49,10 @@ export default {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachQuellkurs')),
 					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLvTemplate.js'
 				},
-				// NOTE: Keep in case of later necessity.
-				// softwareanforderungNachLv: {
-				// 	title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
-				// 	component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
-				// },
+				softwareanforderungNachLv: {
+					title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
+				},
 				softwareanforderungNachSw: {
 					title: Vue.computed(() => this.$p.t('global/softwareliste')),
 					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachSw.js'
@@ -62,20 +63,34 @@ export default {
 				}
 			},
 			currentTab: 'softwarebereitstellungUebersicht',
-			studiensemester: [],
-			selectedStudiensemester: ''
+			studienjahre: [],
+			selectedStudienjahr: ''
 		}
 	},
 	created(){
-		this.loadAndSetStudiensemester();
+		this.loadAndSetStudienjahr();
 	},
 	methods: {
-		loadAndSetStudiensemester(){
+		loadAndSetStudienjahr(){
 			this.$fhcApi
-				.get('api/frontend/v1/organisation/Studiensemester/getAll', {start: this.STUDIENSEMESTER_DROPDOWN_STARTDATE})
-				.then( result => this.studiensemester = result.data )
-				.then( () => this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getAktNext') ) // Get actual Studiensemester
-				.then( result => this.selectedStudiensemester = result.data[0].studiensemester_kurzbz ) // Preselect Studiensemester
+				.get('api/frontend/v1/organisation/Studienjahr/getAll', {
+					studienjahr_kurzbz: this.STUDIENJAHR_DROPDOWN_STARTDATE
+				})
+				.then(result => this.studienjahre = result.data )
+				.then( () => {
+					return this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getAktNext')
+				})
+				.then(result => {
+					return this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getStudienjahrByStudiensemester',
+						{
+							semester: result.data[0].studiensemester_kurzbz
+						}
+					)
+				})
+				 // Get actual studienjahr
+				.then( result => {
+					this.selectedStudienjahr = result.data.studienjahr_kurzbz
+				} ) // Preselect Studienjahr
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		onTabChange(tab) {
@@ -93,13 +108,13 @@ export default {
 				<div class="col-2 ms-auto">
 					<core-form-input
 						type="select"
-						v-model="selectedStudiensemester"
-						name="studiensemester">
+						v-model="selectedStudienjahr"
+						name="studienjahre">
 						<option 
-						v-for="(studSem, index) in studiensemester"
+						v-for="(studJahr, index) in studienjahre"
 						:key="index" 
-						:value="studSem.studiensemester_kurzbz">
-							{{studSem.studiensemester_kurzbz}}
+						:value="studJahr.studienjahr_kurzbz">
+							{{studJahr.studienjahr_kurzbz}}
 						</option>
 					</core-form-input>
 				</div>
