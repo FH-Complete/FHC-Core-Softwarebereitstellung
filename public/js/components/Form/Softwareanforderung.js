@@ -11,6 +11,7 @@ export default {
 		CoreBsModal
 	},
 	inject: [
+		'selectedStudienjahr',
 		'changeTab'
 	],
 	emit: [
@@ -23,7 +24,6 @@ export default {
 			lvSuggestions: [],
 			swSuggestions: [],
 			studiensemester: [],
-			selectedStudiensemester: '',
 			selectedLvs: [],
 			selectedSw: [],
 			selectedTemplate: {},
@@ -101,7 +101,7 @@ export default {
 					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
-		openModalLvTemplateToSw(selectedData, selectedStudiensemester) {
+		openModalLvTemplateToSw(selectedData) {
 			this.requestModus = 'tpl';
 
 			// Reset form
@@ -116,6 +116,7 @@ export default {
 				this.selectedLvs = selectedData
 					.filter(data => data.lehrtyp_kurzbz != 'tpl')
 					.map(data => ({
+						'studiensemester_kurzbz': data.studiensemester_kurzbz,
 						'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 						'lehrveranstaltung_id': data.lehrveranstaltung_id,
 						'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
@@ -125,13 +126,10 @@ export default {
 					}));
 			}
 
-			// Load Studiensemester to populate dropdown
-			this.loadAndSetStudiensemester(selectedStudiensemester);
-
 			// Open modal
 			this.$refs.modalContainer.show();
 		},
-		openModalLvToSw(selectedData, selectedStudiensemester) {
+		openModalLvToSw(selectedData) {
 			this.requestModus = 'lv';
 
 			// Reset form
@@ -140,6 +138,7 @@ export default {
 			// Prefill software select with data of table selection
 			if (Array.isArray(selectedData)) {
 				this.selectedLvs = selectedData.map(data => ({
+					'studiensemester_kurzbz': data.studiensemester_kurzbz,
 					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
 					'lehrveranstaltung_id': data.lehrveranstaltung_id,
 					'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
@@ -148,9 +147,6 @@ export default {
 					'stg_bezeichnung': data.stg_bezeichnung
 				}));
 			}
-
-			// Load Studiensemester to populate dropdown
-			this.loadAndSetStudiensemester(selectedStudiensemester);
 
 			// Open modal
 			this.$refs.modalContainer.show();
@@ -169,30 +165,8 @@ export default {
 				}));
 			}
 
-			// Load studiensemester to populate dropdown
-			this.loadAndSetStudiensemester();
-
 			// Open modal
 			this.$refs.modalContainer.show();
-		},
-		loadAndSetStudiensemester(selectedStudiensemester = null){
-			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAktAndFutureSemester')
-				.then( result => {
-					this.studiensemester = result.data;
-
-					this.selectedStudiensemester = selectedStudiensemester !== null
-						? selectedStudiensemester
-						: this.studiensemester[0].studiensemester_kurzbz
-				})
-				.catch(error => this.$fhcAlert.handleSystemError(error) );
-		},
-		onStudiensemesterChange(event){
-			// Empty lehrveranstaltungen dropdown
-			this.selectedLvs = [];
-
-			// Hide section with SW-LV-Zuordnungen
-			this.isLvSwRowsVisible = false;
 		},
 		searchSw(event) {
 			if (event.query || !this.swSuggestions.length) {
@@ -259,7 +233,7 @@ export default {
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
-		},
+		},*/
 		isLvSelected(option){
 			// Disable option if lv is selected
 			return this.selectedLvs.some(item => item.lehrveranstaltung_id === option.lehrveranstaltung_id);
@@ -270,7 +244,6 @@ export default {
 		},
 		resetForm(){
 			this.formData = [];
-			this.selectedStudiensemester = this.studiensemester.length > 0 ? this.studiensemester[0].studiensemester_kurzbz : '';
 			this.selectedLvs = [];
 			this.selectedSw = [];
 			this.selectedTemplate = {};
@@ -284,7 +257,7 @@ export default {
 			for(const lv of this.selectedLvs){
 				for (const sw of this.selectedSw){
 					this.formData.push({
-						studiensemester_kurzbz: this.selectedStudiensemester,
+						studiensemester_kurzbz: lv.studiensemester_kurzbz,
 						lv_oe_bezeichnung: lv.lv_oe_bezeichnung,
 						lehrveranstaltung_id: lv.lehrveranstaltung_id,
 						lehrveranstaltung_template_id: lv.lehrveranstaltung_template_id,
@@ -339,13 +312,12 @@ export default {
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		flagBerechtigtOnStgOe(){
-			let postData = {
-				studiensemester_kurzbz: this.selectedStudiensemester,
-				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id)
-			}
 
 			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', postData)
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', {
+					studienjahr_kurzbz: this.selectedStudienjahr,
+					lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id)
+				})
 				.then( result => result.data)
 				.then (data =>
 				{
@@ -395,23 +367,7 @@ export default {
 					<!-- Formular -->
 					<core-form-validation></core-form-validation>
 					<div class="row">
-						<div class="col-2 mb-3">
-							<core-form-input
-								type="select"
-								v-model="selectedStudiensemester"
-								name="studiensemester"
-								:label="$p.t('lehre', 'studiensemester')"
-								:disabled="requestModus === 'lv' || requestModus === 'tpl'"
-								@change="onStudiensemesterChange">
-								<option 
-								v-for="(studSem, index) in studiensemester"
-								:key="index" 
-								:value="studSem.studiensemester_kurzbz">
-									{{studSem.studiensemester_kurzbz}}
-								</option>
-							</core-form-input>
-						</div>
-						<div class="col-2 mb-3 align-self-start" v-if="requestModus == 'tpl'">
+						<div class="col-4 mb-3 align-self-start" v-if="requestModus == 'tpl'">
 						 	<core-form-input
 								v-model="selectedTemplate.lv_bezeichnung"
 								name="selectedTemplate"
@@ -437,6 +393,8 @@ export default {
 								@complete="searchLv">
 							</core-form-input>
 						</div>
+					</div>
+					<div class="row">
 						<div class="col-12 mb-3">
 							<core-form-input
 								type="autocomplete"

@@ -131,27 +131,26 @@ class Softwareanforderung extends FHCAPI_Controller
 	}
 
 	/**
-	 * Get all Lehrveranstaltungen of a given Studiensemester limited to
+	 * Get all Lehrveranstaltungen of a given Studienjahr limited to
 	 * the OEs for which the user has the necessary permissions
 	 */
 	public function getLvsByStgOe()
 	{
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
+		// Get OES the user is entitled for
 		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
 		if(!$entitledOes) $entitledOes = [];
 
 		// Get all Lvs
 		// Filter query by studiensemester and permitted oes
 		$result = $this->LehrveranstaltungModel->getLvs(
-			$this->input->get('studiensemester_kurzbz'),
+			$this->input->get('studienjahr_kurzbz'),
 			null,
 			$entitledOes,	// check against stg oes
 			$this->input->get('lv_ids') ?  $this->input->get('lv_ids') : null  // Set to null if not provided
 		);
 
 		// Return
-		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data);
+		$this->terminateWithSuccess(hasData($result) ? getData($result) : []);
 	}
 
 	/**
@@ -167,8 +166,9 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Get all Lvs
 		// Filter query by studiensemester and permitted oes
 		$result = $this->LehrveranstaltungModel->getTemplateLvTree(
-			$this->input->get('studiensemester_kurzbz'),
-			$entitledOes
+			null,
+			$entitledOes,
+			$this->input->get('studienjahr_kurzbz')
 		);
 
 		// Return
