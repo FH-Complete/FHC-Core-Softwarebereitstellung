@@ -12,7 +12,7 @@ export default {
 		SoftwareanforderungForm
 	},
 	inject: [
-		'selectedStudiensemester',
+		'selectedStudienjahr',
 		'currentTab'
 	],
 	data: function() {
@@ -28,13 +28,13 @@ export default {
 			this.table.setGroupStartOpen(newVal);
 			this.table.setData();
 		},
-		selectedStudiensemester(newVal) {
+		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwareanforderungNachLvTemplate" && this.table) {
 				this.replaceTableData();
 			}
 		},
 		currentTab(newVal) {
-			if (newVal === 'softwareanforderungNachLvTemplate' && this.selectedStudiensemester && this.table) {
+			if (newVal === 'softwareanforderungNachLvTemplate' && this.selectedStudienjahr && this.table) {
 				this.replaceTableData();
 			}
 		}
@@ -43,7 +43,7 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				// NOTE: data is set on table built to await preselected actual Studiensemester
+				// NOTE: data is set on table built to await preselected actual Studienjahr
 				ajaxResponse(url, params, response){
 					return self.cbDataTree
 						? self.prepDataTreeData(response.data) // Prepare data for dataTree view
@@ -64,6 +64,7 @@ export default {
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
 					{title: 'Lehrtyp Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:false, width: 70},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 350},
+					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:true, width: 90},
 					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
 					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 70},
 					{title: 'Semester', field: 'semester', headerFilter: true, width: 50},
@@ -87,7 +88,7 @@ export default {
 				return;
 			}
 
-			this.$refs.softwareanforderungForm.openModalLvTemplateToSw(selectedData, this.selectedStudiensemester);
+			this.$refs.softwareanforderungForm.openModalLvTemplateToSw(selectedData);
 		},
 		onFormClosed(){
 			// Deselect all rows
@@ -97,7 +98,7 @@ export default {
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
+					'?studienjahr_kurzbz=' + this.selectedStudienjahr
 				),
 			)
 		},
@@ -105,7 +106,7 @@ export default {
 			this.table.replaceData(
 				CoreRESTClient._generateRouterURI(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
+					'?studienjahr_kurzbz=' + this.selectedStudienjahr
 				),
 			)
 		},
@@ -203,7 +204,7 @@ export default {
 	template: `
 <div class="softwareanforderungNachStandardLvTemplate overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-12 h4">Software bestellen für Quellkurse {{ selectedStudiensemester }}</div>
+		<div class="col-12 h4">Software bestellen für Quellkurse {{ selectedStudienjahr }}</div>
 	</div>
 	<div class="row mb-5">
 		<div class="col">
