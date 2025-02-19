@@ -74,7 +74,7 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
 		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
-			$this->input->get('studiensemester_kurzbz'),
+			$this->input->get('studienjahr_kurzbz'),
 			$entitledOes,
 			null,
 			true
@@ -96,7 +96,7 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// Get SW-LV-Zuordnungen berechtigt by lvs' stg
 		$lvs = $this->SoftwareLvModel->getSwLvs(
-			$this->input->get('studiensemester_kurzbz'),
+			$this->input->get('studienjahr_kurzbz'),
 			null,
 			$entitledOes
 		);
@@ -105,7 +105,7 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
 		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
-			$this->input->get('studiensemester_kurzbz'),
+			$this->input->get('studienjahr_kurzbz'),
 			$entitledOes,
 			null,
 			true

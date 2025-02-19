@@ -23,7 +23,7 @@ class SoftwareLv_model extends DB_Model
 	 * If false, only SwLvs that were requested by Lv (NOT by Quellkurs) are returned.
 	 * @return mixed
 	 */
-	public function getSwLvs($studiensemester_kurzbz = null, $lv_oes = null, $stg_oes = null, $requestedByTpl = null)
+	public function getSwLvs($studienjahr_kurzbz = null, $lv_oes = null, $stg_oes = null, $requestedByTpl = null)
 	{
 		$qry = '
 			SELECT 
@@ -103,7 +103,8 @@ class SoftwareLv_model extends DB_Model
 				JOIN extension.tbl_softwaretyp 			sw_typ USING (softwaretyp_kurzbz)
 				JOIN public.tbl_organisationseinheit 	oe USING (oe_kurzbz)
 				JOIN public.tbl_studiengang          	stg ON stg.studiengang_kz = lv.studiengang_kz
-				JOIN public.tbl_studiengangstyp 		stgtyp ON stgtyp.typ = stg.typ';
+				JOIN public.tbl_studiengangstyp 		stgtyp ON stgtyp.typ = stg.typ
+				JOIN public.tbl_studiensemester 		stsem USING (studiensemester_kurzbz)';
 
 		if (is_bool($requestedByTpl))
 		{
@@ -116,11 +117,11 @@ class SoftwareLv_model extends DB_Model
 
 		$params = [];
 
-		if (isset($studiensemester_kurzbz) && is_string($studiensemester_kurzbz))
+		if (isset($studienjahr_kurzbz) && is_string($studienjahr_kurzbz))
 		{
 			/* filter studiensemester */
-			$qry.= ' AND swlv.studiensemester_kurzbz =  ? ';
-			$params[]= $studiensemester_kurzbz;
+			$qry.= ' AND stsem.studienjahr_kurzbz =  ? ';
+			$params[]= $studienjahr_kurzbz;
 		}
 
 		if ($requestedByTpl === true)
@@ -148,6 +149,8 @@ class SoftwareLv_model extends DB_Model
 			$qry.= ' AND stg.oe_kurzbz IN ?';
 			$params[]= $stg_oes;
 		}
+
+		$qry.= ' ORDER BY studiensemester_kurzbz DESC';
 
 		return $this->execQuery($qry, $params);
 	}
