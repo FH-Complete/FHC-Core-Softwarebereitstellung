@@ -233,7 +233,7 @@ export default {
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
-		},*/
+		},
 		isLvSelected(option){
 			// Disable option if lv is selected
 			return this.selectedLvs.some(item => item.lehrveranstaltung_id === option.lehrveranstaltung_id);
