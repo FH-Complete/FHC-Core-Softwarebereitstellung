@@ -20,7 +20,8 @@ class Softwareanforderung extends FHCAPI_Controller
 			array(
 				'getSwLvsRequestedByLv' => 'extension/software_bestellen:rw',
 				'getSwLvsRequestedByTpl' => 'extension/software_bestellen:rw',
-				'updateSwLvs' => 'extension/software_bestellen:rw',
+				'updateSoftwareByLv' => 'extension/software_bestellen:rw',
+				'updateSoftwareByTpl' => 'extension/software_bestellen:rw',
 				'deleteSwLvs' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvs' => 'extension/software_bestellen:rw',
 				'getLvsByStgOe' => 'extension/software_bestellen:rw',
@@ -274,89 +275,55 @@ class Softwareanforderung extends FHCAPI_Controller
 		$this->terminateWithSuccess();
 	}
 
+
 	/**
-	 * Updates changed Software for given Template Lvs or standalone LV after some checks:
-	 * No update if Bearbeitung is gesperrt.
+	 * Update changed Software for Quellkurs swlv and its assigned swlvs. Sends mail to SWB.
+	 *
+	 * No update if Planungsdeadline is past.
 	 * No update if SW is already assigend.
-	 * If given software_lv_id is a template, all zugehoerige Lvs are retrieved and SW is changed for all.
-	 * If given software_lv_id is standalone lv, SW is changed for this lv.
 	 */
-	public function updateSwLvs(){
-		$software_lv_id = $this->input->post('software_lv_id');
-		$updated_software_id = $this->input->post('software_id');
-		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
+	public function updateSoftwareByTpl(){
 
 		// Check if deletion is allowed
-		if ($this->softwarelib->isPlanningDeadlinePast($studiensemester_kurzbz)) exit;
-
-		// Get Lehrveranstaltung and Software by software_lv_id
-		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
-		$result = $this->SoftwareLvModel->load($software_lv_id);
-		$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
-		$software_id = getData($result)[0]->software_id;
+		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'))) exit;
 
 		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->_checkAndGetExistingSwLvs([
-			[
-				'lehrveranstaltung_id' => $lehrveranstaltung_id,
-				'software_id' => $updated_software_id,
-				'studiensemester_kurzbz' => $studiensemester_kurzbz
-			]
+		$result = $this->SoftwareLvModel->loadWhere([
+			'software_lv_id' => $this->input->post('tpl_software_lv_id'),
+			'software_id' => $this->input->post('software_id')
 		]);
 
 		// Return if at least one SW LV Zuordnung exists
-		if(count($result) > 0)
+		if(hasData($result))
 		{
 			$this->terminateWithValidationErrors(['selectedSw' => $this->p->t('global', 'zuordnungExistiertBereits')]);
 		}
 
-		// Check if Lehrveranstaltung is a Quellkurs
-		$result = $this->LehrveranstaltungModel->checkIsTemplate($lehrveranstaltung_id);
-		$isTemplate = $this->getDataOrTerminateWithError($result);
+		// Get Quellkurs swlv
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
+		$result = $this->SoftwareLvModel->load($this->input->post('tpl_software_lv_id'));
+		$tpl = current(getData($result));
 
-		$updateSoftwareLvIds = [];
+		// Get assigned swlvs
+		$result = $this->SoftwareLvModel->getSwLvsByTemplate(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id,
+			$tpl->studiensemester_kurzbz
+		);
+		$assignedSwLvs = hasData($result) ? getData($result) : [];
 
-		// If is Quellkurs
-		if ($isTemplate)
-		{
-			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
-			$assignedSwLvs = hasData($result) ? getData($result) : [];
-
-			// Store software_lv_ids for update
-			$updateSoftwareLvIds = array_merge(
-				[$this->input->post('software_lv_id')], // template
-				array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
-			);
-
-			// Send mail to other Softwarebeauftragte concerned
-			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
-			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
-			$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
-			$msg = $this->softwarelib->formatMsgQuellkursSwLvEdited($lehrveranstaltung_id, $software_id, $updated_software_id);		// Format message
-
-			foreach (array_keys($grouped) as $fak_oe_kurzbz)
-			{
-				// If not the users own Fakultät
-				if (!in_array($fak_oe_kurzbz, $entitledOes))
-				{
-					// Send mail to other concerned SWB
-					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
-				}
-			}
-		}
-		// Else is not a Quellkurs. Its a single Lehrveranstaltung.
-		else
-		{
-			// Store software_lv_id for update
-			$updateSoftwareLvIds = [$this->input->post('software_lv_id')];	// lv
-		}
+		// Combine template and assigned swlvs for update
+		$updateSoftwareLvIds = array_merge(
+			[$this->input->post('tpl_software_lv_id')], // template
+			array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
+		);
 
 		// Prepare data for batch update
 		$updateData = [];
-		foreach ($updateSoftwareLvIds as $id) {
+		foreach ($updateSoftwareLvIds as $softwareLvId) {
 			$updateData[] = [
-				'software_lv_id' => $id,
-				'software_id' => $updated_software_id
+				'software_lv_id' => $softwareLvId,
+				'software_id' => $this->input->post('software_id')
 			];
 		}
 
@@ -365,8 +332,66 @@ class Softwareanforderung extends FHCAPI_Controller
 			$result = $this->SoftwareLvModel->updateBatch($updateData);
 
 			// On error
-			$this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 		}
+
+		// Send mail to other Softwarebeauftragte concerned
+		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+		$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs , $studiengangToFakultaetMap);
+		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+		// Format message
+		$msg = $this->softwarelib->formatMsgQuellkursSwLvEdited(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id,
+			$this->input->post('software_id')
+		);
+
+		foreach (array_keys($grouped) as $fak_oe_kurzbz)
+		{
+			// If not the users own Fakultät
+			if (!in_array($fak_oe_kurzbz, $entitledOes))
+			{
+				// Send mail to other concerned SWB
+				$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
+			}
+		}
+
+		// On success
+		$this->terminateWithSuccess();
+	}
+
+	/**
+	 * Update changed Software for single swlv.
+	 *
+	 * No update if Planungsdeadline is past.
+	 * No update if SW is already assigend.
+	 */
+	public function updateSoftwareByLv(){
+		// Check if deletion is allowed
+		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'))) exit;
+
+		// Check if posted SW LV Zuordnungen already exists
+		$result = $this->SoftwareLvModel->loadWhere([
+			'software_lv_id' => $this->input->post('software_lv_id'),
+			'software_id' => $this->input->post('software_id')
+		]);
+
+		// Return if at least one SW LV Zuordnung exists
+		if(hasData($result))
+		{
+			$this->terminateWithValidationErrors(['selectedSw' => $this->p->t('global', 'zuordnungExistiertBereits')]);
+		}
+
+		// Update
+		$result = $this->SoftwareLvModel->update(
+			$this->input->post('software_lv_id'),
+			[
+				'software_id' => $this->input->post('software_id')
+			]
+		);
+
+		// On error
+		if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess();
