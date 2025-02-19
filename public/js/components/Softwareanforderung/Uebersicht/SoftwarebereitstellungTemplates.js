@@ -114,7 +114,7 @@ export default {
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true, width: 200, visible: false},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
-					{title: 'Schreibberechtigt', field: 'stgOeBerechtigt', headerFilter: true, visible: false},
+					// {title: 'Schreibberechtigt', field: 'stgOeBerechtigt', headerFilter: true, visible: false},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
 						formatter: (cell) => {
 							const { softwarestatus_kurzbz, softwarestatus_bezeichnung } = cell.getRow().getData();
@@ -351,8 +351,9 @@ export default {
 			let structuredData = [];
 			let qkSwParentLevel = new Set();	// Quellkurs + Software pair
 
+			// NOTE: maybe useful later. Not used in GUI now.
 			// Await the extra flag if user is entitled to edit Lizenzanzahl (LV must be entitled by STG OE)
-			await this._flagBerechtigtOnStgOe(data);
+			//await this._flagBerechtigtOnStgOe(data);
 
 			// Iterate over the data array
 			data.forEach((item, index) => {
@@ -390,15 +391,15 @@ export default {
 				}
 			});
 		},
-		async _flagBerechtigtOnStgOe(swlvs){
-			let params = {
-				studiensemester_kurzbz: this.selectedStudiensemester,
-				lv_ids: swlvs.map(swlv => swlv.lehrveranstaltung_id)
-			}
+		// NOTE: _flagBerechtigt NOT used in GUI  now.
+/*		async _flagBerechtigtOnStgOe(swlvs){
 
 			return new Promise((resolve, reject) => {
 				this.$fhcApi
-					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', params)
+					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', {
+						studienjahr_kurzbz: this.selectedStudienjahr,
+						lv_ids: swlvs.map(swlv => swlv.lehrveranstaltung_id)
+					})
 					.then (result =>
 					{
 						const data = result.data;
@@ -410,7 +411,7 @@ export default {
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error) );
 			});
-		},
+		},*/
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungVerwaltungTable.tabulator !== null && this.$refs.softwareanforderungVerwaltungTable.tabulator !== undefined)
 			{
