@@ -326,11 +326,16 @@ class Software_model extends DB_Model
 		);
 	}
 
+	/**
+	 * @param string $eventQuery
+	 * @param array | null $exclStatusArr Softwarestati to exclude from query
+	 * @return mixed
+	 */
 	public function getAutocompleteSuggestions($eventQuery, $exclStatusArr = null){
 		$params[] = '%' . $eventQuery . '%';
 
 		$qry = '
-			SELECT DISTINCT on (software_id) *
+			SELECT DISTINCT on (software_id) software_id, software_kurzbz
 			FROM extension.tbl_software sw
 			JOIN extension.tbl_software_softwarestatus swstat using (software_id)
 			WHERE software_kurzbz ILIKE ? ';
