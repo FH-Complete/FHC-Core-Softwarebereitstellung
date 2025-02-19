@@ -24,7 +24,7 @@ export default {
 		},
 		currentTab(newVal) {
 			if (newVal === 'softwareanforderungNachLv' && this.selectedStudienjahr && this.table) {
-				this.resetTableData();
+				this.replaceTableData();
 			}
 		}
 	},
