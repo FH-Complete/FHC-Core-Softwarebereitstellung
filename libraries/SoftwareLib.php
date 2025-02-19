@@ -77,9 +77,9 @@ class SoftwareLib
 	 * @param $studiensemester_kurzbz
 	 * @return bool
 	 */
-	public function isPlanningDeadlinePast($studiensemester_kurzbz = null)
+	public function isPlanningDeadlinePast($studienjahr_kurzbz = null)
 	{
-		$planungDeadline = $this->getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz);
+		$planungDeadline = $this->getPlanungDeadlineOfStudjahr($studienjahr_kurzbz);
 		if (isError($planungDeadline)) return getError($planungDeadline);
 
 		$today = new DateTime();
@@ -135,14 +135,12 @@ class SoftwareLib
 	 * @param $studiensemester_kurzbz
 	 * @return mixed
 	 */
-	public function getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz = null)
+	public function getPlanungDeadlineOfStudjahr($studienjahr_kurzbz = null)
 	{
 		// Get Studienjahr by Studiensemester
-		if (is_string($studiensemester_kurzbz))
+		if (is_string($studienjahr_kurzbz))
 		{
-			$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
-			$result = $this->_ci->StudiensemesterModel->getStudienjahrByStudiensemester($studiensemester_kurzbz);
-			$startstudienjahr = hasData($result) ? getData($result)->startstudienjahr : '';
+			$startstudienjahr = substr($studienjahr_kurzbz, 0, 4);
 		}
 		// Or get current Studienjahr
 		else
