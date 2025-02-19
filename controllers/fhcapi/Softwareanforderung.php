@@ -33,7 +33,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
 				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
-				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
+				'getVorrueckStudienjahr' => 'extension/software_bestellen:rw',
 				'getOtoboUrl' => 'extension/software_bestellen:rw',
 				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw',
 				'sendMailToSoftwarebeauftragte' => 'extension/software_bestellen:rw'
@@ -454,24 +454,26 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	public function deleteSwLvs(){
 		$software_lv_id = $this->input->post('software_lv_id');
-		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
+		$studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
 
 		// Check if deletion is allowed
-		$planungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast($studiensemester_kurzbz);
+		$planungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz);
 
 		if ($planungDeadlinePast) exit;	// There is a frontend check too, no more explanation needed.
 
 		// Get Lehrveranstaltung and Software by software_lv_id
 		$lehrveranstaltung_id = null;
 		$software_id = null;
+		$studiensemester_kurzbz = null;
 
-		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
 		$result = $this->SoftwareLvModel->load($software_lv_id);
 
 		if (hasData($result))
 		{
 			$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
 			$software_id = getData($result)[0]->software_id;
+			$studiensemester_kurzbz = getData($result)[0]->studiensemester_kurzbz;
 		}
 
 		// Check if Lehrveranstaltung is a Quellkurs
@@ -592,7 +594,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	}
 
 	public function isPlanningDeadlinePast(){
-		$result = $this->softwarelib->isPlanningDeadlinePast($this->input->post('studiensemester_kurzbz'));
+		$result = $this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'));
 
 		$this->terminateWithSuccess($result); // return true or false
 	}
@@ -612,15 +614,14 @@ class Softwareanforderung extends FHCAPI_Controller
 	/**
 	 * Get Studiensemester one year next to selected Studiensemester (e.g. SS2024 -> get SS2025)
 	 */
-	public function getVorrueckStudiensemester(){
-		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+	public function getVorrueckStudienjahr(){
+		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
 
-		$result = $this->StudiensemesterModel->getNextFrom($this->input->get('studiensemester_kurzbz'));
-		$result = $this->StudiensemesterModel->getNextFrom(hasData($result) ? getData($result)[0]->studiensemester_kurzbz : '');
+		$result = $this->StudienjahrModel->getNextFrom($this->input->get('studienjahr_kurzbz'));
 
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data[0]->studiensemester_kurzbz);
+		$this->terminateWithSuccess(current($data)->studienjahr_kurzbz);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
