@@ -22,10 +22,15 @@ export default {
 			vorrueckenActivated: false,
 			vorrueckStudienjahr: '',
 			cbDataTree: true, // checkbox display dataTree or not
-			cbDataTreeStartExpanded: false	// checkbox expand dataTree or not
+			cbDataTreeStartExpanded: false,	// checkbox expand dataTree or not
+			cbGroupStartOpen: true // checkbox group organisationseinheit start open
 		}
 	},
 	watch: {
+		cbGroupStartOpen(newVal){
+			this.table.setGroupStartOpen(newVal);
+			this.replaceTableData();
+		},
 		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
 				this.replaceTableData();
@@ -468,6 +473,13 @@ export default {
 							<button v-if="vorrueckenActivated" class="btn btn-primary" type="button" @click="vorrueckenSwLvs">
 								<!--{{ $p.t('ui/vorruecken') }}--> Vorrücken in {{ vorrueckStudienjahr }}
 							</button>
+							<div class="form-check form-check-inline ms-3">
+								<input
+									class="form-check-input"
+									type="checkbox"
+									v-model="cbGroupStartOpen">
+								<label class="form-check-label">Kompetenzfelder {{ $p.t('global/aufgeklappt') }}</label>
+							</div>
 							<div class="form-check form-check-inline ms-3">
 								<input
 									class="form-check-input"
