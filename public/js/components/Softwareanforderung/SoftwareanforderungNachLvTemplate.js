@@ -137,57 +137,44 @@ export default {
 			row.treeToggle();
 		},
 		prepDataTreeData(data){
-			let toDelete = [];
+			let structuredData = [];
+			let qkSwParentLevel = new Set();	// Quellkurs + Software pair
 
-			// loop through all data
-			for (let childIdx = 0; childIdx < data.length; childIdx++)
-			{
-				let child = data[childIdx];
+			// Iterate over the data array
+			data.forEach((item, index) => {
+				// Only process valid Quellkurs + Software pairs
+				if (item.lehrtyp_kurzbz === 'tpl' && item.software_id !== null) {
+					let parentKey = `${item.lehrveranstaltung_id}-${item.software_id}`;
 
-				// if it has parent id, it is a child
-				if (child[parentIdField])
-				{
-					// append the child on the right place. If parent found, mark original sw child on 0 level for deleting
-					if (this._appendChild(data, child)) toDelete.push(childIdx);
+					// Ensure each Quellkurs + Software pair is unique
+					if (!qkSwParentLevel.has(parentKey)) {
+						qkSwParentLevel.add(parentKey); // Track Quellkurs-Software pairs
+
+						let parentItem = {
+							...item,
+							_children: []  // Initialize children array
+						};
+
+						// Attach Zuordnungen (assignments) directly under this parent
+						this._appendSwLvZuordnung(data, parentItem);
+
+						structuredData.push(parentItem); // Add to final structured data
+					}
 				}
-			}
+			});
 
-			// delete the marked children from 0 level
-			for (let counter = 0; counter < toDelete.length; counter++)
-			{
-				// decrease index by counter as index of data array changes after every deletion
-				data.splice(toDelete[counter] - counter, 1);
-			}
-
-			return data;
+			return structuredData;
 		},
-		_appendChild(data, child) {
-			// get parent id
-			let parentId = child[parentIdField];
+		_appendSwLvZuordnung (data, parentItem) {
+			//Attach LV-SW Zuordnungen directly under the Quellkurs + Software parent
+			data.forEach((item) => {
+				// If the current item is a software assignment related to the parent
+				if (item[parentIdField] === parentItem[idField] &&
+					item.software_id === parentItem.software_id) {
 
-			// loop thorugh all data
-			for (let parentIdx = 0; parentIdx < data.length; parentIdx++)
-			{
-				let parent = data[parentIdx];
-
-				// if it's the parent
-				if (parent[idField] == parentId)
-				{
-					// create children array if not done yet
-					if (!parent._children) parent._children = [];
-
-					// if child is not included in children array, append the child
-					if (!parent._children.includes(child)) parent._children.push(child);
-
-					// parent found
-					return true;
+					parentItem._children.push({...item}); // Add as child
 				}
-				// search children for parents
-				else if (parent._children) this._appendChild(parent._children, child);
-			}
-
-			// parent not found
-			return false;
+			});
 		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungNachLvTemplateTable.tabulator !== null && this.$refs.softwareanforderungNachLvTemplateTable.tabulator !== undefined)
