@@ -361,7 +361,7 @@ export default {
 	template: `
 	<div class="app-example-form-1">
 		<core-form ref="form" @submit.prevent="sendForm">
-			<core-bs-modal ref="modalContainer" class="bootstrap-prompt" dialog-class="modal-fullscreen" @hidden-bs-modal="$emit('formClosed')">
+			<core-bs-modal ref="modalContainer" class="bootstrap-prompt" dialog-class="modal-xl" @hidden-bs-modal="$emit('formClosed')">
 				<template #title>{{ modalTitel }}</template>
 				<template #default>
 					<!-- Formular -->
