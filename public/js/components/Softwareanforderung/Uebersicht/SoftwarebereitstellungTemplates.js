@@ -12,7 +12,7 @@ export default {
 		SoftwareaenderungForm
 	},
 	inject: [
-		'selectedStudiensemester',
+		'selectedStudienjahr',
 		'currentTab'
 	],
 	data: function() {
@@ -20,24 +20,24 @@ export default {
 			table: null,
 			planungDeadlinePast: false,
 			vorrueckenActivated: false,
-			vorrueckStudiensemester: '',
+			vorrueckStudienjahr: '',
 			cbDataTree: true, // checkbox display dataTree or not
 			cbDataTreeStartExpanded: false	// checkbox expand dataTree or not
 		}
 	},
 	watch: {
-		selectedStudiensemester(newVal) {
+		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
 				this.replaceTableData();
 			}
 		},
 		currentTab(newVal) {
-			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudiensemester && this.table) {
+			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudienjahr && this.table) {
 				this.replaceTableData();
 			}
 		},
 		vorrueckenActivated(newVal){
-			if (newVal) this.setVorrueckStudiensemester(this.selectedStudiensemester);
+			if (newVal) this.setVorrueckStudienjahr(this.selectedStudienjahr);
 			this.table.redraw(true); // to trigger rowFormatter
 		}
 	},
@@ -45,7 +45,7 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				// NOTE: data is set on table built to await preselected actual Studiensemester
+				// NOTE: data is set on table built to await preselected actual Studienjahr
 				ajaxResponse(url, params, response){
 					return self.prepDataTreeData(response.data); // Prepare data for dataTree view
 				},
@@ -101,7 +101,7 @@ export default {
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
-					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:false},
+					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:true},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
 					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
 					{title: 'Lehrtyp-Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:false},
@@ -189,16 +189,16 @@ export default {
 	},
 	methods: {
 		setTableData(){
-			if (this.selectedStudiensemester)
+			if (this.selectedStudienjahr)
 				this.$fhcApi
 					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
-						studiensemester_kurzbz: this.selectedStudiensemester
+						studienjahr_kurzbz: this.selectedStudienjahr
 					})
 					.then((result) => this.planungDeadlinePast = result.data)
 					.then(() => {
 						this.table.setData(CoreRESTClient._generateRouterURI(
 							'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
-							'?studiensemester_kurzbz=' + this.selectedStudiensemester
+							'?studienjahr_kurzbz=' + this.selectedStudienjahr
 						))
 					})
 					.catch((error) => { this.$fhcAlert.handleSystemError(error) });
@@ -207,13 +207,13 @@ export default {
 		replaceTableData(){
 			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
-					studiensemester_kurzbz: this.selectedStudiensemester
+					studienjahr_kurzbz: this.selectedStudienjahr
 				})
 				.then((result) => this.planungDeadlinePast = result.data)
 				.then(() => {
 					this.table.replaceData(CoreRESTClient._generateRouterURI(
 						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
-						'?studiensemester_kurzbz=' + this.selectedStudiensemester
+						'?studienjahr_kurzbz=' + this.selectedStudienjahr
 					))
 				})
 				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
@@ -222,12 +222,12 @@ export default {
 			// If selected row is a Quellkurs
 			if (row.getData().lehrtyp_kurzbz === 'tpl')
 			{
-				this.$refs.softwareaenderungForm.openModalUpdateSwByTemplate(row.getData(), this.selectedStudiensemester);
+				this.$refs.softwareaenderungForm.openModalUpdateSwByTemplate(row.getData());
 			}
 			// Else its a simple LV
 			else
 			{
-				this.$refs.softwareaenderungForm.openModalUpdateSwByLv(row.getData(), this.selectedStudiensemester);
+				this.$refs.softwareaenderungForm.openModalUpdateSwByLv(row.getData());
 			}
 
 		},
@@ -237,7 +237,7 @@ export default {
 			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvs', {
 					software_lv_id: software_lv_id,
-					studiensemester_kurzbz: this.selectedStudiensemester
+					studienjahr_kurzbz: this.selectedStudienjahr
 				})
 				.then((result) => this.reloadTabulator())
 				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
@@ -257,8 +257,8 @@ export default {
 			}, true)
 
 			this.table.addColumn({
-				title: this.vorrueckStudiensemester,
-				field: 'vorrueckStudiensemester',
+				title: this.vorrueckStudienjahr,
+				field: 'vorrueckStudienjahr',
 				formatter: (cell, formatterParams, onRendered)=> {
 					let data = cell.getRow().getData();
 					if (data.lehrtyp_kurzbz === 'tpl' && data.abbestelltamum !== null) {
@@ -278,7 +278,7 @@ export default {
 		},
 		deactivateVorruecken(){
 			this.vorrueckenActivated = false;
-			this.table.deleteColumn('vorrueckStudiensemester');
+			this.table.deleteColumn('vorrueckStudienjahr');
 			this.table.deleteColumn('selection');
 			this.table.deselectRow();
 		},
@@ -310,12 +310,12 @@ export default {
 				.then(() => this.table.redraw(true))
 				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
-		setVorrueckStudiensemester(selectedStudiensemester){
+		setVorrueckStudienjahr(selectedStudienjahr){
 			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudiensemester', {
-					studiensemester_kurzbz: selectedStudiensemester
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudienjahr', {
+					studienjahr_kurzbz: selectedStudienjahr
 				})
-				.then(result => {this.vorrueckStudiensemester = result.data;})
+				.then(result => {this.vorrueckStudienjahr = result.data;})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		onRowClick(e, row) {
@@ -329,8 +329,8 @@ export default {
 
 			this.setTableData();
 
-			if (this.selectedStudiensemester)
-				this.setVorrueckStudiensemester(this.selectedStudiensemester);
+			if (this.selectedStudienjahr)
+				this.setVorrueckStudienjahr(this.selectedStudienjahr);
 
 			// Replace column titles with phrasen
 			await this.$p.loadCategory(['lehre']);
@@ -426,12 +426,12 @@ export default {
 	template: `
 <div class="softwareanforderungVerwaltung overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-12 h4">Meine Quellkurs-Softwarebestellungen {{ selectedStudiensemester }}</div>
+		<div class="col-12 h4">Meine Quellkurs-Softwarebestellungen {{ selectedStudienjahr }}</div>
 	</div>
 	<div class="row mb-5">
 		<div class="col">
-	<!--		<div class="card bg-light p-2">
-				<div class="card-body">-->
+			<div class="card bg-light p-2">
+				<div class="card-body">
 					<core-filter-cmpt
 						ref="softwareanforderungVerwaltungTable"
 						uniqueId="softwareanforderungVerwaltungTable"
@@ -465,7 +465,7 @@ export default {
 								<!--{{ $p.t('ui/abbestellen') }}--> Abbestellen
 							</button>	
 							<button v-if="vorrueckenActivated" class="btn btn-primary" type="button" @click="vorrueckenSwLvs">
-								<!--{{ $p.t('ui/vorruecken') }}--> Vorrücken in {{ vorrueckStudiensemester }}
+								<!--{{ $p.t('ui/vorruecken') }}--> Vorrücken in {{ vorrueckStudienjahr }}
 							</button>
 							<div class="form-check form-check-inline ms-3">
 								<input
@@ -478,8 +478,8 @@ export default {
 							</div>
 						</template>
 					</core-filter-cmpt>		
-	<!--			</div>
-			</div>	-->			
+				</div>
+			</div>				
 		</div>
 	</div>
 </div>
