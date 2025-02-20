@@ -119,7 +119,6 @@ export default {
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true, width: 200, visible: false},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
-					// {title: 'Schreibberechtigt', field: 'stgOeBerechtigt', headerFilter: true, visible: false},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
 						formatter: (cell) => {
 							const { softwarestatus_kurzbz, softwarestatus_bezeichnung } = cell.getRow().getData();
@@ -140,21 +139,7 @@ export default {
 							selectContents:true,
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
 						},
-						validator: ["min:0", "maxLength:3", "integer"],
-						// NOTE: Keep in case of later necessity.
-						// editable: function(cell) {
-						// 	const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
-						//
-						// 	// Only editable if 'stgOeBerechtigt' is true
-						// 	return stgOeBerechtigt;
-						// },
-						// tooltip: function(event, cell) {
-						// 	const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
-						//
-						// 	if (!stgOeBerechtigt) {
-						// 		return self.$p.t('ui/nurLeseberechtigung');
-						// 	}
-						// }
+						validator: ["min:0", "maxLength:3", "integer"]
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 120,
@@ -356,10 +341,6 @@ export default {
 			let structuredData = [];
 			let qkSwParentLevel = new Set();	// Quellkurs + Software pair
 
-			// NOTE: maybe useful later. Not used in GUI now.
-			// Await the extra flag if user is entitled to edit Lizenzanzahl (LV must be entitled by STG OE)
-			//await this._flagBerechtigtOnStgOe(data);
-
 			// Iterate over the data array
 			data.forEach((item, index) => {
 				// Only process valid Quellkurs + Software pairs
@@ -396,27 +377,6 @@ export default {
 				}
 			});
 		},
-		// NOTE: _flagBerechtigt NOT used in GUI  now.
-/*		async _flagBerechtigtOnStgOe(swlvs){
-
-			return new Promise((resolve, reject) => {
-				this.$fhcApi
-					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', {
-						studienjahr_kurzbz: this.selectedStudienjahr,
-						lv_ids: swlvs.map(swlv => swlv.lehrveranstaltung_id)
-					})
-					.then (result =>
-					{
-						const data = result.data;
-						swlvs.forEach(swlv => {
-							const match = data.find(item => item.studiengang_kz === swlv.studiengang_kz);
-							swlv.stgOeBerechtigt = !match ? false : true;
-						});
-						resolve(); // Resolve the Promise when done
-					})
-					.catch(error => this.$fhcAlert.handleSystemError(error) );
-			});
-		},*/
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungVerwaltungTable.tabulator !== null && this.$refs.softwareanforderungVerwaltungTable.tabulator !== undefined)
 			{

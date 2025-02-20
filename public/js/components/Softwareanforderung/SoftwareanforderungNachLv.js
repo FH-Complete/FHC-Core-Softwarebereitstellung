@@ -60,28 +60,7 @@ export default {
 					{title: 'Studienplan', field: 'studienplan_bezeichnung', headerFilter: true, visible:true, width: 220},
 					{title: 'LE-Gruppen', field: 'lehreinheitgruppen_bezeichnung', headerFilter: true, width: 200},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false, minWidth: 80},
-					{title: 'LV-OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200},
-					{
-						title: 'Quellkurs-LV',
-						field: 'lehrveranstaltung_template_id',
-						formatter: function(cell) {
-							const value = cell.getValue();
-							return value !== null && value !== undefined && value !== ""
-								? '<i class="fa fa-check text-success"></i>'
-								: '<i class="fa fa-xmark text-danger"></i>';
-						},
-						headerFilter: 'tickCross',
-						headerFilterParams:{ tristate: true },
-						headerFilterFunc: function(headerValue, rowValue) {
-							return headerValue === ""
-								? true // Show all
-								: headerValue === true
-									? (rowValue !== null && rowValue !== undefined && rowValue !== "") // Show numbers
-									: (rowValue === null || rowValue === ""); // Show null
-						},
-						width: 70,
-						hozAlign: 'center'
-					}
+					{title: 'LV-OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200}
 				]
 			}
 		}
@@ -105,7 +84,7 @@ export default {
 		setTableData(){
 			this.table.setData(
 				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getNonQuellkursLvs' +
 					'?studienjahr_kurzbz=' + this.selectedStudienjahr
 				),
 			)
@@ -113,7 +92,7 @@ export default {
 		replaceTableData(){
 			this.table.replaceData(
 				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getNonQuellkursLvs' +
 					'?studienjahr_kurzbz=' + this.selectedStudienjahr
 				),
 			)

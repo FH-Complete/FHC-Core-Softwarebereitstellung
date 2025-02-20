@@ -24,7 +24,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'updateSoftwareByTpl' => 'extension/software_bestellen:rw',
 				'deleteSwLvs' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvs' => 'extension/software_bestellen:rw',
-				'getLvsByStgOe' => 'extension/software_bestellen:rw',
+				'getNonQuellkursLvs' => 'extension/software_bestellen:rw',
 				'getLvsForTplRequests' => 'extension/software_bestellen:rw',
 				'saveSwRequestByLvs' => 'extension/software_bestellen:rw',
 				'saveSwRequestByTpl' => 'extension/software_bestellen:rw',
@@ -134,20 +134,29 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * Get all Lehrveranstaltungen of a given Studienjahr limited to
 	 * the OEs for which the user has the necessary permissions
 	 */
-	public function getLvsByStgOe()
+	public function getNonQuellkursLvs()
 	{
 		// Get OES the user is entitled for
 		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
 		if(!$entitledOes) $entitledOes = [];
 
-		// Get all Lvs
-		// Filter query by studiensemester and permitted oes
-		$result = $this->LehrveranstaltungModel->getLvs(
-			$this->input->get('studienjahr_kurzbz'),
-			null,
-			$entitledOes,	// check against stg oes
-			$this->input->get('lv_ids') ?  $this->input->get('lv_ids') : null  // Set to null if not provided
-		);
+		// Get given lvs that are not assigned to a Quellkurs
+		if ($this->input->get('lv_ids'))
+		{
+			$result = $this->LehrveranstaltungModel->getNonQuellkursLvs(
+				$this->input->get('studienjahr_kurzbz'),
+				$entitledOes,	// check against stg oes
+				$this->input->get('lv_ids')
+			);
+		}
+		// Get all lvs that are not assigned to a Quellkurs
+		else
+		{
+			$result = $this->LehrveranstaltungModel->getNonQuellkursLvs(
+				$this->input->get('studienjahr_kurzbz'),
+				$entitledOes	// check against stg oes
+			);
+		}
 
 		// Return
 		$this->terminateWithSuccess(hasData($result) ? getData($result) : []);

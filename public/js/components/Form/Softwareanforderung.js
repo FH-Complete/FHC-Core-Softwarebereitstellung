@@ -276,11 +276,6 @@ export default {
 			// Flag if selection already exists
 			this.flagExistingSwLvZuordnungen();
 
-			if (this.requestModus === 'tpl')
-			{
-				this.flagBerechtigtOnStgOe();
-			}
-
 			// Sort formData
 			this.sortFormData();
 
@@ -311,26 +306,6 @@ export default {
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
-		flagBerechtigtOnStgOe(){
-
-			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', {
-					studienjahr_kurzbz: this.selectedStudienjahr,
-					lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id)
-				})
-				.then( result => result.data)
-				.then (data =>
-				{
-					this.formData.forEach(fd => {
-						const match = data.find(item => item.studiengang_kz === fd.studiengang_kz);
-
-						if (!match) {
-							fd.stgOeBerechtigt = false;
-						}
-					});
-				})
-				.catch(error => this.$fhcAlert.handleSystemError(error) );
-		},
 		sortFormData(){
 			this.formData.sort((a, b) => {
 
@@ -344,11 +319,6 @@ export default {
 				const softwareB = b.software_kurzbz.toUpperCase();
 				if (softwareA < softwareB) return -1;
 				if (softwareA > softwareB) return 1;
-
-				// Sort by stgOeBerechtigt third (false should be last)
-				if (a.stgOeBerechtigt !== b.stgOeBerechtigt) {
-					return a.stgOeBerechtigt === false ? -1 : 1;
-				}
 
 				return 0; // In case all comparisons are equal
 			});
@@ -416,12 +386,6 @@ export default {
 						</div>
 					</div>
 					<div class="fhc-hr mt-n-3" v-if="isLvSwRowsVisible"></div>
-					<!-- // NOTE: Keep in case of later necessity. -->
-					<!--<div class="row-col" v-if="isLvSwRowsVisible && requestModus == 'tpl'">
-						<div class="alert alert-info" role="alert">
-							Bitte geben Sie die User-Anzahl an; für Lehrveranstaltungen außerhalb Ihres Kompetenzbereichs wird die User-Anzahl auf 0 gesetzt, und die Softwarebeauftragten werden informiert, um diese anzupassen.	
-						</div>
-					</div>-->
 					<div class="row" v-if="isLvSwRowsVisible" v-for="(fd, index) in formData" :key="index">
 							<div class="col-2 mb-2">
 								<core-form-input
@@ -456,8 +420,6 @@ export default {
 								</core-form-input>
 							</div>
 							<div class="col-2 mb-2">
-							<!-- // NOTE: Keep and change below in case of later necessity. -->
-							<!--:disabled="fd.zuordnungExists || !fd.stgOeBerechtigt"-->
 							<core-form-input
 								type="number"
 								v-model="fd.lizenzanzahl"
