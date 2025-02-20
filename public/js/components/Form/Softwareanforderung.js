@@ -263,16 +263,13 @@ export default {
 			}
 
 			// Flag if selection already exists
-			this.flagExistingSwLvZuordnungen();
-
-			// Sort formData
-			this.sortFormData();
+			this.flagAndSortExistingSwLvs();
 
 			// Display formData as rows
 			this.isLvSwRowsVisible = true;
 
 		},
-		flagExistingSwLvZuordnungen(){
+		flagAndSortExistingSwLvs(){
 			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvs', this.formData)
 				.then( result => {
@@ -293,6 +290,7 @@ export default {
 						});
 					}
 				})
+				.then(() => this.sortFormData())
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		sortFormData(){
@@ -300,7 +298,7 @@ export default {
 
 				// Sort by zuordnungExists first
 				if (a.zuordnungExists !== b.zuordnungExists) {
-					return a.zuordnungExists ? -1 : 1;
+					return a.zuordnungExists ? 1 : -1;
 				}
 
 				// Sort by software_kurzbz second (case insensitive)
