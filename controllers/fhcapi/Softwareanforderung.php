@@ -280,22 +280,23 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Check if deletion is allowed
 		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'))) exit;
 
-		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->SoftwareLvModel->loadWhere([
-			'software_lv_id' => $this->input->post('tpl_software_lv_id'),
-			'software_id' => $this->input->post('software_id')
-		]);
-
-		// Return if at least one SW LV Zuordnung exists
-		if(hasData($result))
-		{
-			$this->terminateWithValidationErrors(['selectedSw' => $this->p->t('global', 'zuordnungExistiertBereits')]);
-		}
-
 		// Get Quellkurs swlv
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
 		$result = $this->SoftwareLvModel->load($this->input->post('tpl_software_lv_id'));
 		$tpl = current(getData($result));
+
+		// Check if posted SW LV Zuordnungen already exists
+		$result = $this->_checkAndGetExistingSwLvs([[
+			'lehrveranstaltung_id' => $tpl->lehrveranstaltung_id,
+			'software_id' => $this->input->post('software_id'),
+			'studiensemester_kurzbz' => $tpl->studiensemester_kurzbz
+		]]);
+
+		// Return if at least one SW LV Zuordnung exists
+		if(count($result) > 0)
+		{
+			$this->terminateWithValidationErrors(['selectedSw' => $this->p->t('global', 'zuordnungExistiertBereits')]);
+		}
 
 		// Get assigned swlvs
 		$result = $this->SoftwareLvModel->getSwLvsByTemplate(
