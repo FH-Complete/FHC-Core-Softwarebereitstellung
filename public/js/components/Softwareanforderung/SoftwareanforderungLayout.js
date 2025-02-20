@@ -77,20 +77,8 @@ export default {
 					studienjahr_kurzbz: this.STUDIENJAHR_DROPDOWN_STARTDATE
 				})
 				.then(result => this.studienjahre = result.data )
-				.then( () => {
-					return this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getAktNext')
-				})
-				.then(result => {
-					return this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getStudienjahrByStudiensemester',
-						{
-							semester: result.data[0].studiensemester_kurzbz
-						}
-					)
-				})
-				 // Get actual studienjahr
-				.then( result => {
-					this.selectedStudienjahr = result.data.studienjahr_kurzbz
-				} ) // Preselect Studienjahr
+				.then(() => this.$fhcApi.get('api/frontend/v1/organisation/Studienjahr/getNext'))
+				.then( result => this.selectedStudienjahr = result.data.studienjahr_kurzbz)
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		onTabChange(tab) {
