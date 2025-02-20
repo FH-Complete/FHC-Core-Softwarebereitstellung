@@ -84,18 +84,8 @@ export default {
 					.then(result => {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
 
-						let updatedFields = {};
-						postData.forEach((pd, index) => {
-							const name = 'lizenzanzahl' + index;
-							updatedFields[name] = '';
-
-							// Disable updated Lizenzanzahl field
-							const formElement = this.$refs.form.$el.querySelector(`[name="${name}"]`);
-							if (formElement) {
-								formElement.disabled = true;
-							}
-						});
-						this.$refs.form.setFeedback(true, updatedFields);
+						// Reset SW-Dropdown
+						this.selectedSw = [];
 
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
@@ -267,8 +257,7 @@ export default {
 						software_id: sw.software_id,
 						software_kurzbz: sw.software_kurzbz,
 						lizenzanzahl: 0,  // Default
-						zuordnungExists: false, // Default,
-						stgOeBerechtigt: true
+						zuordnungExists: false // Default,
 					})
 				}
 			}
