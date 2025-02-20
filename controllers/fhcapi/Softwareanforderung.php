@@ -8,7 +8,6 @@ if (! defined('BASEPATH')) exit('No direct script access allowed');
 class Softwareanforderung extends FHCAPI_Controller
 {
 	private $_uid;
-	const BERECHTIGUNG_SOFTWAREANFORDERUNG = 'extension/software_bestellen';
 	const NOT_ZUORDENBARE_STATI = ['endoflife', 'nichtverfuegbar'];
 
 	/**
@@ -42,6 +41,9 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		$this->_setAuthUID(); // sets property uid
 
+		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
+		$this->entitledOes = $this->permissionlib->getOE_isEntitledFor('extension/software_bestellen') ?: [];
+
 		// Load models
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Software_model', 'SoftwareModel');
@@ -68,14 +70,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * the user has permission to view. Permission is checked against lv oes.
 	 */
 	public function getSwLvsRequestedByTpl(){
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $entitledOes = [];
-
 		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
 		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studienjahr_kurzbz'),
-			$entitledOes,
+			$this->entitledOes,
 			null,
 			true
 		);
@@ -90,15 +88,11 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * the user has permission to view. Permission is checked against lv's stg oes.
 	 */
 	public function getSwLvsRequestedByLv(){
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $entitledOes = [];
-
 		// Get SW-LV-Zuordnungen berechtigt by lvs' stg
 		$lvs = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studienjahr_kurzbz'),
 			null,
-			$entitledOes
+			$this->entitledOes
 		);
 
 		$lvs = hasData($lvs) ? getData($lvs) : [];
@@ -106,7 +100,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
 		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
 			$this->input->get('studienjahr_kurzbz'),
-			$entitledOes,
+			$this->entitledOes,
 			null,
 			true
 		);
@@ -136,16 +130,12 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	public function getNonQuellkursLvs()
 	{
-		// Get OES the user is entitled for
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $entitledOes = [];
-
 		// Get given lvs that are not assigned to a Quellkurs
 		if ($this->input->get('lv_ids'))
 		{
 			$result = $this->LehrveranstaltungModel->getNonQuellkursLvs(
 				$this->input->get('studienjahr_kurzbz'),
-				$entitledOes,	// check against stg oes
+				$this->entitledOes,	// check against stg oes
 				$this->input->get('lv_ids')
 			);
 		}
@@ -154,7 +144,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		{
 			$result = $this->LehrveranstaltungModel->getNonQuellkursLvs(
 				$this->input->get('studienjahr_kurzbz'),
-				$entitledOes	// check against stg oes
+				$this->entitledOes	// check against stg oes
 			);
 		}
 
@@ -168,15 +158,9 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	public function getLvsForTplRequests()
 	{
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $entitledOes = [];
-
-		// Get all Lvs
-		// Filter query by studiensemester and permitted oes
 		$result = $this->LehrveranstaltungModel->getTemplateLvTree(
 			null,
-			$entitledOes,
+			$this->entitledOes,
 			$this->input->get('studienjahr_kurzbz')
 		);
 
@@ -347,7 +331,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Send mail to other Softwarebeauftragte concerned
 		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
 		$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs , $studiengangToFakultaetMap);
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+
 		// Format message
 		$msg = $this->softwarelib->formatMsgQuellkursSwLvEdited(
 			$tpl->lehrveranstaltung_id,
@@ -358,7 +342,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		foreach (array_keys($grouped) as $fak_oe_kurzbz)
 		{
 			// If not the users own Fakultät
-			if (!in_array($fak_oe_kurzbz, $entitledOes))
+			if (!in_array($fak_oe_kurzbz, $this->entitledOes))
 			{
 				// Send mail to other concerned SWB
 				$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
@@ -435,7 +419,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Send mail to other Softwarebeauftragte concerned
 		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
 		$grouped = $this->softwarelib->groupLvsByFakultaet($data, $studiengangToFakultaetMap);
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+
 		$msg = $this->softwarelib->formatMsgAbbestellteSwLvs($grouped);		// Format message
 
 		if (count($msg) > 0)
@@ -447,7 +431,7 @@ class Softwareanforderung extends FHCAPI_Controller
 			foreach ($messagesGroupedByFak as $fak_oe_kurzbz => $message) {
 
 				// If not the users own Fakultät
-				if (!in_array($fak_oe_kurzbz, $entitledOes)) {
+				if (!in_array($fak_oe_kurzbz, $this->entitledOes)) {
 					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $message);
 				}
 			}
@@ -504,13 +488,12 @@ class Softwareanforderung extends FHCAPI_Controller
 			// Send mail to other Softwarebeauftragte concerned
 			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
 			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
-			$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
 			$msg = $this->softwarelib->formatMsgQuellkursSwLvDeleted($lehrveranstaltung_id, $software_id);		// Format message
 
 			foreach (array_keys($grouped) as $fak_oe_kurzbz)
 			{
 				// If not the users own Fakultät
-				if (!in_array($fak_oe_kurzbz, $entitledOes))
+				if (!in_array($fak_oe_kurzbz, $this->entitledOes))
 				{
 					// Send mail to other concerned SWB
 					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
@@ -570,17 +553,13 @@ class Softwareanforderung extends FHCAPI_Controller
 	{
 		$query = strtolower(urldecode($query));
 
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $oe_permissions = [];
-
 		// Get results for given lv search string
 		// Filter query by studiensemester and permitted oes
 		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
 		$result = $this->LehrveranstaltungModel->getAutocompleteSuggestions(
 			$query,
 			$this->input->get('studiensemester_kurzbz'),
-			$entitledOes,
+			$this->entitledOes,
 			'lv'
 		);
 
