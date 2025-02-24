@@ -182,7 +182,7 @@ export default {
 			if (!await this.$fhcAlert.confirmDelete()) return;
 
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvs', {
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvsByLv', {
 					software_lv_id: software_lv_id,
 					studienjahr_kurzbz: this.selectedStudienjahr
 				})

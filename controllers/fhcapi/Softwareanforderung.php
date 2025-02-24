@@ -22,7 +22,8 @@ class Softwareanforderung extends FHCAPI_Controller
 				'updateSoftwareByLv' => 'extension/software_bestellen:rw',
 				'updateSoftwareByTpl' => 'extension/software_bestellen:rw',
 				'sendMailSoftwareUpdated' => 'extension/software_bestellen:rw',
-				'deleteSwLvs' => 'extension/software_bestellen:rw',
+				'deleteSwLvsByLv' => 'extension/software_bestellen:rw',
+				'deleteSwLvsByTpl' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvs' => 'extension/software_bestellen:rw',
 				'getNonQuellkursLvs' => 'extension/software_bestellen:rw',
 				'getLvsForTplRequests' => 'extension/software_bestellen:rw',
@@ -463,77 +464,69 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * If given software_lv_id is a template, all zugehoerige Lvs are retrieved and SW is deleted for all.
 	 * If given software_lv_id is standalone lv, SW is deleted for this lv.
 	 */
-	public function deleteSwLvs(){
+	public function deleteSwLvsByTpl(){
 		$software_lv_id = $this->input->post('software_lv_id');
 		$studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
 
 		// Check if deletion is allowed
-		$planungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz);
+		if ($this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz)) exit;
 
-		if ($planungDeadlinePast) exit;	// There is a frontend check too, no more explanation needed.
-
-		// Get Lehrveranstaltung and Software by software_lv_id
-		$lehrveranstaltung_id = null;
-		$software_id = null;
-		$studiensemester_kurzbz = null;
-
+		// Get Quellkurs swlv
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
 		$result = $this->SoftwareLvModel->load($software_lv_id);
+		$tpl = current(getData($result));
 
-		if (hasData($result))
-		{
-			$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
-			$software_id = getData($result)[0]->software_id;
-			$studiensemester_kurzbz = getData($result)[0]->studiensemester_kurzbz;
-		}
+		// Get assigned swlvs
+		$result = $this->SoftwareLvModel->getSwLvsByTemplate(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id,
+			$tpl->studiensemester_kurzbz
+		);
+		$assignedSwLvs = hasData($result) ? getData($result) : [];
 
-		// Check if Lehrveranstaltung is a Quellkurs
-		$result = $this->LehrveranstaltungModel->checkIsTemplate($lehrveranstaltung_id);
-		$isTemplate = $this->getDataOrTerminateWithError($result);
-
-		// If is Quellkurs
-		if ($isTemplate)
-		{
-			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
-			$assignedSwLvs = hasData($result) ? getData($result) : [];
-
-			// Store software_lv_ids for deletion
-			$deleteSoftwareLvIds = array_merge(
-				[$this->input->post('software_lv_id')], // template
-				array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
-			);
-
-			// Send mail to other Softwarebeauftragte concerned
-			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
-			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
-			$msg = $this->softwarelib->formatMsgQuellkursSwLvDeleted($lehrveranstaltung_id, $software_id);		// Format message
-
-			foreach (array_keys($grouped) as $fak_oe_kurzbz)
-			{
-				// If not the users own Fakultät
-				if (!in_array($fak_oe_kurzbz, $this->entitledOes))
-				{
-					// Send mail to other concerned SWB
-					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
-				}
-			}
-		}
-		// Else is not a Quellkurs. Its a single Lehrveranstaltung.
-		else
-		{
-			// Store software_lv_id for deletion
-			$deleteSoftwareLvIds = [$this->input->post('software_lv_id')];	// lv
-		}
+		// Combine template and assigned swlvs for deletion
+		$deleteSoftwareLvIds = array_merge(
+			[$this->input->post('software_lv_id')], // template
+			array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
+		);
 
 		// Delete software_lv_ids
-		$deleted = [];
 		foreach ($deleteSoftwareLvIds as $software_lv_id) {
 			$this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]);
-
-			$deleted[]= $software_lv_id;
 		}
 
-		$this->terminateWithSuccess($deleted);
+		// Send mail
+		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+		$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
+		$msg = $this->softwarelib->formatMsgQuellkursSwLvDeleted(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id
+		);		// Format message
+
+		foreach (array_keys($grouped) as $fak_oe_kurzbz)
+		{
+			// If not the users own Fakultät
+			if (!in_array($fak_oe_kurzbz, $this->entitledOes))
+			{
+				// Send mail to other concerned SWB
+				$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
+			}
+		}
+
+		$this->terminateWithSuccess($tpl);
+	}
+
+	public function deleteSwLvsByLv(){
+		$software_lv_id = $this->input->post('software_lv_id');
+		$studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		// Check if deletion is allowed
+		if ($this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz)) exit;
+
+		// Delete software_lv_id
+		$this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]);
+
+		$this->terminateWithSuccess();
 	}
 
 	/**

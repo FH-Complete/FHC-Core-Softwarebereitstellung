@@ -225,12 +225,14 @@ export default {
 			if (!await this.$fhcAlert.confirmDelete()) return;
 
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvs', {
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvsByTpl', {
 					software_lv_id: software_lv_id,
 					studienjahr_kurzbz: this.selectedStudienjahr
 				})
-				.then((result) => this.reloadTabulator())
-				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
+				.then((result) => {
+					this.$fhcAlert.alertSuccess('Gelöscht');
+					this.reloadTabulator();
+				})
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
 		activateVorruecken(){
