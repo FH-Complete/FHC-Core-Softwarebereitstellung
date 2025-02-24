@@ -21,6 +21,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'getSwLvsRequestedByTpl' => 'extension/software_bestellen:rw',
 				'updateSoftwareByLv' => 'extension/software_bestellen:rw',
 				'updateSoftwareByTpl' => 'extension/software_bestellen:rw',
+				'sendMailSoftwareUpdated' => 'extension/software_bestellen:rw',
 				'deleteSwLvs' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvs' => 'extension/software_bestellen:rw',
 				'getNonQuellkursLvs' => 'extension/software_bestellen:rw',
@@ -329,6 +330,25 @@ class Softwareanforderung extends FHCAPI_Controller
 			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 		}
 
+		// On success
+		$this->terminateWithSuccess();
+	}
+
+
+	public function sendMailSoftwareUpdated(){
+		// Get Quellkurs swlv
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
+		$result = $this->SoftwareLvModel->load($this->input->post('tpl_software_lv_id'));
+		$tpl = current(getData($result));
+
+		// Get assigned swlvs
+		$result = $this->SoftwareLvModel->getSwLvsByTemplate(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id,
+			$tpl->studiensemester_kurzbz
+		);
+		$assignedSwLvs = hasData($result) ? getData($result) : [];
+
 		// Send mail to other Softwarebeauftragte concerned
 		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
 		$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs , $studiengangToFakultaetMap);
@@ -349,9 +369,6 @@ class Softwareanforderung extends FHCAPI_Controller
 				$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
 			}
 		}
-
-		// On success
-		$this->terminateWithSuccess();
 	}
 
 	/**

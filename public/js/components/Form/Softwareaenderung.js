@@ -49,6 +49,13 @@ export default {
 							this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
 							this.$emit('onSaved');
 						})
+						.then(() => {
+							this.$fhcApi.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareUpdated',
+							{
+								tpl_software_lv_id: this.selectedTemplate.software_lv_id,
+								software_id: this.selectedSw.software_id,
+							})
+						})
 						.catch(error => this.$fhcAlert.handleSystemError(error));
 				}
 			}
