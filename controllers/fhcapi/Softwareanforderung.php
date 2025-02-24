@@ -32,7 +32,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'abbestellenSwLvs' => 'extension/software_bestellen:rw',
 				'updateLizenzanzahl' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
-				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
+				'autocompleteLvSuggestionsByStudjahr' => 'extension/software_bestellen:rw',
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudienjahr' => 'extension/software_bestellen:rw',
 				'getOtoboUrl' => 'extension/software_bestellen:rw',
@@ -560,18 +560,17 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * Autocomplete Lehrveranstaltungen Suggestions
 	 * @return void
 	 */
-	public function autocompleteLvSuggestionsByStudsem($query = '')
+	public function autocompleteLvSuggestionsByStudjahr($query = '')
 	{
 		$query = strtolower(urldecode($query));
 
 		// Get results for given lv search string
 		// Filter query by studiensemester and permitted oes
 		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
-		$result = $this->LehrveranstaltungModel->getAutocompleteSuggestions(
+		$result = $this->LehrveranstaltungModel->getNonQuellkursLvsAutocompleteSuggestions(
 			$query,
-			$this->input->get('studiensemester_kurzbz'),
-			$this->entitledOes,
-			'lv'
+			$this->input->get('studienjahr_kurzbz'),
+			$this->entitledOes
 		);
 
 		// Return

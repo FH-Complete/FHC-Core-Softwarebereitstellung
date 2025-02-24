@@ -23,7 +23,6 @@ export default {
 			autocompleteAbortController: null,
 			lvSuggestions: [],
 			swSuggestions: [],
-			studiensemester: [],
 			selectedLvs: [],
 			selectedSw: [],
 			selectedTemplate: {},
@@ -187,9 +186,9 @@ export default {
 				this.autocompleteAbortController = new AbortController();
 				this.$fhcApi
 					.get(
-						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteLvSuggestionsByStudsem/' + encodeURIComponent(event.query),
+						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteLvSuggestionsByStudjahr/' + encodeURIComponent(event.query),
 						{
-							studiensemester_kurzbz: this.selectedStudiensemester
+							studienjahr_kurzbz: this.selectedStudienjahr
 						},
 						{
 							signal: this.autocompleteAbortController.signal,
