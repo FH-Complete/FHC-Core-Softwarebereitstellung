@@ -191,29 +191,30 @@ export default {
 				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
-		onCellEdited(cell){
+		abbestellenSwLvs() {
+			let selectedData = this.table.getSelectedData();
+
+			// Cancel SW-LV-Bestellungen (abbestellen)
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateLizenzanzahl', [{
-					software_lv_id: cell.getData().software_lv_id,
-					lizenzanzahl: cell.getData().anzahl_lizenzen,
-				}])
-				.then(() => this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert')))
-				.catch((error) => this.$fhcAlert.handleSystemError(error));
-		},
-		setTableData(){
-			if(this.selectedStudienjahr)
-				this.$fhcApi
-					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
-						studienjahr_kurzbz: this.selectedStudienjahr
-					})
-					.then((result) => this.planungDeadlinePast = result.data)
-					.then(() => {
-						this.table.setData(CoreRESTClient._generateRouterURI(
-								'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
-								'?studienjahr_kurzbz=' + this.selectedStudienjahr
-							))
-					})
-					.catch((error) => { this.$fhcAlert.handleSystemError(error) });
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/abbestellenSwLvs', {
+					data: selectedData.map((item) => item.software_lv_id)
+				})
+				.then(result => result.data)
+				.then(data => {
+					if (data && Array.isArray(data) && data.length > 0)
+					{
+						this.table.updateData(data);
+						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'abbestellt'));
+
+						this.$fhcApi
+							.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailToSoftwarebeauftragte', {
+								data: data.map((item) => item.software_lv_id)
+							})
+							.catch(error => this.$fhcAlert.handleSystemError(error));
+					}
+				})
+				.then(() => this.table.redraw(true))
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		replaceTableData(){
 			this.$fhcApi
@@ -364,7 +365,6 @@ export default {
 				]"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
 				<template v-slot:actions>
-			<!--		<button class="btn btn-primary" @click="openModalChangeLicense">{{ $p.t('global/userAnzahlAendern') }}</button>-->
 					<button class="btn btn-outline-secondary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
 						{{ $p.t('ui/aktion') }}
 					</button>
@@ -398,11 +398,6 @@ export default {
 			</div>		
 		</div>
 	</div>
-	
-	<!-- Form -->
-<!--
-	<softwarelizenzanforderung-form ref="softwarelizenzanforderungForm" @form-closed="onFormClosed"></softwarelizenzanforderung-form>
--->
 
 	<softwareaenderung-form ref="softwareaenderungForm" @on-saved="reloadTabulator()"></softwareaenderung-form>
 </div>
