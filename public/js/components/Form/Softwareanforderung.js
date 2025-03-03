@@ -111,7 +111,8 @@ export default {
 						'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
 						'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
 						'studiengang_kz': data.studiengang_kz,
-						'stg_bezeichnung': data.stg_bezeichnung
+						'stg_bezeichnung': data.stg_bezeichnung,
+						'stg_typ_kurzbz': data.stg_typ_kurzbz
 					}));
 			}
 
@@ -133,7 +134,8 @@ export default {
 					'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
 					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
 					'studiengang_kz': data.studiengang_kz,
-					'stg_bezeichnung': data.stg_bezeichnung
+					'stg_bezeichnung': data.stg_bezeichnung,
+					'stg_typ_kurzbz': data.stg_typ_kurzbz
 				}));
 			}
 
@@ -251,6 +253,7 @@ export default {
 						lehrveranstaltung_id: lv.lehrveranstaltung_id,
 						lehrveranstaltung_template_id: lv.lehrveranstaltung_template_id,
 						lv_bezeichnung: lv.lv_bezeichnung,
+						stg_typ_kurzbz: lv.stg_typ_kurzbz,
 						studiengang_kz: lv.studiengang_kz,
 						stg_bezeichnung: lv.stg_bezeichnung,
 						software_id: sw.software_id,
@@ -373,21 +376,16 @@ export default {
 					</div>
 					<div class="fhc-hr mt-n-3" v-if="isLvSwRowsVisible"></div>
 					<div class="row" v-if="isLvSwRowsVisible" v-for="(fd, index) in formData" :key="index">
-							<div class="col-2 mb-2">
+							<div class="col-1 mb-2">
 								<core-form-input
-									v-model="fd.stg_bezeichnung"
-									name="stg_bezeichnung"
+									v-model="fd.stg_typ_kurzbz"
+									name="stg_typ_kurzbz"
 									:label="index === 0 ? $p.t('lehre', 'studiengang') : ''"
 									class="form-control-sm"
 									readonly>
 								</core-form-input>
-								<!--<div class="form-text text-danger" v-if="!fd.stgOeBerechtigt">{{ $p.t('ui/nurLeseberechtigung') }}</div>-->
-								<div class="form-text text-primary" v-if="!fd.stgOeBerechtigt">
-									 <i class="fa fa-info-circle" aria-hidden="true"></i>
-									 STG anderer Fakultät
-								 </div>
 							</div>
-							<div class="col-4 mb-2">
+							<div class="col-5 mb-2">
 								<core-form-input
 									v-model="fd.lv_bezeichnung"
 									name="lv_bezeichnung"
