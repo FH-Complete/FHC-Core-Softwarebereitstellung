@@ -91,6 +91,12 @@ export default {
 					filter: false, //persist filter sorting
 				},
 				columns: [
+					{
+						field: 'selection',
+						formatter: 'rowSelection',
+						width: 70,
+						visible: false
+					},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
@@ -161,6 +167,14 @@ export default {
 							return container;
 						},
 						frozen: true
+					},
+					{
+						title: this.vorrueckStudienjahr,
+						field: 'vorrueckStudienjahr',
+						formatter: this._formatVorrueckTableData,
+						headerSort: false,
+						width: 170,
+						visible: false
 					}
 				]
 			}
@@ -252,30 +266,15 @@ export default {
 		},
 		activateVorruecken() {
 			this.vorrueckenActivated = true;
+			this.table.showColumn('selection');
+			this.table.showColumn('vorrueckStudienjahr');
+			this.table.redraw(true);
 
-			this.table.addColumn({
-				field: 'selection',
-				formatter: 'rowSelection',
-				width: 70
-			}, true)
-
-			this._addVorrueckTableData()
-				//.then(tableData => this.table.replaceData(tableData))
-				.then(tableData => this.table.updateData(tableData).then(() => this.table.redraw(true)))
-				.then(() => {
-					this.table.addColumn({
-						title: this.vorrueckStudienjahr,
-						field: 'vorrueckStudienjahr',
-						formatter: this._formatVorrueckTableData,
-						headerSort: false,
-						width: 170
-					})
-				});
 		},
 		deactivateVorruecken(){
 			this.vorrueckenActivated = false;
-			this.table.deleteColumn('vorrueckStudienjahr');
-			this.table.deleteColumn('selection');
+			this.table.hideColumn('vorrueckStudienjahr');
+			this.table.hideColumn('selection');
 			this.table.deselectRow();
 			this.table.redraw(true);
 		},
@@ -296,9 +295,14 @@ export default {
 							rowData.isVorgerueckt = isVorgerrueckt_software_lv_ids.includes(rowData.software_lv_id);
 							rowData.isMissingLvNextYear = isMissingLvNextYear_software_lv_ids.includes(rowData.software_lv_id);
 						})
+
+						return tableData;
 					}
-					return tableData;
 				})
+				.then((tableData) => {
+					if (tableData) this.table.updateData(tableData)
+				})
+				.then(() => this.table.redraw(true))
 				.catch(error => {this.$fhcAlert.handleSystemError(error)});
 		},
 		_formatVorrueckTableData(cell, formatterParams, onRendered){
@@ -323,7 +327,10 @@ export default {
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudienjahr', {
 					studienjahr_kurzbz: selectedStudienjahr
 				})
-				.then(result => {this.vorrueckStudienjahr = result.data;})
+				.then(result => {
+					this.vorrueckStudienjahr = result.data;
+					return result.data
+				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		setTableData(){
@@ -333,12 +340,14 @@ export default {
 						studienjahr_kurzbz: this.selectedStudienjahr
 					})
 					.then((result) => this.planungDeadlinePast = result.data)
-					.then(() => {
-						this.table.setData(CoreRESTClient._generateRouterURI(
-							'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
-							'?studienjahr_kurzbz=' + this.selectedStudienjahr
-						))
-					})
+					.then(() =>
+						this.table
+							.setData(CoreRESTClient._generateRouterURI(
+								'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
+								'?studienjahr_kurzbz=' + this.selectedStudienjahr
+							))
+							.then(() => this._addVorrueckTableData())
+					)
 					.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
 		replaceTableData(){
@@ -367,6 +376,9 @@ export default {
 		onRowClick(e, row) {
 			if (!this.vorrueckenActivated) row.deselect();
 		},
+		onDataLoaded(data) {
+			if (this.table) this._addVorrueckTableData();
+		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungTable.tabulator !== null && this.$refs.softwareanforderungTable.tabulator !== undefined)
 			{
@@ -383,7 +395,9 @@ export default {
 			this.setTableData();
 
 			if (this.selectedStudienjahr)
-				this.setVorrueckStudienjahr(this.selectedStudienjahr);
+				this.setVorrueckStudienjahr(this.selectedStudienjahr).then((vorrueckStudienjahr) =>
+					this.table.updateColumnDefinition('vorrueckStudienjahr', {title: vorrueckStudienjahr })
+				);
 
 			// Replace column titles with phrasen
 			await this.$p.loadCategory(['global', 'lehre']);
@@ -416,7 +430,8 @@ export default {
 				:tabulator-events="[
 					{event: 'tableBuilt', handler: onTableBuilt},
 					{event: 'cellEdited', handler: onCellEdited},
-					{event: 'rowClick', handler: onRowClick}
+					{event: 'rowClick', handler: onRowClick},
+					{event: 'dataLoaded', handler: onDataLoaded}
 				]"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
 				<template v-slot:actions>

@@ -31,6 +31,9 @@ export default {
 			this.table.setGroupStartOpen(newVal);
 			this.replaceTableData();
 		},
+		cbDataTreeStartExpanded(newVal){
+			if (newVal) this.table.redraw(true);
+		},
 		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
 				this.replaceTableData();
@@ -78,7 +81,7 @@ export default {
 							data.softwarestatus_kurzbz === 'endoflife' ||
 							data.softwarestatus_kurzbz === 'nichtverfuegbar' ||
 							data.isMissingLvNextYear === true ||
-							data.isVorgerueckt === true)  // TODO check ob auch wen lehrtyp lv
+							data.isVorgerueckt === true)  // TODO check ob auch wenn lehrtyp lv
 						: data.lehrtyp_kurzbz === 'tpl';
 				},
 				rowFormatter: function(row) {
@@ -106,6 +109,13 @@ export default {
 					rowElement.style.pointerEvents = isDisabled ? "none" : "auto";
 				},
 				columns: [
+					{
+						field: 'selection',
+						formatter: 'rowSelection',
+						headerSort: false,
+						width: 70,
+						visible: false
+					},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
@@ -143,6 +153,10 @@ export default {
 							selectContents:true,
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
 						},
+						editable: (cell) => {
+							let rowData = cell.getRow().getData();
+							return rowData.lehrtyp_kurzbz !== 'tpl';
+						},
 						validator: ["min:0", "maxLength:3", "integer"]
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
@@ -176,6 +190,14 @@ export default {
 							}
 						},
 						frozen: true
+					},
+					{
+						title: this.vorrueckStudienjahr,
+						field: 'vorrueckStudienjahr',
+						formatter: this._formatVorrueckTableData,
+						headerSort: false,
+						width: 170,
+						visible: false,
 					}
 				]
 			}
@@ -223,21 +245,31 @@ export default {
 					if (result.data.length > 0) {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
 
-						let updateData = [];
-						let tpl_software_lv_ids = this.table.getData().map((row) => row.software_lv_id);
+						// If dataTree not expanded, update parent level -> lightweight performance
+						if (!this.cbDataTreeStartExpanded) {
+							let updateData = [];
+							let tpl_software_lv_ids = this.table.getData().map((row) => row.software_lv_id);
 
-						result.data.forEach(swlvId => {
-							// Add to updateData only the template swlvIds (to make updateData work correctly)
-							if (tpl_software_lv_ids.includes(swlvId))
-								updateData.push(
-									{
-										software_lv_id: swlvId,
-										isVorgerueckt: true
-									}
-								)
-						});
+							result.data.forEach(swlvId => {
+								// Add to updateData only the template swlvIds (to make updateData work correctly)
+								if (tpl_software_lv_ids.includes(swlvId))
+									updateData.push(
+										{
+											software_lv_id: swlvId,
+											isVorgerueckt: true
+										}
+									)
+							});
 
-						this.table.updateData(updateData).then(() => this.table.redraw(true));
+							this.table.updateData(updateData).then(() => this.table.redraw(true));
+						}
+						// If dataTree is expanded, use method as workaround to update also children rows
+						else
+						{
+							// Use this method as workaround to update also children rows
+							this._addVorrueckTableData();
+
+						}
 					}
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error));
@@ -269,35 +301,14 @@ export default {
 		},
 		activateVorruecken(){
 			this.vorrueckenActivated = true;
-
-			let abbestellteQkSwLvsRows = this.table.getRows().filter(row => row.getData().abbestelltamum !== null);
-			abbestellteQkSwLvsRows.forEach(row => row.deselect());
-
-			this.table.addColumn({
-				field: 'selection',
-				formatter: 'rowSelection',
-				headerSort: false,
-				width: 70
-			}, true)
-
-			this._addVorrueckTableData()
-				.then(tableData => {
-					this.table.updateData(tableData).then(() => this.table.redraw(true));
-				})
-				.then(() => {
-					this.table.addColumn({
-						title: this.vorrueckStudienjahr,
-						field: 'vorrueckStudienjahr',
-						formatter: this._formatVorrueckTableData,
-						headerSort: false,
-						width: 170
-					})
-				});
+			this.table.showColumn('selection');
+			this.table.showColumn('vorrueckStudienjahr');
+			//this.table.redraw(true);
 		},
 		deactivateVorruecken(){
 			this.vorrueckenActivated = false;
-			this.table.deleteColumn('vorrueckStudienjahr');
-			this.table.deleteColumn('selection');
+			this.table.hideColumn('vorrueckStudienjahr');
+			this.table.hideColumn('selection');
 			this.table.deselectRow();
 			this.table.redraw(true);
 		},
@@ -307,6 +318,7 @@ export default {
 		 	const tableData = this.table.getSelectedData();
 			this.table.deselectRow();
 
+			if (tableData.length > 0)
 			return this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/validateVorrueckSwLvsForTpl', {
 					software_lv_ids: tableData.map(row => row.software_lv_id),
@@ -321,9 +333,14 @@ export default {
 							rowData.isVorgerueckt = isVorgerrueckt_software_lv_ids.includes(rowData.software_lv_id);
 							rowData.isMissingLvNextYear = isMissingLvNextYear_software_lv_ids.includes(rowData.software_lv_id);
 						})
+
+						return tableData;
 					}
-					return tableData;
 				})
+				.then((tableData) => {
+					if (tableData) this.table.updateData(tableData)
+				})
+				.then(() => this.table.redraw(true))
 				.catch(error => {this.$fhcAlert.handleSystemError(error)});
 		},
 		_formatVorrueckTableData(cell, formatterParams, onRendered){
@@ -348,7 +365,10 @@ export default {
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudienjahr', {
 					studienjahr_kurzbz: selectedStudienjahr
 				})
-				.then(result => {this.vorrueckStudienjahr = result.data;})
+				.then(result => {
+					this.vorrueckStudienjahr = result.data;
+					return result.data;
+				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		setTableData(){
@@ -358,12 +378,14 @@ export default {
 						studienjahr_kurzbz: this.selectedStudienjahr
 					})
 					.then((result) => this.planungDeadlinePast = result.data)
-					.then(() => {
-						this.table.setData(CoreRESTClient._generateRouterURI(
-							'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
-							'?studienjahr_kurzbz=' + this.selectedStudienjahr
-						))
-					})
+					.then(() =>
+						this.table
+							.setData(CoreRESTClient._generateRouterURI(
+								'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
+								'?studienjahr_kurzbz=' + this.selectedStudienjahr
+							))
+							.then(() => this._addVorrueckTableData())
+					)
 					.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 
 		},
@@ -387,19 +409,25 @@ export default {
 		onRowDblClick(e, row) {
 			row.treeToggle();
 		},
+		onDataLoaded(data) {
+			console.log('onDataLoaded');
+			if (this.table) this._addVorrueckTableData();
+		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungVerwaltungTable.tabulator;
 
 			this.setTableData();
 
 			if (this.selectedStudienjahr)
-				this.setVorrueckStudienjahr(this.selectedStudienjahr);
+				this.setVorrueckStudienjahr(this.selectedStudienjahr).then((vorrueckStudienjahr) =>
+					this.table.updateColumnDefinition('vorrueckStudienjahr', {title: vorrueckStudienjahr })
+				);
 
 			// Replace column titles with phrasen
 			await this.$p.loadCategory(['lehre']);
 			this.table.updateColumnDefinition('lv_bezeichnung', {title: this.$p.t('lehre', 'lehrveranstaltung')});
 		},
-		onCellEdited(cell){
+		onCellEdited(cell) {
 			if (cell.getData().lehrtyp_kurzbz !== 'tpl') {
 				this.$fhcApi
 					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateLizenzanzahl', [{
@@ -482,7 +510,8 @@ export default {
 							{event: 'rowClick', handler: onRowClick},
 							{event: 'rowDblClick', handler: onRowDblClick},
 							{event: 'tableBuilt', handler: onTableBuilt},
-							{event: 'cellEdited', handler: onCellEdited}
+							{event: 'cellEdited', handler: onCellEdited},
+							{event: 'dataLoaded', handler: onDataLoaded}
 						]"
 						:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
 						<template v-slot:actions>
