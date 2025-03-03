@@ -170,6 +170,27 @@ class SoftwareLib
 		}
 	}
 
+	public function addStudiensemesterOfNextStudjahr($softwareLvIds)
+	{
+		// NOTE: Mixed data: SWLV data of given swlvId, but studiensemester is from Next year!
+		$this->_ci->SoftwareLvModel->addSelect('software_lv_id');
+		$this->_ci->SoftwareLvModel->addSelect('lehrveranstaltung_id');
+		$this->_ci->SoftwareLvModel->addSelect('software_id');
+		$this->_ci->SoftwareLvModel->addSelect('lizenzanzahl');
+		$this->_ci->SoftwareLvModel->addSelect('
+			(
+				SELECT studiensemester_kurzbz
+				FROM public.tbl_studiensemester
+				WHERE studiensemester_kurzbz > extension.tbl_software_lv.studiensemester_kurzbz
+				ORDER BY studiensemester_kurzbz
+				LIMIT 1
+	  		) AS studiensemester_kurzbz
+		');
+
+		return $this->_ci->SoftwareLvModel->loadWhere('
+			software_lv_id IN ('. implode(', ', $softwareLvIds). ')
+		');
+	}
 	// -----------------------------------------------------------------------------------------------------------------
 	// JOBS & ALERTS
 	// -----------------------------------------------------------------------------------------------------------------

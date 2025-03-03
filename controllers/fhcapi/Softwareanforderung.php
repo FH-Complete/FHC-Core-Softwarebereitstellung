@@ -30,6 +30,10 @@ class Softwareanforderung extends FHCAPI_Controller
 				'saveSwRequestByLvs' => 'extension/software_bestellen:rw',
 				'saveSwRequestByTpl' => 'extension/software_bestellen:rw',
 				'abbestellenSwLvs' => 'extension/software_bestellen:rw',
+				'vorrueckSwLvsByLvs' => 'extension/software_bestellen:rw',
+				'vorrueckSwLvsByTpl' => 'extension/software_bestellen:rw',
+				'validateVorrueckSwLvsForLvs' => 'extension/software_bestellen:rw',
+				'validateVorrueckSwLvsForTpl' => 'extension/software_bestellen:rw',
 				'updateLizenzanzahl' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
 				'autocompleteLvSuggestionsByStudjahr' => 'extension/software_bestellen:rw',
@@ -455,6 +459,187 @@ class Softwareanforderung extends FHCAPI_Controller
 				}
 			}
 		}
+	}
+
+	public function validateVorrueckSwLvsForLvs(){
+		$software_lv_ids = $this->input->post('software_lv_ids');
+		$vorrueck_studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		if (empty($software_lv_ids)) $this->terminateWithSuccess();
+
+		// Get lv and software of given swlvs, also set lizenzanzahl 0 and next years studiensemester
+		$result = $this->softwarelib->addStudiensemesterOfNextStudjahr($software_lv_ids);
+
+		// Convert object array to assoc array
+		$selectedSwLvs = hasData($result)
+			? array_map(function($obj) {return (array) $obj; }, getData($result))
+			: [];
+
+		// Check and exit if vorrueck swlvs already exist in next year
+		$existing_swlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
+
+		// Check if lvids do exist in next studienjahr
+		$isMissingLvNextYear_software_lv_ids = [];
+		$isVorgerrueckt_software_lv_ids = [];
+
+		$result = $this->LehrveranstaltungModel->getNonQuellkursLvs($vorrueck_studienjahr_kurzbz);
+		$nextYearLvs = hasData($result) ? getData($result) : [];
+		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
+
+		foreach ($selectedSwLvs as $selectedSwLv) {
+			if (!in_array($selectedSwLv['lehrveranstaltung_id'], $nextYearLvIds)) {
+				$isMissingLvNextYear_software_lv_ids[]= $selectedSwLv['software_lv_id'];
+			}
+
+			foreach ($existing_swlvs as $existing) {
+				if ($selectedSwLv["lehrveranstaltung_id"] == $existing->lehrveranstaltung_id &&
+					$selectedSwLv["software_id"] == $existing->software_id) {
+					$isVorgerrueckt_software_lv_ids[] = $selectedSwLv["software_lv_id"];
+					break; // No need to check further once a match is found
+				}
+			}
+		}
+
+		$this->terminateWithSuccess([
+			'isVorgerrueckt_software_lv_ids' => $isVorgerrueckt_software_lv_ids,
+			'isMissingLvNextYear_software_lv_ids' => $isMissingLvNextYear_software_lv_ids,
+		]);
+	}
+
+	public function validateVorrueckSwLvsForTpl(){
+		$software_lv_ids = $this->input->post('software_lv_ids');
+		$vorrueck_studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		if (empty($software_lv_ids)) return;
+
+		// Get lv and software of given swlvs, also set lizenzanzahl 0 and next years studiensemester
+		$result = $this->softwarelib->addStudiensemesterOfNextStudjahr($software_lv_ids);
+
+		// Convert object array to assoc array
+		$selectedSwLvs = hasData($result)
+			? array_map(function($obj) {return (array) $obj; }, getData($result))
+			: [];
+
+		// Check and exit if vorrueck swlvs already exist in next year
+		$existing_swlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
+
+		// Check if lvids do exist in next studienjahr
+		$isMissingLvNextYear_software_lv_ids = [];
+		$isVorgerrueckt_software_lv_ids = [];
+
+		$result = $this->LehrveranstaltungModel->getTemplateLvTree(true, true, $vorrueck_studienjahr_kurzbz);
+		$nextYearLvs = hasData($result) ? getData($result) : [];
+		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
+
+		foreach ($selectedSwLvs as $selectedSwLv) {
+			if (!in_array($selectedSwLv['lehrveranstaltung_id'], $nextYearLvIds)) {
+				$isMissingLvNextYear_software_lv_ids[]= $selectedSwLv['software_lv_id'];
+			}
+
+			foreach ($existing_swlvs as $existing) {
+				if ($selectedSwLv["lehrveranstaltung_id"] == $existing->lehrveranstaltung_id &&
+					$selectedSwLv["software_id"] == $existing->software_id) {
+					$isVorgerrueckt_software_lv_ids[] = $selectedSwLv["software_lv_id"];
+					break; // No need to check further once a match is found
+				}
+			}
+		}
+
+		$this->terminateWithSuccess([
+			'isVorgerrueckt_software_lv_ids' => $isVorgerrueckt_software_lv_ids,
+			'isMissingLvNextYear_software_lv_ids' => $isMissingLvNextYear_software_lv_ids,
+		]);
+	}
+
+	public function vorrueckSwLvsByTpl(){
+		$software_lv_ids = $this->input->post('software_lv_ids');
+		$vorrueck_studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		// Get lv and software of given swlvs, also set lizenzanzahl 0 and next years studiensemester
+		$result = $this->softwarelib->addStudiensemesterOfNextStudjahr($software_lv_ids);
+
+		// Convert object array to assoc array
+		$selectedSwLvs = hasData($result)
+			? array_map(function($obj) {return (array) $obj; }, getData($result))
+			: [];
+
+		// Check and exit if vorrueck swlvs already exist in next year
+		$existingSwlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
+
+		// Check if lvids do exist in next studienjahr
+		$result = $this->LehrveranstaltungModel->getTemplateLvTree(null, null, $vorrueck_studienjahr_kurzbz);
+		$nextYearLvs = hasData($result) ? getData($result) : [];
+		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
+
+		// Store swlvs that do not already exist and where lehrveranstaltung is already set for next year
+		$vorrueckSwLvs = [];
+		$isVorgerrueckt_software_lv_ids = [];
+
+		foreach ($selectedSwLvs as $swlv) {
+			if (in_array($swlv['lehrveranstaltung_id'], $nextYearLvIds) &&
+				!in_array($swlv['lehrveranstaltung_id'], array_column($existingSwlvs, 'lehrveranstaltung_id'))
+			)
+			{
+				$isVorgerrueckt_software_lv_ids[] = $swlv['software_lv_id']; // Store ID before unsetting
+				unset($swlv['software_lv_id']); // Remove for batch insert
+				$vorrueckSwLvs[] = $swlv;
+			}
+		}
+
+		if (!empty($vorrueckSwLvs))
+		{
+			$result = $this->SoftwareLvModel->insertBatch($vorrueckSwLvs);
+
+			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		}
+
+		// On success
+		$this->terminateWithSuccess($isVorgerrueckt_software_lv_ids);
+	}
+	public function vorrueckSwLvsByLvs(){
+		$software_lv_ids = $this->input->post('software_lv_ids');
+		$vorrueck_studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		// Get lv and software of given swlvs, also set lizenzanzahl 0 and next years studiensemester
+		$result = $this->softwarelib->addStudiensemesterOfNextStudjahr($software_lv_ids);
+
+		// Convert object array to assoc array
+		$selectedSwLvs = hasData($result)
+			? array_map(function($obj) {return (array) $obj; }, getData($result))
+			: [];
+
+		// Filter out swlvs that already exist for next years semester
+		$existingSwlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
+
+		// Check if lvids do exist in next studienjahr
+		$result = $this->LehrveranstaltungModel->getNonQuellkursLvs($vorrueck_studienjahr_kurzbz);
+		$nextYearLvs = hasData($result) ? getData($result) : [];
+		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
+
+		// Store swlvs that do not already exist and where lehrveranstaltung is already set for next year
+		$vorrueckSwLvs = [];
+		$isVorgerrueckt_software_lv_ids = [];
+
+		foreach ($selectedSwLvs as $swlv) {
+			if (in_array($swlv['lehrveranstaltung_id'], $nextYearLvIds) &&
+				!in_array($swlv['lehrveranstaltung_id'], array_column($existingSwlvs, 'lehrveranstaltung_id'))
+			)
+			{
+				$isVorgerrueckt_software_lv_ids[] = $swlv['software_lv_id']; // Store ID before unsetting
+				unset($swlv['software_lv_id']); // Remove for batch insert
+				$vorrueckSwLvs[] = $swlv;
+			}
+		}
+
+		if (!empty($vorrueckSwLvs))
+		{
+			$result = $this->SoftwareLvModel->insertBatch($vorrueckSwLvs);
+
+			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		}
+
+		// On success
+		$this->terminateWithSuccess($isVorgerrueckt_software_lv_ids);
 	}
 
 	/**

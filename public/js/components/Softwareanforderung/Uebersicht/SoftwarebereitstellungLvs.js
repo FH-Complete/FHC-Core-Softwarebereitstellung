@@ -31,16 +31,16 @@ export default {
 		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
 				this.replaceTableData();
+				this.setVorrueckStudienjahr(this.selectedStudienjahr);
+				if (this.vorrueckenActivated) this.deactivateVorruecken();
 			}
 		},
 		currentTab(newVal) {
 			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudienjahr && this.table) {
 				this.replaceTableData();
+				this.setVorrueckStudienjahr(this.selectedStudienjahr);
+				if (this.vorrueckenActivated) this.deactivateVorruecken();
 			}
-		},
-		vorrueckenActivated(newVal){
-			if (newVal) this.setVorrueckStudienjahr(this.selectedStudienjahr);
-			this.table.redraw(true); // to trigger rowFormatter
 		}
 	},
 	computed: {
@@ -65,7 +65,9 @@ export default {
 					return self.vorrueckenActivated
 						? data.abbestelltamum === null ||
 						  data.softwarestatus_kurzbz === 'endoflife' ||
-						  data.softwarestatus_kurzbz === 'nichtverfuegbar'
+						  data.softwarestatus_kurzbz === 'nichtverfuegbar' ||
+						  data.isMissingLvNextYear === true ||
+						  data.isVorgerueckt === true
 						: true;
 				},
 				rowFormatter: function(row) {
@@ -76,7 +78,9 @@ export default {
 					const isDisabled = self.vorrueckenActivated && (
 						data.abbestelltamum !== null ||
 						data.softwarestatus_kurzbz === 'endoflife' ||
-						data.softwarestatus_kurzbz === 'nichtverfuegbar'
+						data.softwarestatus_kurzbz === 'nichtverfuegbar' ||
+						data.isMissingLvNextYear === true ||
+						data.isVorgerueckt === true
 					)
 
 					rowElement.classList.remove("tabulator-unselectable"); // Ensure class doesn't interfere
@@ -216,6 +220,127 @@ export default {
 				.then(() => this.table.redraw(true))
 				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
+		vorrueckenSwLvs() {
+			let selectedData = this.table.getSelectedData();
+			if (selectedData.length === 0) return;
+
+			// Save SW-LV-Zuordnungen
+			this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/vorrueckSwLvsByLvs', {
+					software_lv_ids: selectedData.map((item) => item.software_lv_id),
+					studienjahr_kurzbz: this.vorrueckStudienjahr
+				})
+				.then(result => {
+					this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
+
+					if (result.data.length > 0) {
+						let updateData = [];
+
+						result.data.forEach(swlvId => {
+							updateData.push(
+								{
+									software_lv_id: swlvId,
+									isVorgerueckt: true
+								}
+							)
+						});
+
+						this.table.updateData(updateData).then(() => this.table.redraw(true));
+					}
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
+		},
+		activateVorruecken() {
+			this.vorrueckenActivated = true;
+
+			this.table.addColumn({
+				field: 'selection',
+				formatter: 'rowSelection',
+				width: 70
+			}, true)
+
+			this._addVorrueckTableData()
+				//.then(tableData => this.table.replaceData(tableData))
+				.then(tableData => this.table.updateData(tableData).then(() => this.table.redraw(true)))
+				.then(() => {
+					this.table.addColumn({
+						title: this.vorrueckStudienjahr,
+						field: 'vorrueckStudienjahr',
+						formatter: this._formatVorrueckTableData,
+						headerSort: false,
+						width: 170
+					})
+				});
+		},
+		deactivateVorruecken(){
+			this.vorrueckenActivated = false;
+			this.table.deleteColumn('vorrueckStudienjahr');
+			this.table.deleteColumn('selection');
+			this.table.deselectRow();
+			this.table.redraw(true);
+		},
+		_addVorrueckTableData(){
+			return this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/validateVorrueckSwLvsForLvs', {
+					software_lv_ids: this.table.getData().map(row => row.software_lv_id),
+					studienjahr_kurzbz: this.vorrueckStudienjahr
+				})
+				.then((result) => {
+					let tableData = this.table.getData();
+
+					if (result.data) {
+						const isVorgerrueckt_software_lv_ids = result.data.isVorgerrueckt_software_lv_ids;
+						const isMissingLvNextYear_software_lv_ids = result.data.isMissingLvNextYear_software_lv_ids;
+
+						tableData.forEach(rowData => {
+							rowData.isVorgerueckt = isVorgerrueckt_software_lv_ids.includes(rowData.software_lv_id);
+							rowData.isMissingLvNextYear = isMissingLvNextYear_software_lv_ids.includes(rowData.software_lv_id);
+						})
+					}
+					return tableData;
+				})
+				.catch(error => {this.$fhcAlert.handleSystemError(error)});
+		},
+		_formatVorrueckTableData(cell, formatterParams, onRendered){
+			let data = cell.getRow().getData();
+
+			if (data.abbestelltamum !== null) {
+				return `<span class="badge bg-danger">Abbestellt</span>`;
+			} else if (
+				data.softwarestatus_kurzbz === 'endoflife' ||
+				data.softwarestatus_kurzbz === 'nichtverfuegbar'
+			) {
+				return `<span class="badge bg-danger">Nicht bestellbar</span>`;
+			} else if (data.isMissingLvNextYear === true) {
+				return `<span class="badge bg-light text-dark">LV-ID fehlt ${this.vorrueckStudienjahr}</span>`;
+			} else if (data.isVorgerueckt === true) {
+				return `<span class="badge bg-success">Vorgerückt</span>`;
+			}
+			return "";
+		},
+		setVorrueckStudienjahr(selectedStudienjahr){
+			return this.$fhcApi
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudienjahr', {
+					studienjahr_kurzbz: selectedStudienjahr
+				})
+				.then(result => {this.vorrueckStudienjahr = result.data;})
+				.catch(error => this.$fhcAlert.handleSystemError(error) );
+		},
+		setTableData(){
+			if(this.selectedStudienjahr)
+				this.$fhcApi
+					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
+						studienjahr_kurzbz: this.selectedStudienjahr
+					})
+					.then((result) => this.planungDeadlinePast = result.data)
+					.then(() => {
+						this.table.setData(CoreRESTClient._generateRouterURI(
+							'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByLv' +
+							'?studienjahr_kurzbz=' + this.selectedStudienjahr
+						))
+					})
+					.catch((error) => { this.$fhcAlert.handleSystemError(error) });
+		},
 		replaceTableData(){
 			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
@@ -230,87 +355,17 @@ export default {
 				})
 				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
 		},
-		activateVorruecken(){
-			this.vorrueckenActivated = true;
-
-			this.table.addColumn({
-				field: 'selection',
-				formatter: 'rowSelection',
-				width: 70
-			}, true)
-
-			this.table.addColumn({
-				title: this.vorrueckStudienjahr,
-				field: 'vorrueckStudienjahr',
-				formatter: (cell, formatterParams, onRendered)=> {
-					let data = cell.getRow().getData();
-					if (data.abbestelltamum !== null) {
-						return `<span class="badge bg-danger">Abbestellt</span>`;
-					}
-					else if (
-						data.softwarestatus_kurzbz === 'endoflife' ||
-						data.softwarestatus_kurzbz === 'nichtverfuegbar'
-					){
-						return `<span class="badge bg-danger">Nicht bestellbar</span>`;
-					}
-					return "";
-				},
-				headerSort: false,
-				width: 170
-			})
-
-		},
-		deactivateVorruecken(){
-			this.vorrueckenActivated = false;
-			this.table.deleteColumn('vorrueckStudienjahr');
-			this.table.deleteColumn('selection');
-			this.table.deselectRow();
-		},
-		vorrueckenSwLvs() {
-			// TODO
-		},
-		abbestellenSwLvs() {
-			let selectedData = this.table.getSelectedData();
-
-			// Cancel SW-LV-Bestellungen (abbestellen)
+		onCellEdited(cell){
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/abbestellenSwLvs', {
-					data: selectedData.map((item) => item.software_lv_id)
-				})
-				.then(result => result.data)
-				.then(data => {
-					if (data && Array.isArray(data) && data.length > 0)
-					{
-						this.table.updateData(data);
-						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'abbestellt'));
-
-						this.$fhcApi
-							.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailToSoftwarebeauftragte', {
-								data: data.map((item) => item.software_lv_id)
-							})
-							.catch(error => this.$fhcAlert.handleSystemError(error));
-					}
-				})
-				.then(() => this.table.redraw(true))
-				.catch(error => this.$fhcAlert.handleSystemError(error));
-		},
-		setVorrueckStudienjahr(selectedStudienjahr){
-			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudienjahr', {
-					studienjahr_kurzbz: selectedStudienjahr
-				})
-				.then(result => {this.vorrueckStudienjahr = result.data;})
-				.catch(error => this.$fhcAlert.handleSystemError(error) );
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateLizenzanzahl', [{
+					software_lv_id: cell.getData().software_lv_id,
+					lizenzanzahl: cell.getData().anzahl_lizenzen,
+				}])
+				.then(() => this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert')))
+				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
 		onRowClick(e, row) {
 			if (!this.vorrueckenActivated) row.deselect();
-		},
-		onFormClosed(){
-			// Deselect all rows
-			this.table.deselectRow();
-
-			// Reset data
-			this.table.setData();
 		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungTable.tabulator !== null && this.$refs.softwareanforderungTable.tabulator !== undefined)
