@@ -47,6 +47,7 @@ export default {
 						)
 						.then(result => {
 							this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
+							this.$refs.modalContainer.hide();
 							this.$emit('onSaved');
 						})
 						.then(() => {
@@ -72,6 +73,7 @@ export default {
 						)
 						.then(result => {
 							this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
+							this.$refs.modalContainer.hide();
 							this.$emit('onSaved');
 						})
 						.catch(error => this.$fhcAlert.handleSystemError(error));
