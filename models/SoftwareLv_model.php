@@ -109,7 +109,12 @@ class SoftwareLv_model extends DB_Model
 		if (is_bool($requestedByTpl))
 		{
 			/* filter studiensemester */
-			$qry.= ' LEFT JOIN extension.tbl_software_lv swlv1 ON swlv1.lehrveranstaltung_id = lv.lehrveranstaltung_template_id AND swlv1.software_id = swlv.software_id';
+			$qry.= ' 
+				LEFT JOIN extension.tbl_software_lv swlv1 ON 
+					swlv1.lehrveranstaltung_id = lv.lehrveranstaltung_template_id AND 
+					swlv1.software_id = swlv.software_id AND 
+					swlv1.studiensemester_kurzbz = swlv.studiensemester_kurzbz
+			';
 		}
 
 		$qry.= ' WHERE 1 = 1 
