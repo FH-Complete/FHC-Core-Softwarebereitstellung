@@ -423,9 +423,8 @@ class SoftwareLv_model extends DB_Model
 			JOIN public.tbl_studiengang stg USING (studiengang_kz)
 			WHERE studiensemester_kurzbz IN ?
 			AND lizenzanzahl = 0
-			-- ignore open source software, as they are supposed to have 0
-			AND (sw.lizenzart != \'opensource\' OR sw.lizenzart IS NULL)
-			ORDER BY lv.studiengang_kz;;
+			AND lv.lehrtyp_kurzbz = \'lv\'
+			ORDER BY lv.studiengang_kz
 		';
 
 		return $this->execQuery($qry, [$studiensemester]);
