@@ -407,7 +407,7 @@ class SoftwareLv_model extends DB_Model
 	public function getWhereLizenzanzahl0()
 	{
 		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
-		$result = $this->StudienjahrModel->getCurrStudienjahr();
+		$result = $this->StudienjahrModel->getNextStudienjahr();
 		$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
 
 		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
@@ -439,7 +439,7 @@ class SoftwareLv_model extends DB_Model
 	public function getExpiredSwStatusSwLvs($date = 'YESTERDAY')
 	{
 		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
-		$result = $this->StudienjahrModel->getCurrStudienjahr();
+		$result = $this->StudienjahrModel->getNextStudienjahr();
 		$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
 
 		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
