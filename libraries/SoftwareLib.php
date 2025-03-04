@@ -865,9 +865,8 @@ class SoftwareLib
 
 			$message = "
 					<p>
-					<b>Bestellte SW muss für kommendes Studiensemester installiert werden</b><br>
-					Im kommenden Studiensemester ist Software bestellt, wo der Status noch nicht 'Verfügbar' ist.<br>
-					Prüfen Sie, ob die Software schon installiert wurde und/oder ändern Sie den Status.
+					<b>Bestellte SW noch nicht verfügbar</b><br>
+					Prüfen/ändern Sie den Status. Gegebenenfalls muss die SW noch installiert werden.
 					</p>
 				";
 			$message .= $table;
