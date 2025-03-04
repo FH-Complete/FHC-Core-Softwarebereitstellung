@@ -77,9 +77,9 @@ class SoftwareLib
 	 * @param $studiensemester_kurzbz
 	 * @return bool
 	 */
-	public function isPlanningDeadlinePast($studienjahr_kurzbz = null)
+	public function isPlanningDeadlinePast()
 	{
-		$planungDeadline = $this->getPlanungDeadlineOfStudjahr($studienjahr_kurzbz);
+		$planungDeadline = $this->getPlanungDeadline();
 		if (isError($planungDeadline)) return getError($planungDeadline);
 
 		$today = new DateTime();
@@ -94,9 +94,10 @@ class SoftwareLib
 	 * @param null $studiensemester_kurzbz
 	 * @return bool
 	 */
-	public function isTwoWeeksBeforePlanningDeadline($studiensemester_kurzbz = null)
+	public function isTwoWeeksBeforePlanningDeadline()
 	{
-		$planungDeadline = $this->getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz);
+		$planungDeadline = $this->getPlanungDeadline();
+		echo "<pre>"; print_r($planungDeadline); echo "</pre>";
 		if (isError($planungDeadline)) return getError($planungDeadline);
 		$planungDeadline = getData($planungDeadline);
 
@@ -130,26 +131,18 @@ class SoftwareLib
 	}
 
 	/**
-	 * Get Planungsdeadline of actual Studienjahr.
+	 * Get Planungsdeadline of next Studienjahr.
 	 *
 	 * @param $studiensemester_kurzbz
 	 * @return mixed
 	 */
-	public function getPlanungDeadlineOfStudjahr($studienjahr_kurzbz = null)
+	public function getPlanungDeadline()
 	{
-		// Get Studienjahr by Studiensemester
-		if (is_string($studienjahr_kurzbz))
-		{
-			$startstudienjahr = substr($studienjahr_kurzbz, 0, 4);
-		}
-		// Or get current Studienjahr
-		else
-		{
-			$this->_ci->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
-			$result = $this->_ci->StudienjahrModel->getCurrStudienjahr();
-			$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
-			$startstudienjahr = substr($studienjahr_kurzbz, 0, 4);
-		}
+		// Get next Studienjahr
+		$this->_ci->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
+		$result = $this->_ci->StudienjahrModel->getNextStudienjahr();
+		$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
+		$startstudienjahr = substr($studienjahr_kurzbz, 0, 4);
 
 		// Get Planungsdeadline of requested Studienjahr
 		if ($this->_ci->config->item('planung_deadline'))
