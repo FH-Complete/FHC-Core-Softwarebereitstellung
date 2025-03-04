@@ -390,8 +390,7 @@ class SoftwareLib
 
 			$message = "
 				<p>
-					<b>Lizenzpflichtige Software ohne User-Anzahl</b></br>
-					Bitte tragen Sie die angeforderte User-Anzahl ein.
+					<b>Lizenzpflichtige Software ohne User-Anzahl</b>
 				</p>
 			";
 			$message .= $table;
@@ -437,8 +436,8 @@ class SoftwareLib
 
 			$message = "
 				<p>
-					<b>Softwarebestellungen (bald) nicht mehr möglich.</b></br>
-					Der Softwarestatus wurde für folgende SW-Bestellungen geändert und kann nicht mehr erneut bestellt werden.
+					<b>Ablaufende Software</b></br>
+					Der Softwarestatus wurde auf 'End of Life' oder 'Nicht verfügbar' geändert und kann nicht mehr bestellt werden.
 				</p>
 			";
 			$message .= $table;
