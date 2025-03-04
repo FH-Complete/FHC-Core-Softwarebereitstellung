@@ -105,7 +105,7 @@ class Softwareverwaltung extends JOB_Controller
 		// Add msg to msg collector
 		$allMessages.= $msg;
 
-		// Task: Get licensed Software (not open source), where Lizenzlaufzeit has end
+		// Task: Get licensed Software (not open source), where Lizenzlaufzeit has ended yesterday
 		// -------------------------------------------------------------------------------------------------------------
 		$result = $this->_ci->SoftwareModel->getSoftwareLizenzAbgelaufen('YESTERDAY');
 		if (isError($result)) $this->logError(getError($result));

@@ -393,7 +393,7 @@ class Software_model extends DB_Model
 	}
 
 	/**
-	 * Get software licenses with expiration within the specified interval.
+	 * Get lizenpflichtige software licenses with expiration within the specified interval.
 	 * @param string | null $interval The time interval to check for license expiration.
 	 * @return mixed The result of the query or an error message if interval is null.
 	 */
@@ -412,13 +412,14 @@ class Software_model extends DB_Model
 		);
 		$this->addJoin('extension.tbl_softwaretyp swt', 'softwaretyp_kurzbz');
 
-		return $this->loadWhere(
-			'lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE'
-		);
+		return $this->loadWhere("
+			(lizenzart IS NULL OR lizenzart != 'opensource') AND
+			lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE
+		");
 	}
 
 	/**
-	 * Get SW entries where Lizenzlaufzeit has ended on given date.
+	 * Get lizenzpflichtige SW entries where Lizenzlaufzeit has ended on given date.
 	 *
 	 * @param string $date Can be 'TODAY', 'YESTERDAY' or '2025-01-10'
 	 */
@@ -444,7 +445,7 @@ class Software_model extends DB_Model
 	 * Get Software with its last Softwarestatus, that is requested on given Studiensemester.
 	 * Can be filtered by given Softwarestatus Array.
 	 *
-	 * @param $studiensemester_kurzbz
+	 * @param $studiensemester_kurzbz	Studiensemester the SW was requested for
 	 * @param null | array $softwarestatus_kurzbz
 	 * @return mixed
 	 */

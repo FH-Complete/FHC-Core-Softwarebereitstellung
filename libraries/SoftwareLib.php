@@ -97,7 +97,7 @@ class SoftwareLib
 	public function isTwoWeeksBeforePlanningDeadline()
 	{
 		$planungDeadline = $this->getPlanungDeadline();
-		echo "<pre>"; print_r($planungDeadline); echo "</pre>";
+
 		if (isError($planungDeadline)) return getError($planungDeadline);
 		$planungDeadline = getData($planungDeadline);
 
