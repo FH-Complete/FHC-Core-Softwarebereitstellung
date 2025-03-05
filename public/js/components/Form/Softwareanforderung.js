@@ -85,7 +85,6 @@ export default {
 
 						// Reset SW-Dropdown
 						this.selectedSw = [];
-						this.$refs.form.clearValidation();
 
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
