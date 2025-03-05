@@ -215,7 +215,9 @@ export default {
 								lv_bezeichnung: item.lv_bezeichnung + ' [ ' + item.orgform_kurzbz + ' ]',
 								lv_oe_kurzbz: item.lv_oe_kurzbz,
 								lv_oe_bezeichnung: item.lv_oe_bezeichnung,
-								stg_bezeichnung: item.stg_bezeichnung
+								stg_bezeichnung: item.stg_bezeichnung,
+								stg_typ_kurzbz: item.stg_typ_kurzbz,
+								studiensemester_kurzbz: item.studiensemester_kurzbz
 							};
 
 							groupedData[key].lvs.push(lv);
