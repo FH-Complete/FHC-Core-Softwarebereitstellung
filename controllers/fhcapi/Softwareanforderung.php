@@ -182,6 +182,9 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		$this->_validateLizenzanzahl($this->input->post());
 
+		// Validate duplicate entries before inserting
+		$this->_validateDupliacateEntries($this->input->post());
+
 		// Check if posted SW LV Zuordnungen already exists
 		$result = $this->_checkAndGetExistingSwLvs($this->input->post());
 
@@ -869,6 +872,29 @@ class Softwareanforderung extends FHCAPI_Controller
 		if ($this->form_validation->run() == false)
 		{
 			$this->terminateWithValidationErrors($this->form_validation->error_array());
+		}
+	}
+	private function _validateDupliacateEntries($data)
+	{
+		$seen = [];
+		$duplicates = [];
+
+		foreach ($data as $item) {
+			$key = $item['lehrveranstaltung_id'] . '|' . $item['studiensemester_kurzbz'] . '|' . $item['software_id'];
+
+			if (isset($seen[$key])) {
+				$duplicates[] = $item['lehrveranstaltung_id'];
+			} else {
+				$seen[$key] = true;
+			}
+		}
+
+		if (!empty($duplicates))
+		{
+			$this->terminateWithError('
+				Abbruch: Doppelte LVs gefunden. Entfernen Sie diese erst und fordern erneut an.
+				Betroffene LV-IDs: ' . implode(', ', array_unique($duplicates))
+			);
 		}
 	}
 }

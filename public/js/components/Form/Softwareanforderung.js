@@ -85,6 +85,7 @@ export default {
 
 						// Reset SW-Dropdown
 						this.selectedSw = [];
+						this.$refs.form.clearValidation();
 
 					})
 					.catch(error => this.$fhcAlert.handleSystemError(error));
@@ -239,6 +240,7 @@ export default {
 			this.selectedSw = [];
 			this.selectedTemplate = {};
 			this.isLvSwRowsVisible = false;
+			this.$refs.form.clearValidation();
 		},
 		generateSwLvRows(){
 			// Reset formData
