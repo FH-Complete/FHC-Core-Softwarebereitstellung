@@ -290,7 +290,7 @@ export default {
 						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'abbestellt'));
 
 						this.$fhcApi
-							.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailToSoftwarebeauftragte', {
+							.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareAbbestellt', {
 								data: data.map((item) => item.software_lv_id)
 							})
 							.catch(error => this.$fhcAlert.handleSystemError(error));

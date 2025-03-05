@@ -30,6 +30,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'saveSwRequestByLvs' => 'extension/software_bestellen:rw',
 				'saveSwRequestByTpl' => 'extension/software_bestellen:rw',
 				'abbestellenSwLvs' => 'extension/software_bestellen:rw',
+				'sendMailSoftwareAbbestellt' => 'extension/software_bestellen:rw',
 				'vorrueckSwLvsByLvs' => 'extension/software_bestellen:rw',
 				'vorrueckSwLvsByTpl' => 'extension/software_bestellen:rw',
 				'validateVorrueckSwLvsForLvs' => 'extension/software_bestellen:rw',
@@ -40,8 +41,7 @@ class Softwareanforderung extends FHCAPI_Controller
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
 				'getVorrueckStudienjahr' => 'extension/software_bestellen:rw',
 				'getOtoboUrl' => 'extension/software_bestellen:rw',
-				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw',
-				'sendMailToSoftwarebeauftragte' => 'extension/software_bestellen:rw'
+				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw'
 			)
 		);
 
@@ -355,8 +355,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		$assignedSwLvs = hasData($result) ? getData($result) : [];
 
 		// Send mail to other Softwarebeauftragte concerned
-		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
-		$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs , $studiengangToFakultaetMap);
+		$studiengangToFakultaetMap = $this->softwarelib->getOeTypToFakultaetMap('Studiengang');
+		$grouped = $this->softwarelib->groupLvsByFakultaetOfLvStgOe($assignedSwLvs , $studiengangToFakultaetMap);
 
 		// Format message
 		$msg = $this->softwarelib->formatMsgQuellkursSwLvEdited(
@@ -428,7 +428,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		}
 	}
 
-	public function sendMailToSoftwarebeauftragte()
+	public function sendMailSoftwareAbbestellt()
 	{
 		$software_lv_ids = $this->input->post('data');
 
@@ -440,8 +440,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		$data = getData($result);
 
 		// Send mail to other Softwarebeauftragte concerned
-		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
-		$grouped = $this->softwarelib->groupLvsByFakultaet($data, $studiengangToFakultaetMap);
+		$studiengangToFakultaetMap = $this->softwarelib->getOeTypToFakultaetMap('Studiengang');
+		$grouped = $this->softwarelib->groupLvsByFakultaetOfLvStgOe($data, $studiengangToFakultaetMap);
 
 		$msg = $this->softwarelib->formatMsgAbbestellteSwLvs($grouped);		// Format message
 
@@ -681,8 +681,8 @@ class Softwareanforderung extends FHCAPI_Controller
 		}
 
 		// Send mail
-		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
-		$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
+		$studiengangToFakultaetMap = $this->softwarelib->getOeTypToFakultaetMap('Studiengang');
+		$grouped = $this->softwarelib->groupLvsByFakultaetOfLvStgOe($assignedSwLvs, $studiengangToFakultaetMap);
 		$msg = $this->softwarelib->formatMsgQuellkursSwLvDeleted(
 			$tpl->lehrveranstaltung_id,
 			$tpl->software_id

@@ -144,7 +144,10 @@ class Softwareverwaltung extends JOB_Controller
 		$this->logInfo('Start execJobsAndMailToSoftwarebeauftragte');
 
 		// Load all Studiengang OEs and add corresponding Fakultät OE
-		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
+		$studiengangToFakultaetMap = $this->softwarelib->getOeTypToFakultaetMap('Studiengang');
+
+		// Load all Kompetenzfeld OEs and add corresponding Fakultät OE
+		$kompetenzfeldToFakultaetMap = $this->softwarelib->getOeTypToFakultaetMap('Kompetenzfeld');
 
 		// Prepare to collect all messages
 		$allMessages = [];
@@ -155,10 +158,10 @@ class Softwareverwaltung extends JOB_Controller
 
 		if (count($newlyAssignedLvs) > 0)
 		{
-			// Group newly assigned Lvs
-			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+			// Group newly assigned Lvs - group for Quellkurs-SWB only
+			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaetOfLvOe(
 				$newlyAssignedLvs,
-				$studiengangToFakultaetMap
+				$kompetenzfeldToFakultaetMap
 			);
 
 			// Prepare and store messages
@@ -171,7 +174,7 @@ class Softwareverwaltung extends JOB_Controller
 		// Task: Notify if Lizenzanzahl is still 0 two weeks before the planning deadline.
 		// -------------------------------------------------------------------------------------------------------------
 		$isTwoWeeksBeforeDeadline = $this->softwarelib->isTwoWeeksBeforePlanningDeadline();
-		
+
 		if ($isTwoWeeksBeforeDeadline)
 		{
 			$result = $this->SoftwareLvModel->getWhereLizenzanzahl0();
@@ -180,10 +183,10 @@ class Softwareverwaltung extends JOB_Controller
 			{
 				$swlvsLizAnz0 = getData($result);
 
-				// Group newly assigned Lvs
-				$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+				// Group newly assigned Lvs - group for Quellkurs-SWB only
+				$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaetOfLvOe(
 					$swlvsLizAnz0,
-					$studiengangToFakultaetMap
+					$kompetenzfeldToFakultaetMap
 				);
 
 				$allMessages = array_merge(
@@ -202,8 +205,8 @@ class Softwareverwaltung extends JOB_Controller
 		{
 			$expiredSwStatSwLvs = getData($result);
 
-			// Group newly assigned Lvs
-			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaet(
+			// Group newly assigned Lvs - group for Quellkurs-SWB only
+			$groupedLvsByFakultaet = $this->softwarelib->groupLvsByFakultaetOfLvStgOe(
 				$expiredSwStatSwLvs,
 				$studiengangToFakultaetMap
 			);

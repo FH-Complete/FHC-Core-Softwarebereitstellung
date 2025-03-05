@@ -195,7 +195,7 @@ class SoftwareLib
 	 *
 	 * @return array
 	 */
-	public function getStudiengaengeWithFakultaet(){
+	public function getOeTypToFakultaetMap($organisationseinheittyp_kurzbz){
 
 		// Load all Studiengang Oes
 		$this->_ci->load->model('organisation/Organisationseinheit_model', 'OrganisationseinheitModel');
@@ -203,34 +203,34 @@ class SoftwareLib
 		$this->_ci->OrganisationseinheitModel->addSelect('oe_kurzbz, oe_parent_kurzbz');
 		$this->_ci->OrganisationseinheitModel->addOrder('oe_parent_kurzbz');
 		$result = $this->_ci->OrganisationseinheitModel->loadWhere([
-			'organisationseinheittyp_kurzbz' => 'Studiengang',
+			'organisationseinheittyp_kurzbz' => $organisationseinheittyp_kurzbz,
 			'aktiv' => true
 		]);
-		$stg_oe_arr = hasData($result) ? getData($result) : [];
+		$oe_arr = hasData($result) ? getData($result) : [];
 
 		// Iterate Studiengang Oes
-		foreach ($stg_oe_arr as $stg_oe) {
+		foreach ($oe_arr as $oe) {
 
 			// Get parents
-			$result = $this->_ci->OrganisationseinheitModel->getParents($stg_oe->oe_kurzbz);
+			$result = $this->_ci->OrganisationseinheitModel->getParents($oe->oe_kurzbz);
 
 			// Iterate parents
 			foreach (getData($result) as $parent_oe) {
 
 				// Find and add Fakultät
 				if (strpos($parent_oe->oe_kurzbz, 'fak') === 0) {
-					$stg_oe->stg_fak_oe_kurzbz = $parent_oe->oe_kurzbz;
+					$oe->fak_oe_kurzbz = $parent_oe->oe_kurzbz;
 					break;  // Stop after finding the first match
 				}
 
 				// else set null
 				else{
-					$stg_oe->stg_fak_oe_kurzbz = NULL;
+					$oe->fak_oe_kurzbz = NULL;
 				}
 			}
 		}
 		// Return result or []
-		return $stg_oe_arr;
+		return $oe_arr;
 	}
 
 	/**
@@ -280,24 +280,47 @@ class SoftwareLib
 	}
 
 	/**
-	 * Helper to group LVs by Fakultät of the LV Studiengang.
+	 * Helper to group LVs by Fakultät of the LV Studiengang OE.
 	 *
 	 * @param $lv_arr
 	 * @param $stg_oe_arr
 	 * @return array
 	 */
-	public function groupLvsByFakultaet($lv_arr, $stg_oe_arr)
+	public function groupLvsByFakultaetOfLvOe($lv_arr, $oeToFakMap_arr)
 	{
 		$grouped = [];
 
-		foreach ($lv_arr as $item) {
-			foreach ($stg_oe_arr as $stg_oe) {
-				if ($item->stg_oe_kurzbz === $stg_oe->oe_kurzbz) {
-					// Add FAK OE of lvs' stg
-					$item->stg_fak_oe_kurzbz = $stg_oe->stg_fak_oe_kurzbz;
+		foreach ($lv_arr as $lv) {
+			foreach ($oeToFakMap_arr as $item) {
+				if ($lv->oe_kurzbz === $item->oe_kurzbz) {
+					// Group by FAK OE of lvs' oe
+					$grouped[$item->fak_oe_kurzbz][] = $lv;
 				}
 			}
-			$grouped[$item->stg_fak_oe_kurzbz][] = $item;
+		}
+
+		return $grouped;
+	}
+
+	/**
+	 * Helper to group LVs by Fakultät of the LVs OE.
+	 *
+	 * @param $lv_arr
+	 * @param $stg_oe_arr
+	 * @return array
+	 */
+	public function groupLvsByFakultaetOfLvStgOe($lv_arr, $oeToFakMap_arr)
+	{
+		$grouped = [];
+
+		foreach ($lv_arr as $lv) {
+			foreach ($oeToFakMap_arr as $item) {
+				// Check against LV oe
+				if ($lv->stg_oe_kurzbz === $item->oe_kurzbz) {
+					// Group by FAK OE of lvs' stg oe
+					$grouped[$item->fak_oe_kurzbz][] = $lv;
+				}
+			}
 		}
 
 		return $grouped;
