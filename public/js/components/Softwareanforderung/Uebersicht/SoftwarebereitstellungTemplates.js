@@ -303,7 +303,7 @@ export default {
 			this.vorrueckenActivated = true;
 			this.table.showColumn('selection');
 			this.table.showColumn('vorrueckStudienjahr');
-			//this.table.redraw(true);
+			this.table.redraw(true);
 		},
 		deactivateVorruecken(){
 			this.vorrueckenActivated = false;
