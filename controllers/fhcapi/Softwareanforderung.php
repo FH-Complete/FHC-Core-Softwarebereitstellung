@@ -139,7 +139,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Get given lvs that are not assigned to a Quellkurs
 		if ($this->input->get('lv_ids'))
 		{
-			$result = $this->LehrveranstaltungModel->getNonQuellkursLvs(
+			$result = $this->SoftwareLvModel->getNonQuellkursLvs(
 				$this->input->get('studienjahr_kurzbz'),
 				$this->entitledOes,	// check against stg oes
 				$this->input->get('lv_ids')
@@ -148,7 +148,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Get all lvs that are not assigned to a Quellkurs
 		else
 		{
-			$result = $this->LehrveranstaltungModel->getNonQuellkursLvs(
+			$result = $this->SoftwareLvModel->getNonQuellkursLvs(
 				$this->input->get('studienjahr_kurzbz'),
 				$this->entitledOes	// check against stg oes
 			);
@@ -492,7 +492,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		$isMissingLvNextYear_software_lv_ids = [];
 		$isVorgerrueckt_software_lv_ids = [];
 
-		$result = $this->LehrveranstaltungModel->getNonQuellkursLvs($vorrueck_studienjahr_kurzbz);
+		$result = $this->SoftwareLvModel->getNonQuellkursLvs($vorrueck_studienjahr_kurzbz);
 		$nextYearLvs = hasData($result) ? getData($result) : [];
 		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
 
@@ -622,7 +622,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		$existingSwlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
 
 		// Check if lvids do exist in next studienjahr
-		$result = $this->LehrveranstaltungModel->getNonQuellkursLvs($vorrueck_studienjahr_kurzbz);
+		$result = $this->SoftwareLvModel->getNonQuellkursLvs($vorrueck_studienjahr_kurzbz);
 		$nextYearLvs = hasData($result) ? getData($result) : [];
 		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
 
@@ -762,7 +762,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		// Get results for given lv search string
 		// Filter query by studiensemester and permitted oes
 		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
-		$result = $this->LehrveranstaltungModel->getNonQuellkursLvsAutocompleteSuggestions(
+		$result = $this->SoftwareLvModel->getNonQuellkursLvsAutocompleteSuggestions(
 			$query,
 			$this->input->get('studienjahr_kurzbz'),
 			$this->entitledOes
