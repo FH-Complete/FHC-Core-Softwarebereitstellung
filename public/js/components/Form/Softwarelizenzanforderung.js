@@ -2,7 +2,8 @@ import CoreForm from "../../../../../js/components/Form/Form.js";
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import CoreFormValidation from "../../../../../js/components/Form/Validation.js";
 import CoreBsModal from '../../../../../js/components/Bootstrap/Modal.js';
-
+// TODO DEPRECATED. No code adaptations done, as anforderung is done only via table GUI (vorruecken, lizen ändern).
+// TODO Check if can be deleted.
 export default {
 	components: {
 		CoreForm,
