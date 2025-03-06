@@ -20,7 +20,8 @@ export default {
 			cbGroupStartOpen: true,	// checkbox group organisationseinheit start open
 			planungDeadlinePast: false,
 			vorrueckenActivated: false,
-			vorrueckStudienjahr: ''
+			vorrueckStudienjahr: '',
+			toggleEdit: false
 		}
 	},
 	watch: {
@@ -41,6 +42,10 @@ export default {
 				this.setVorrueckStudienjahr(this.selectedStudienjahr);
 				if (this.vorrueckenActivated) this.deactivateVorruecken();
 			}
+		},
+		toggleEdit(newVal){
+			newVal === true ? this.table.hideColumn('selection') : this.table.showColumn('selection');
+			this.reloadTabulator();
 		}
 	},
 	computed: {
@@ -62,6 +67,9 @@ export default {
 				selectableRangeMode: 'click',
 				selectableCheck: function (row) {
 					let data = row.getData();
+
+					if (self.toggleEdit) return;
+
 					return self.vorrueckenActivated
 						? data.abbestelltamum === null ||
 						  data.softwarestatus_kurzbz === 'endoflife' ||
@@ -95,7 +103,7 @@ export default {
 						field: 'selection',
 						formatter: 'rowSelection',
 						width: 70,
-						visible: false
+						visible: true
 					},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
@@ -138,7 +146,9 @@ export default {
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
 						},
 						validator: ["min:0", "maxLength:3", "integer"],
-						editable: true,
+						editable:  (cell) => {
+							return self.toggleEdit;  // todo funkt nicht
+						},
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 120,
@@ -266,7 +276,9 @@ export default {
 		},
 		activateVorruecken() {
 			this.vorrueckenActivated = true;
-			this.table.showColumn('selection');
+			this.toggleEdit = false;
+			this.table.deselectRow();
+			//this.table.showColumn('selection');
 			this.table.showColumn('vorrueckStudienjahr');
 			this.table.redraw(true);
 
@@ -274,7 +286,7 @@ export default {
 		deactivateVorruecken(){
 			this.vorrueckenActivated = false;
 			this.table.hideColumn('vorrueckStudienjahr');
-			this.table.hideColumn('selection');
+			//this.table.hideColumn('selection');
 			this.table.deselectRow();
 			this.table.redraw(true);
 		},
@@ -373,9 +385,6 @@ export default {
 				.then(() => this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert')))
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
-		onRowClick(e, row) {
-			if (!this.vorrueckenActivated) row.deselect();
-		},
 		onDataLoaded(data) {
 			if (this.table) this._addVorrueckTableData();
 		},
@@ -430,7 +439,6 @@ export default {
 				:tabulator-events="[
 					{event: 'tableBuilt', handler: onTableBuilt},
 					{event: 'cellEdited', handler: onCellEdited},
-					{event: 'rowClick', handler: onRowClick},
 					{event: 'dataLoaded', handler: onDataLoaded}
 				]"
 				:download="[{ formatter: 'csv', file: 'software.csv', options: {delimiter: ';', bom: true} }]">
@@ -461,6 +469,15 @@ export default {
 							type="checkbox"
 							v-model="cbGroupStartOpen">
 						<label class="form-check-label">Kompetenzfelder {{ $p.t('global/aufgeklappt') }}</label>
+					</div>
+					<div class="form-check form-switch ms-3">
+						<input
+							class="form-check-input"
+							type="checkbox"
+							v-model="toggleEdit">
+						<label class="form-check-label" for="toggleUserEdit">
+							Editier Modus <i class="fa fa-info-circle" data-bs-toggle="tooltip" title="Deaktiviert die Zeilenauswahl"></i>
+						</label>
 					</div>
 				</template>		
 			</core-filter-cmpt>

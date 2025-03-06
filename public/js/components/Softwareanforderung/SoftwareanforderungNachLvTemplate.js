@@ -55,12 +55,31 @@ export default {
 				index: 'lehrveranstaltung_id',
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: self.cbDataTreeStartExpanded,
+				dataTreeElementColumn: 'lv_bezeichnung',
 				dataTreeChildIndent: 15, //indent child rows by 15 px
 				dataTreeSelectPropagate:true, //propagate selection events from parent rows to children
 				persistence:{
 					filter: false, //persist filter sorting
 				},
+				selectableRangeMode: 'click',
+				rowFormatter: (row) => {
+					const data = row.getData();
+					const selectionCell = row.getCell('selection');
+
+					// Hide children checkboxes for children SwLvs
+					if (selectionCell) {
+						const checkbox = selectionCell.getElement().querySelector("input[type='checkbox']");
+						if (checkbox && data.lehrtyp_kurzbz !== 'tpl') checkbox.style.display = "none";
+					}
+				},
 				columns: [
+					{
+						field: 'selection',
+						formatter: 'rowSelection',
+						headerSort: false,
+						width: 70,
+						visible: true
+					},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
 					{title: 'Lehrtyp Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:false, width: 70},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 350},
@@ -123,15 +142,18 @@ export default {
 
 		},
 		onRowClick(e, row){
-			// Only if first level (= lv template) is clicked
-			if (row.getTreeParent() === false)
-			{
-				// First deselect all rows
-				row.getTable().deselectRow();
+			let parent = row.getTreeParent();
 
-				// Select lv template row and its children lvs (due to option setting datatree propagate)
-				row.select();
+			if (parent) {
+				// If child row is clicked, prevent selection
+				return;
 			}
+
+			// Deselect all rows first to enforce "one parent at a time"
+			this.table.deselectRow();
+
+			// Select the parent row (children will be selected automatically due to propagation)
+			row.select();
 		},
 		onRowDblClick(e, row) {
 			row.treeToggle();

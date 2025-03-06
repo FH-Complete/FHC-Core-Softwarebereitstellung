@@ -21,6 +21,7 @@ export default {
 			planungDeadlinePast: false,
 			vorrueckenActivated: false,
 			vorrueckStudienjahr: '',
+			toggleEdit: false,
 			cbDataTree: true, // checkbox display dataTree or not
 			cbDataTreeStartExpanded: false,	// checkbox expand dataTree or not
 			cbGroupStartOpen: true // checkbox group organisationseinheit start open
@@ -30,9 +31,6 @@ export default {
 		cbGroupStartOpen(newVal){
 			this.table.setGroupStartOpen(newVal);
 			this.replaceTableData();
-		},
-		cbDataTreeStartExpanded(newVal){
-			if (newVal) this.table.redraw(true);
 		},
 		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
@@ -47,6 +45,19 @@ export default {
 				this.setVorrueckStudienjahr(this.selectedStudienjahr);
 				if (this.vorrueckenActivated) this.deactivateVorruecken();
 			}
+		},
+		toggleEdit(newVal){
+			if (newVal === true){
+				this.table.hideColumn('selection');
+				this.cbDataTreeStartExpanded = true;
+			}
+			else
+			{
+				this.table.showColumn('selection');
+				this.cbDataTreeStartExpanded = false;
+			}
+
+			this.reloadTabulator();
 		}
 	},
 	computed: {
@@ -75,6 +86,9 @@ export default {
 				selectableRangeMode: 'click',
 				selectableCheck: function (row) {
 					let data = row.getData();
+
+					if (self.toggleEdit) return;
+
 					return self.vorrueckenActivated
 						? data.lehrtyp_kurzbz === 'tpl' && (
 							data.abbestelltamum === null ||
@@ -114,7 +128,7 @@ export default {
 						formatter: 'rowSelection',
 						headerSort: false,
 						width: 70,
-						visible: false
+						visible: true
 					},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
@@ -155,7 +169,7 @@ export default {
 						},
 						editable: (cell) => {
 							let rowData = cell.getRow().getData();
-							return rowData.lehrtyp_kurzbz !== 'tpl';
+							return self.toggleEdit && rowData.lehrtyp_kurzbz !== 'tpl'; // Todo funkt nicht
 						},
 						validator: ["min:0", "maxLength:3", "integer"]
 					},
@@ -301,14 +315,14 @@ export default {
 		},
 		activateVorruecken(){
 			this.vorrueckenActivated = true;
-			this.table.showColumn('selection');
+			this.toggleEdit = false;
+			this.table.deselectRow();
 			this.table.showColumn('vorrueckStudienjahr');
 			this.table.redraw(true);
 		},
 		deactivateVorruecken(){
 			this.vorrueckenActivated = false;
 			this.table.hideColumn('vorrueckStudienjahr');
-			this.table.hideColumn('selection');
 			this.table.deselectRow();
 			this.table.redraw(true);
 		},
@@ -402,9 +416,6 @@ export default {
 					))
 				})
 				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
-		},
-		onRowClick(e, row) {
-			if (!this.vorrueckenActivated) row.deselect();
 		},
 		onRowDblClick(e, row) {
 			row.treeToggle();
@@ -507,7 +518,6 @@ export default {
 						:side-menu="false"
 						:tabulator-options="tabulatorOptions"
 						:tabulator-events="[
-							{event: 'rowClick', handler: onRowClick},
 							{event: 'rowDblClick', handler: onRowDblClick},
 							{event: 'tableBuilt', handler: onTableBuilt},
 							{event: 'cellEdited', handler: onCellEdited},
@@ -542,14 +552,14 @@ export default {
 									v-model="cbGroupStartOpen">
 								<label class="form-check-label">Kompetenzfelder {{ $p.t('global/aufgeklappt') }}</label>
 							</div>
-							<div class="form-check form-check-inline ms-3">
+							<div class="form-check form-switch ms-3">
 								<input
 									class="form-check-input"
 									type="checkbox"
-									v-model="cbDataTreeStartExpanded"
-									:checked="cbDataTreeStartExpanded"
-									@change="reloadTabulator">
-								<label class="form-check-label">Quellkurse {{ $p.t('global/aufgeklappt') }}</label>
+									v-model="toggleEdit">
+								<label class="form-check-label" for="toggleUserEdit">
+									Editier Modus <i class="fa fa-info-circle" data-bs-toggle="tooltip" title="Deaktiviert die Zeilenauswahl"></i>
+								</label>
 							</div>
 						</template>
 					</core-filter-cmpt>		
