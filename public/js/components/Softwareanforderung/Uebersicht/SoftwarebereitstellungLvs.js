@@ -232,7 +232,7 @@ export default {
 					if (data && Array.isArray(data) && data.length > 0)
 					{
 						this.table.updateData(data);
-						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'abbestellt'));
+						this.$fhcAlert.alertSuccess(this.$p.t('global', 'softwareAbbestellt'));
 
 						this.$fhcApi
 							.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareAbbestellt', {
