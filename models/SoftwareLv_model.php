@@ -522,7 +522,7 @@ class SoftwareLv_model extends DB_Model
 		if (isset($stg_oes) && is_array($stg_oes))
 		{
 			/* filter by lv studiengangs organisationseinheit */
-			$subQry.= ' AND stg.oe_kurzbz IN ?';
+			$subQry.= ' AND lv.oe_kurzbz IN ?';
 			$params[]= $stg_oes;
 		}
 
@@ -577,7 +577,7 @@ class SoftwareLv_model extends DB_Model
 		if (isset($oes) && is_array($oes))
 		{
 			/* filter by STG organisationseinheit */
-			$subQry.= ' AND stg.oe_kurzbz IN ?';
+			$subQry.= ' AND lv.oe_kurzbz IN ?';
 			$params[]= $oes;
 		}
 
