@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {Raumzuordnung} from "../SoftwareManagement/Raumzuordnung.js";
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
 
@@ -23,12 +22,14 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				ajaxURL: CoreRESTClient._generateRouterURI('extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelistData'),
+				ajaxURL:  self.$fhcApi.getUri(
+					'extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelistData'
+				),
 				ajaxResponse(url, params, response){
 					// If dataTree checkbox is checked
 					return self.cbDataTree
-						? self.prepDataTreeData(CoreRESTClient.getData(response)) // Prepare data for dataTree view
-						: CoreRESTClient.getData(response); // else return data for normal list view
+						? self.prepDataTreeData(response.retval) // Prepare data for dataTree view
+						: response.retval; // else return data for normal list view
 				},
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: self.cbDataTreeStartExpanded,

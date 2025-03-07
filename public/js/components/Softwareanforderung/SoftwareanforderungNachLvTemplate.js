@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
 
 // Fields used to restructure table data for dataTree
@@ -26,16 +25,16 @@ export default {
 	watch: {
 		cbGroupStartOpen(newVal){
 			this.table.setGroupStartOpen(newVal);
-			this.table.setData();
+			this.table.replaceData();
 		},
 		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwareanforderungNachLvTemplate" && this.table) {
-				this.replaceTableData();
+				this.table.replaceData();
 			}
 		},
 		currentTab(newVal) {
 			if (newVal === 'softwareanforderungNachLvTemplate' && this.selectedStudienjahr && this.table) {
-				this.replaceTableData();
+				this.table.replaceData();
 			}
 		}
 	},
@@ -43,7 +42,14 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				// NOTE: data is set on table built to await preselected actual Studienjahr
+				ajaxURL: self.$fhcApi.getUri(
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests'
+				),
+				ajaxParams: () => {
+					return {
+						studienjahr_kurzbz: self.selectedStudienjahr
+					}
+				},
 				ajaxResponse(url, params, response){
 					return self.cbDataTree
 						? self.prepDataTreeData(response.data) // Prepare data for dataTree view
@@ -113,25 +119,8 @@ export default {
 			// Deselect all rows
 			this.table.deselectRow();
 		},
-		setTableData(){
-			this.table.setData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests' +
-					'?studienjahr_kurzbz=' + this.selectedStudienjahr
-				),
-			)
-		},
-		replaceTableData(){
-			this.table.replaceData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests' +
-					'?studienjahr_kurzbz=' + this.selectedStudienjahr
-				),
-			)
-		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungNachLvTemplateTable.tabulator;
-			this.setTableData();
 
 			// Await phrases categories
 			await this.$p.loadCategory(['lehre']);

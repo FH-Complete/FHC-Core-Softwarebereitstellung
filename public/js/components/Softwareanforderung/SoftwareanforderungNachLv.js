@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
 
 export default {
@@ -19,20 +18,30 @@ export default {
 	watch: {
 		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwareanforderungNachLv" && this.table) {
-				this.replaceTableData();
+				this.table.replaceData();
 			}
 		},
 		currentTab(newVal) {
 			if (newVal === 'softwareanforderungNachLv' && this.selectedStudienjahr && this.table) {
-				this.replaceTableData();
+				this.table.replaceData();
 			}
 		}
 	},
 	computed: {
 		tabulatorOptions() {
+		const self = this;
 			return {
-				// NOTE: data is set on table built to await preselected actual Studiensemester
-				ajaxResponse(url, params, response){ return response.data },
+				ajaxURL: self.$fhcApi.getUri(
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getNonQuellkursLvs'
+				),
+				ajaxParams: () => {
+					return {
+						studienjahr_kurzbz: self.selectedStudienjahr
+					}
+				},
+				ajaxResponse(url, params, response){
+					return response.data
+				},
 				layout: 'fitColumns',
 				autoResize:false, // prevent auto resizing of table
 				resizableColumnFit:true, //maintain the fit of columns when resizing
@@ -81,33 +90,13 @@ export default {
 			// Deselect all rows
 			this.table.deselectRow();
 		},
-		setTableData(){
-			this.table.setData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getNonQuellkursLvs' +
-					'?studienjahr_kurzbz=' + this.selectedStudienjahr
-				),
-			)
-		},
-		replaceTableData(){
-			this.table.replaceData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getNonQuellkursLvs' +
-					'?studienjahr_kurzbz=' + this.selectedStudienjahr
-				),
-			)
-		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungNachLvTable.tabulator;
 
-			this.setTableData();
-			// Await phrases categories
-			await this.$p.loadCategory(['lehre']);
-
 			// Replace column titles with phrasen
+			await this.$p.loadCategory(['lehre']);
 			this.table.updateColumnDefinition('lv_bezeichnung', {title: this.$p.t('lehre', 'lehrveranstaltung')});
 			this.table.updateColumnDefinition('stg_bezeichnung', {title: this.$p.t('lehre', 'studiengang')});
-
 		},
 	},
 	template: `
