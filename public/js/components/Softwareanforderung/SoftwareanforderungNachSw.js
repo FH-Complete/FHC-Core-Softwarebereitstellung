@@ -40,14 +40,6 @@ export default {
 					filter: false, //persist filter sorting
 				},
 				columns: [
-					// NOTE: Keep in case of later necessity.
-					// {
-					// 	formatter: 'rowSelection',
-					// 	titleFormatter: 'rowSelection',
-					// 	titleFormatterParams: { rowRange: "active"},
-					// 	width: 70,
-					// 	frozen: true
-					// },
 					{title: 'ID', field: 'software_id', headerFilter: true, visible: false, frozen: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
 						frozen: true,
@@ -115,17 +107,6 @@ export default {
 			let offcanvasElement = new bootstrap.Offcanvas(document.getElementById('softwarelisteOffcanvas'));
 			offcanvasElement.show();
 		},
-		openSoftwareanforderungForm(){
-			let selectedData = this.$refs.softwareanforderungNachSwTable.tabulator.getSelectedData();
-
-			if (selectedData.length == 0)
-			{
-				this.$fhcAlert.alertWarning( this.$p.t('global/zeilenAuswaehlen'));
-				return;
-			}
-
-			this.$refs.softwareanforderungForm.openModalSwToLv(selectedData);
-		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungNachSwTable.tabulator !== null && this.$refs.softwareanforderungNachSwTable.tabulator !== undefined)
 			{
@@ -190,10 +171,6 @@ export default {
 			// parent not found
 			return false;
 		},
-		onFormClosed(){
-			// Deselect all rows
-			this.$refs.softwareanforderungNachSwTable.tabulator.deselectRow();
-		},
 		openOtoboLink(){
 			this.$fhcApi
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getOtoboUrl')
@@ -244,9 +221,6 @@ export default {
 			</core-filter-cmpt>						
 		</div>
 	</div>
-	
-	<!-- Form -->
-	<softwareanforderung-form ref="softwareanforderungForm" @form-closed="onFormClosed"></softwareanforderung-form>
 	
 	<!-- Software Raumverfügbarkeit  -->
 	<div class="offcanvas offcanvas-start w-50" tabindex="-1" id="softwarelisteOffcanvas">
