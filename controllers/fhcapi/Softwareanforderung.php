@@ -814,7 +814,9 @@ class Softwareanforderung extends FHCAPI_Controller
 
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess(current($data)->studienjahr_kurzbz);
+		$data = !empty($data) ? current($data)->studienjahr_kurzbz : '';
+
+		$this->terminateWithSuccess($data);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
