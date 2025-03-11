@@ -551,13 +551,24 @@ export default {
 									v-model="cbGroupStartOpen">
 								<label class="form-check-label">Kompetenzfelder {{ $p.t('global/aufgeklappt') }}</label>
 							</div>
+							<div class="form-check form-check-inline ms-3">
+								<input
+									class="form-check-input"
+									type="checkbox"
+									v-model="cbDataTreeStartExpanded"
+									:checked="cbDataTreeStartExpanded"
+									:disabled="isEditMode"
+									@change="reloadTabulator">
+								<label class="form-check-label">Quellkurse {{ $p.t('global/aufgeklappt') }}</label>
+							</div>
 							<div class="form-check form-switch ms-3">
 								<input
 									class="form-check-input"
 									type="checkbox"
-									v-model="isEditMode">
+									v-model="isEditMode"
+									:disabled="(!isEditMode && cbDataTreeStartExpanded) || isVorrueckMode">
 								<label class="form-check-label" for="toggleUserEdit">
-									Editier Modus <i class="fa fa-info-circle" data-bs-toggle="tooltip" title="Deaktiviert die Zeilenauswahl"></i>
+									Editier Modus <i class="fa fa-info-circle" data-bs-toggle="tooltip" title="User-Anzahl editieren. Deaktiviert die Zeilenauswahl"></i>
 								</label>
 							</div>
 						</template>

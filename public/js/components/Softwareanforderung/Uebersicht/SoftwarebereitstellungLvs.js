@@ -481,9 +481,10 @@ export default {
 						<input
 							class="form-check-input"
 							type="checkbox"
-							v-model="isEditMode">
+							v-model="isEditMode"
+							:disabled="isVorrueckMode">
 						<label class="form-check-label" for="toggleUserEdit">
-							Editier Modus <i class="fa fa-info-circle" data-bs-toggle="tooltip" title="Deaktiviert die Zeilenauswahl"></i>
+							Editier Modus <i class="fa fa-info-circle" data-bs-toggle="tooltip" title="User-Anzahl editieren. Deaktiviert die Zeilenauswahl"></i>
 						</label>
 					</div>
 				</template>		
