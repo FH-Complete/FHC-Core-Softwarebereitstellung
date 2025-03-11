@@ -74,18 +74,16 @@ export default {
 				ajaxRequestFunc: (url, config, params) => {
 					return self
 						.setIsPlanungDeadlinePast()
-						.then(() => {return self.$fhcApi.get(url, params)});
+						.then(() => self.$fhcApi.get(url, params))
+						.then(response => {
+							if (response.data.length > 0) {
+								return this.setVorrueckStudienjahr(this.selectedStudienjahr)
+									.then(() => this._addVorrueckTableData(response.data));
+							} else
+								return [];
+						});
 				},
-				ajaxResponse(url, params, response) {
-					if (response.data.length > 0) {
-						return self
-							._addVorrueckTableData(response.data)
-							.then(result => {return self.prepDataTreeData(result)})
-					}
-					else {
-						return [];
-					}
-				},
+				ajaxResponse: (url, params, response) => this.prepDataTreeData(response),
 				layout: 'fitColumns',
 				autoResize: false, // prevent auto resizing of table
 				resizableColumnFit: true, //maintain the fit of columns when resizing
@@ -224,7 +222,7 @@ export default {
 						frozen: true
 					},
 					{
-						title: this.vorrueckStudienjahr,
+						title: self.vorrueckStudienjahr,
 						field: 'vorrueckStudienjahr',
 						formatter: this._formatVorrueckTableData,
 						headerSort: false,
@@ -411,7 +409,7 @@ export default {
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		setIsPlanungDeadlinePast(){
-			if (this.selectedStudienjahr)
+			if (this.selectedStudienjahr) {
 				return this.$fhcApi
 					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
 						studienjahr_kurzbz: this.selectedStudienjahr
@@ -419,8 +417,10 @@ export default {
 					.then((result) => {
 						this.isPlanungDeadlinePast = result.data
 						return result.data;
-					})
-					.catch((error) => {this.$fhcAlert.handleSystemError(error)});
+					});
+			}
+			// If no selectedStudienjahr, selectedStudienjahr-watcher will do the job
+			return Promise.resolve();
 		},
 		onRowDblClick(e, row) {
 			row.treeToggle();
@@ -428,11 +428,6 @@ export default {
 
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungVerwaltungTable.tabulator;
-
-			//if (this.selectedStudienjahr)
-			this.setVorrueckStudienjahr(this.selectedStudienjahr).then((vorrueckStudienjahr) =>
-				this.table.updateColumnDefinition('vorrueckStudienjahr', {title: vorrueckStudienjahr })
-			);
 
 			// Replace column titles with phrasen
 			await this.$p.loadCategory(['lehre']);

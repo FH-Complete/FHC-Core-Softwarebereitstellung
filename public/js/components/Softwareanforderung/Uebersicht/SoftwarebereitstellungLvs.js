@@ -61,17 +61,14 @@ export default {
 				ajaxRequestFunc: (url, config, params) => {
 					return self
 						.setIsPlanungDeadlinePast()
-						.then(() => {return self.$fhcApi.get(url, params)});
-				},
-				ajaxResponse(url, params, response) {
-					if (response.data.length > 0) {
-						return self
-							._addVorrueckTableData(response.data)
-							.then(result => {return result})
-					}
-					else {
-						return [];
-					}
+						.then(() => self.$fhcApi.get(url, params))
+						.then(response => {
+							if (response.data.length > 0) {
+								return this.setVorrueckStudienjahr(this.selectedStudienjahr)
+									.then(() => this._addVorrueckTableData(response.data));
+							} else
+								return [];
+						});
 				},
 				layout: 'fitColumns',
 				autoResize:false, // prevent auto resizing of table
@@ -376,8 +373,8 @@ export default {
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
-		setIsPlanungDeadlinePast(){
-			if (this.selectedStudienjahr)
+		setIsPlanungDeadlinePast() {
+			if (this.selectedStudienjahr) {
 				return this.$fhcApi
 					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
 						studienjahr_kurzbz: this.selectedStudienjahr
@@ -386,7 +383,10 @@ export default {
 						this.isPlanungDeadlinePast = result.data
 						return result.data;
 					})
-					.catch((error) => {this.$fhcAlert.handleSystemError(error)});
+			}
+
+			// If no selectedStudienjahr, selectedStudienjahr-watcher will do the job
+			return Promise.resolve();
 		},
 		onCellEdited(cell){
 			this.$fhcApi
@@ -410,11 +410,6 @@ export default {
 		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungTable.tabulator;
-
-			if (this.selectedStudienjahr)
-				this.setVorrueckStudienjahr(this.selectedStudienjahr).then((vorrueckStudienjahr) =>
-					this.table.updateColumnDefinition('vorrueckStudienjahr', {title: vorrueckStudienjahr })
-				);
 
 			// Replace column titles with phrasen
 			await this.$p.loadCategory(['global', 'lehre']);
