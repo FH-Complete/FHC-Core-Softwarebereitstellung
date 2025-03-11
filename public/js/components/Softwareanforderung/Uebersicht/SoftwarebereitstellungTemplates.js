@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareaenderungForm from "../../Form/Softwareaenderung.js";
 
 // Fields used to restructure table data for dataTree
@@ -12,43 +11,79 @@ export default {
 		SoftwareaenderungForm
 	},
 	inject: [
-		'selectedStudiensemester',
+		'selectedStudienjahr',
 		'currentTab'
 	],
 	data: function() {
 		return {
 			table: null,
-			planungDeadlinePast: false,
-			vorrueckenActivated: false,
-			vorrueckStudiensemester: '',
+			isPlanungDeadlinePast: false,
+			isEditMode: false,
+			isVorrueckMode: false,
+			vorrueckStudienjahr: '',
 			cbDataTree: true, // checkbox display dataTree or not
-			cbDataTreeStartExpanded: false	// checkbox expand dataTree or not
+			cbDataTreeStartExpanded: false,	// checkbox expand dataTree or not
+			cbGroupStartOpen: true // checkbox group organisationseinheit start open
 		}
 	},
 	watch: {
-		selectedStudiensemester(newVal) {
+		cbGroupStartOpen(newVal){
+			this.table.setGroupStartOpen(newVal);
+			this.table.replaceData();
+		},
+		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
-				this.replaceTableData();
+				this.table.replaceData();
+				this.setVorrueckStudienjahr(this.selectedStudienjahr);
+				if (this.isVorrueckMode) this.deactivateVorruecken();
 			}
 		},
 		currentTab(newVal) {
-			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudiensemester && this.table) {
-				this.replaceTableData();
+			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudienjahr && this.table) {
+				this.table.replaceData();
+				this.setVorrueckStudienjahr(this.selectedStudienjahr);
+				if (this.isVorrueckMode) this.deactivateVorruecken();
 			}
 		},
-		vorrueckenActivated(newVal){
-			if (newVal) this.setVorrueckStudiensemester(this.selectedStudiensemester);
-			this.table.redraw(true); // to trigger rowFormatter
+		isEditMode(newVal){
+			if (newVal === true){
+				this.table.hideColumn('selection');
+				this.cbDataTreeStartExpanded = true;
+			}
+			else
+			{
+				this.table.showColumn('selection');
+				this.cbDataTreeStartExpanded = false;
+			}
+
+			this.reloadTabulator();
 		}
 	},
 	computed: {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				// NOTE: data is set on table built to await preselected actual Studiensemester
-				ajaxResponse(url, params, response){
-					return self.prepDataTreeData(response.data); // Prepare data for dataTree view
+				ajaxURL: self.$fhcApi.getUri(
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl'
+				),
+				ajaxParams: () => {
+					return {
+						studienjahr_kurzbz: self.selectedStudienjahr
+					}
 				},
+				ajaxRequestFunc: (url, config, params) => {
+					return self
+						.setIsPlanungDeadlinePast()
+						.then(() => self.$fhcApi.get(url, params))
+						.then(response => {
+							if (response.data.length > 0) {
+								return this.setVorrueckStudienjahr(this.selectedStudienjahr)
+									.then(() => this._addVorrueckTableData(response.data));
+							} else
+								return [];
+						});
+				},
+				ajaxResponse: (url, params, response) => this.prepDataTreeData(response),
 				layout: 'fitColumns',
 				autoResize: false, // prevent auto resizing of table
 				resizableColumnFit: true, //maintain the fit of columns when resizing
@@ -66,9 +101,18 @@ export default {
 				selectable: true,
 				selectableRangeMode: 'click',
 				selectableCheck: function (row) {
-					return  self.vorrueckenActivated
-						? row.getData().lehrtyp_kurzbz === 'tpl' && row.getData().abbestelltamum === null
-						: row.getData().lehrtyp_kurzbz === 'tpl';
+					let data = row.getData();
+
+					if (self.isEditMode) return;
+
+					return self.isVorrueckMode
+						? data.lehrtyp_kurzbz === 'tpl' && (
+							data.abbestelltamum === null ||
+							data.softwarestatus_kurzbz === 'endoflife' ||
+							data.softwarestatus_kurzbz === 'nichtverfuegbar' ||
+							data.isMissingLvNextYear === true ||
+							data.isVorgerueckt === true)
+						: data.lehrtyp_kurzbz === 'tpl';
 				},
 				rowFormatter: function(row) {
 					const data = row.getData();
@@ -80,19 +124,33 @@ export default {
 						if (checkbox && data.lehrtyp_kurzbz !== 'tpl') checkbox.style.display = "none";
 					}
 
-					// Adjust row styles based on `vorrueckenActivated` and `abbestelltamum`
+					// Format text color and pointer events for different states
 					const rowElement = row.getElement();
-					const isDisabled = self.vorrueckenActivated && data.abbestelltamum !== null;
+					const isDisabled = self.isVorrueckMode && (
+						data.abbestelltamum !== null ||
+						data.softwarestatus_kurzbz === 'endoflife' ||
+						data.softwarestatus_kurzbz === 'nichtverfuegbar' ||
+						data.isMissingLvNextYear === true ||
+						data.isVorgerueckt === true
+					)
 
-					rowElement.style.color = isDisabled ? "grey" : "black";
+					rowElement.classList.remove("tabulator-unselectable"); // Ensure class doesn't interfere
+					rowElement.style.color = self.isVorrueckMode && isDisabled ? "grey" : "black";
 					rowElement.style.pointerEvents = isDisabled ? "none" : "auto";
 				},
 				columns: [
-					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 300},
+					{
+						field: 'selection',
+						formatter: 'rowSelection',
+						headerSort: false,
+						width: 70,
+						visible: true
+					},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
 					{title: 'SW-ID', field: 'software_id', headerFilter: true, visible: false},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
-					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:false},
+					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 350},
+					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:true, width: 90},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false},
 					{title: 'STG KZ', field: 'studiengang_kz', headerFilter: true, visible:false},
 					{title: 'Lehrtyp-Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:false},
@@ -105,7 +163,6 @@ export default {
 					{title: 'SW-Typ', field: 'softwaretyp_bezeichnung', headerFilter: true, width: 200, visible: false},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true},
 					{title: 'Version', field: 'version', headerFilter: true, hozAlign: 'right', width: 100},
-					{title: 'Schreibberechtigt', field: 'stgOeBerechtigt', headerFilter: true, visible: false},
 					{title: 'Software-Status', field: 'softwarestatus_bezeichnung', headerFilter: true,
 						formatter: (cell) => {
 							const { softwarestatus_kurzbz, softwarestatus_bezeichnung } = cell.getRow().getData();
@@ -126,20 +183,11 @@ export default {
 							selectContents:true,
 							verticalNavigation:"table", //up and down arrow keys navigate away from cell without changing value
 						},
-						validator: ["min:0", "maxLength:3", "integer"],
-						editable: function(cell) {
-							const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
-
-							// Only editable if 'stgOeBerechtigt' is true
-							return stgOeBerechtigt;
+						editable: (cell) => {
+							let rowData = cell.getRow().getData();
+							return self.isEditMode && rowData.lehrtyp_kurzbz !== 'tpl'; // Todo funkt nicht
 						},
-						tooltip: function(event, cell) {
-							const stgOeBerechtigt = cell.getRow().getData().stgOeBerechtigt;
-
-							if (!stgOeBerechtigt) {
-								return self.$p.t('ui/nurLeseberechtigung');
-							}
-						}
+						validator: ["min:0", "maxLength:3", "integer"]
 					},
 					{title: this.$p.t('global/aktionen'), field: 'actions',
 						width: 120,
@@ -153,7 +201,7 @@ export default {
 								let button = document.createElement('button');
 								button.className = 'btn btn-outline-secondary';
 								button.innerHTML = 'SW ändern'
-								button.disabled = self.planungDeadlinePast;
+								button.disabled = self.isPlanungDeadlinePast;
 								button.addEventListener('click', (event) =>
 									self.editSwLvZuordnung(cell.getRow())
 								);
@@ -162,7 +210,7 @@ export default {
 								button = document.createElement('button');
 								button.className = 'btn btn-outline-secondary';
 								button.innerHTML = '<i class="fa fa-xmark"></i>';
-								button.disabled = self.planungDeadlinePast;
+								button.disabled = self.isPlanungDeadlinePast;
 								button.addEventListener('click', () =>
 									self.deleteSwLvs(cell.getRow().getIndex())
 								);
@@ -172,108 +220,83 @@ export default {
 							}
 						},
 						frozen: true
+					},
+					{
+						title: self.vorrueckStudienjahr,
+						field: 'vorrueckStudienjahr',
+						formatter: this._formatVorrueckTableData,
+						headerSort: false,
+						width: 170,
+						visible: false,
 					}
 				]
 			}
 		},
 	},
 	methods: {
-		setTableData(){
-			if (this.selectedStudiensemester)
-				this.$fhcApi
-					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
-						studiensemester_kurzbz: this.selectedStudiensemester
-					})
-					.then((result) => this.planungDeadlinePast = result.data)
-					.then(() => {
-						this.table.setData(CoreRESTClient._generateRouterURI(
-							'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
-							'?studiensemester_kurzbz=' + this.selectedStudiensemester
-						))
-					})
-					.catch((error) => { this.$fhcAlert.handleSystemError(error) });
-
-		},
-		replaceTableData(){
-			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
-					studiensemester_kurzbz: this.selectedStudiensemester
-				})
-				.then((result) => this.planungDeadlinePast = result.data)
-				.then(() => {
-					this.table.replaceData(CoreRESTClient._generateRouterURI(
-						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl' +
-						'?studiensemester_kurzbz=' + this.selectedStudiensemester
-					))
-				})
-				.catch((error) => { this.$fhcAlert.handleSystemError(error) });
-		},
 		editSwLvZuordnung(row){
 			// If selected row is a Quellkurs
 			if (row.getData().lehrtyp_kurzbz === 'tpl')
 			{
-				this.$refs.softwareaenderungForm.openModalUpdateSwByTemplate(row.getData(), this.selectedStudiensemester);
+				this.$refs.softwareaenderungForm.openModalUpdateSwByTemplate(row.getData());
 			}
 			// Else its a simple LV
 			else
 			{
-				this.$refs.softwareaenderungForm.openModalUpdateSwByLv(row.getData(), this.selectedStudiensemester);
+				this.$refs.softwareaenderungForm.openModalUpdateSwByLv(row.getData());
 			}
-
 		},
 		async deleteSwLvs(software_lv_id){
 			if (!await this.$fhcAlert.confirmDelete()) return;
 
 			this.$fhcApi
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvs', {
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvsByTpl', {
 					software_lv_id: software_lv_id,
-					studiensemester_kurzbz: this.selectedStudiensemester
+					studienjahr_kurzbz: this.selectedStudienjahr
 				})
-				.then((result) => this.reloadTabulator())
-				.then(() => this.$fhcAlert.alertSuccess('Gelöscht'))
+				.then((result) => {
+					this.$fhcAlert.alertSuccess('Gelöscht');
+					this.reloadTabulator();
+				})
 				.catch((error) => this.$fhcAlert.handleSystemError(error));
 		},
-		activateVorruecken(){
-			this.vorrueckenActivated = true;
-
-			let abbestellteQkSwLvsRows = this.table.getRows().filter(row => row.getData().abbestelltamum !== null);
-			abbestellteQkSwLvsRows.forEach(row => row.deselect());
-
-			this.table.addColumn({
-				field: 'selection',
-				formatter: 'rowSelection',
-				headerSort: false,
-				width: 70
-			}, true)
-
-			this.table.addColumn({
-				title: this.vorrueckStudiensemester,
-				field: 'vorrueckStudiensemester',
-				formatter: (cell, formatterParams, onRendered)=> {
-					let value = cell.getValue();
-					if (cell.getRow().getData().abbestelltamum  !== null && cell.getRow().getData().lehrtyp_kurzbz === 'tpl') {
-						//return `<span class="badge bg-danger">Abbestellt ab ${this.vorrueckStudiensemester}</span>`;
-						return `<span class="badge bg-danger">Abbestellt</span>`;
-					}
-					return "";
-				},
-				hozAlign: "center",
-				headerSort: false,
-				width: 170
-			})
-		},
-		deactivateVorruecken(){
-			this.vorrueckenActivated = false;
-			this.table.deleteColumn('vorrueckStudiensemester');
-			this.table.deleteColumn('selection');
-			this.table.deselectRow();
-		},
 		vorrueckenSwLvs() {
-			// TODO
+			let selectedData = this.table.getSelectedData();
+			if (selectedData.length === 0) return;
+
+			// Save vorgerueckte swlvs
+			this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/vorrueckSwLvsByTpl', {
+					software_lv_ids: selectedData.map((item) => item.software_lv_id),
+					studienjahr_kurzbz: this.vorrueckStudienjahr
+				})
+				.then(result => {
+					if (result.data.length > 0) {
+
+						// Fire success message
+						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
+
+						// Update and reformat row data
+						let selectedRows = this.table.getSelectedRows();
+						selectedRows.forEach((row) => {
+							if (result.data.includes(row.getData().software_lv_id)){
+								row.update({
+										software_lv_id: row.getData().software_lv_id,
+										isVorgerueckt: true
+									})
+									.then(() => {
+										row.reformat();
+										row.deselect();
+									})
+							}
+						})
+					}
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		abbestellenSwLvs() {
 			let selectedData = this.table.getSelectedData();
-			
+
 			// Cancel SW-LV-Bestellungen (abbestellen)
 			this.$fhcApi
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/abbestellenSwLvs', {
@@ -283,46 +306,134 @@ export default {
 				.then(data => {
 					if (data && Array.isArray(data) && data.length > 0)
 					{
-						this.table.updateData(data);
-						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'abbestellt'));
+						// Fire success message
+						this.$fhcAlert.alertSuccess(this.$p.t('global', 'softwareAbbestellt'));
 
-						this.$fhcApi
-							.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailToSoftwarebeauftragte', {
-								data: data.map((item) => item.software_lv_id)
+						// Update and reformat row data
+						let selectedRows = this.table.getSelectedRows();
+						let resultSwlvIds = data.map((item) => item.software_lv_id);
+
+						selectedRows.forEach((row) => {
+							let rowData = row.getData();
+							resultSwlvIds.forEach(swlvId => {
+								//if (swlvId == rowData.software_lv_id && !rowData.isMissingLvNextYear && !rowData.isVorgerueckt) {
+								if (swlvId == rowData.software_lv_id) {
+									row
+										.update({
+											software_lv_id: row.getData().software_lv_id,
+											abbestelltamum: true
+										})
+										.then(() => {
+											row.reformat();
+											row.deselect();
+										})
+								}
 							})
-							.catch(error => this.$fhcAlert.handleSystemError(error));
+						})
+
+						return data;
 					}
 				})
-				.then(() => this.table.redraw(true))
+				.then((data) => {
+					if (data && Array.isArray(data) && data.length > 0) {
+						this.$fhcApi
+							.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareAbbestellt', {
+								data: data.map((item) => item.software_lv_id)
+							})
+					}
+				})
 				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
-		setVorrueckStudiensemester(selectedStudiensemester){
-			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudiensemester', {
-					studiensemester_kurzbz: selectedStudiensemester
+		activateVorruecken(){
+			this.isVorrueckMode = true;
+			this.isEditMode = false;
+			this.table.deselectRow();
+			this.table.showColumn('vorrueckStudienjahr');
+			this.table.redraw(true);
+		},
+		deactivateVorruecken(){
+			this.isVorrueckMode = false;
+			this.isEditMode = false;
+			this.table.hideColumn('vorrueckStudienjahr');
+			this.table.deselectRow();
+			this.table.redraw(true);
+		},
+		_addVorrueckTableData(tableData){
+			return this.$fhcApi
+				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/validateVorrueckSwLvsForTpl', {
+					software_lv_ids: tableData.map(row => row.software_lv_id),
+					studienjahr_kurzbz: this.vorrueckStudienjahr
 				})
-				.then(result => {this.vorrueckStudiensemester = result.data;})
+				.then((result) => {
+					if (result.data) {
+						const isVorgerrueckt_software_lv_ids = result.data.isVorgerrueckt_software_lv_ids;
+						const isMissingLvNextYear_software_lv_ids = result.data.isMissingLvNextYear_software_lv_ids;
+
+						tableData.forEach(rowData => {
+							rowData.isVorgerueckt = isVorgerrueckt_software_lv_ids.includes(rowData.software_lv_id);
+							rowData.isMissingLvNextYear = isMissingLvNextYear_software_lv_ids.includes(rowData.software_lv_id);
+						})
+
+						return tableData;
+					}
+				})
+				.catch(error => {this.$fhcAlert.handleSystemError(error)});
+		},
+		_formatVorrueckTableData(cell, formatterParams, onRendered){
+			let data = cell.getRow().getData();
+
+			if (data.isMissingLvNextYear === true) {
+				return `<span class="badge bg-light text-dark">LV-ID fehlt ${this.vorrueckStudienjahr}</span>`;
+			}
+			else if (data.softwarestatus_kurzbz === 'endoflife' || data.softwarestatus_kurzbz === 'nichtverfuegbar') {
+				return `<span class="badge bg-danger">Nicht bestellbar</span>`;
+			}
+			else if (data.abbestelltamum !== null) {
+				return `<span class="badge bg-danger">Abbestellt</span>`;
+			}
+			else if (data.isVorgerueckt === true) {
+				return `<span class="badge bg-success">Vorgerückt</span>`;
+			}
+
+			return '';
+		},
+		setVorrueckStudienjahr(selectedStudienjahr){
+			return this.$fhcApi
+				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudienjahr', {
+					studienjahr_kurzbz: selectedStudienjahr
+				})
+				.then(result => {
+					this.vorrueckStudienjahr = result.data;
+					return result.data;
+				})
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
-		onRowClick(e, row) {
-			if (!this.vorrueckenActivated) row.deselect();
+		setIsPlanungDeadlinePast(){
+			if (this.selectedStudienjahr) {
+				return this.$fhcApi
+					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
+						studienjahr_kurzbz: this.selectedStudienjahr
+					})
+					.then((result) => {
+						this.isPlanungDeadlinePast = result.data
+						return result.data;
+					});
+			}
+			// If no selectedStudienjahr, selectedStudienjahr-watcher will do the job
+			return Promise.resolve();
 		},
 		onRowDblClick(e, row) {
 			row.treeToggle();
 		},
+
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungVerwaltungTable.tabulator;
-
-			this.setTableData();
-
-			if (this.selectedStudiensemester)
-				this.setVorrueckStudiensemester(this.selectedStudiensemester);
 
 			// Replace column titles with phrasen
 			await this.$p.loadCategory(['lehre']);
 			this.table.updateColumnDefinition('lv_bezeichnung', {title: this.$p.t('lehre', 'lehrveranstaltung')});
 		},
-		onCellEdited(cell){
+		onCellEdited(cell) {
 			if (cell.getData().lehrtyp_kurzbz !== 'tpl') {
 				this.$fhcApi
 					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateLizenzanzahl', [{
@@ -333,12 +444,9 @@ export default {
 					.catch((error) => this.$fhcAlert.handleSystemError(error));
 			}
 		},
-		async prepDataTreeData(data){
+		prepDataTreeData(data){
 			let structuredData = [];
 			let qkSwParentLevel = new Set();	// Quellkurs + Software pair
-
-			// Await the extra flag if user is entitled to edit Lizenzanzahl (LV must be entitled by STG OE)
-			await this._flagBerechtigtOnStgOe(data);
 
 			// Iterate over the data array
 			data.forEach((item, index) => {
@@ -376,27 +484,6 @@ export default {
 				}
 			});
 		},
-		async _flagBerechtigtOnStgOe(swlvs){
-			let params = {
-				studiensemester_kurzbz: this.selectedStudiensemester,
-				lv_ids: swlvs.map(swlv => swlv.lehrveranstaltung_id)
-			}
-
-			return new Promise((resolve, reject) => {
-				this.$fhcApi
-					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', params)
-					.then (result =>
-					{
-						const data = result.data;
-						swlvs.forEach(swlv => {
-							const match = data.find(item => item.studiengang_kz === swlv.studiengang_kz);
-							swlv.stgOeBerechtigt = !match ? false : true;
-						});
-						resolve(); // Resolve the Promise when done
-					})
-					.catch(error => this.$fhcAlert.handleSystemError(error) );
-			});
-		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungVerwaltungTable.tabulator !== null && this.$refs.softwareanforderungVerwaltungTable.tabulator !== undefined)
 			{
@@ -412,7 +499,7 @@ export default {
 	template: `
 <div class="softwareanforderungVerwaltung overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-12 h4">Meine Quellkurs-Softwarebestellungen {{ selectedStudiensemester }}</div>
+		<div class="col-12 h4">Meine Quellkurs-Softwarebestellungen {{ selectedStudienjahr }}</div>
 	</div>
 	<div class="row mb-5">
 		<div class="col">
@@ -426,7 +513,6 @@ export default {
 						:side-menu="false"
 						:tabulator-options="tabulatorOptions"
 						:tabulator-events="[
-							{event: 'rowClick', handler: onRowClick},
 							{event: 'rowDblClick', handler: onRowDblClick},
 							{event: 'tableBuilt', handler: onTableBuilt},
 							{event: 'cellEdited', handler: onCellEdited}
@@ -444,23 +530,41 @@ export default {
 									</a>
 								</li>
 							</ul>
-							<button v-if="vorrueckenActivated" class="btn btn-outline-secondary" type="button" @click="deactivateVorruecken">
+							<button v-if="isVorrueckMode" class="btn btn-outline-secondary" type="button" @click="deactivateVorruecken">
 								{{ $p.t('ui/abbrechen') }}
 							</button>
-							<button v-if="vorrueckenActivated" class="btn btn-danger" type="button" @click="abbestellenSwLvs">
+							<button v-if="isVorrueckMode" class="btn btn-danger" type="button" @click="abbestellenSwLvs">
 								<!--{{ $p.t('ui/abbestellen') }}--> Abbestellen
 							</button>	
-							<button v-if="vorrueckenActivated" class="btn btn-primary" type="button" @click="vorrueckenSwLvs">
-								<!--{{ $p.t('ui/vorruecken') }}--> Vorrücken in {{ vorrueckStudiensemester }}
+							<button v-if="isVorrueckMode" class="btn btn-primary" type="button" @click="vorrueckenSwLvs">
+								<!--{{ $p.t('ui/vorruecken') }}--> Vorrücken in {{ vorrueckStudienjahr }}
 							</button>
+							<div class="form-check form-check-inline ms-3">
+								<input
+									class="form-check-input"
+									type="checkbox"
+									v-model="cbGroupStartOpen">
+								<label class="form-check-label">Kompetenzfelder {{ $p.t('global/aufgeklappt') }}</label>
+							</div>
 							<div class="form-check form-check-inline ms-3">
 								<input
 									class="form-check-input"
 									type="checkbox"
 									v-model="cbDataTreeStartExpanded"
 									:checked="cbDataTreeStartExpanded"
+									:disabled="isEditMode"
 									@change="reloadTabulator">
 								<label class="form-check-label">Quellkurse {{ $p.t('global/aufgeklappt') }}</label>
+							</div>
+							<div class="form-check form-switch ms-3">
+								<input
+									class="form-check-input"
+									type="checkbox"
+									v-model="isEditMode"
+									:disabled="(!isEditMode && cbDataTreeStartExpanded) || isVorrueckMode">
+								<label class="form-check-label" for="toggleUserEdit">
+									Editier Modus <i class="fa fa-info-circle" data-bs-toggle="tooltip" title="User-Anzahl editieren. Deaktiviert die Zeilenauswahl"></i>
+								</label>
 							</div>
 						</template>
 					</core-filter-cmpt>		

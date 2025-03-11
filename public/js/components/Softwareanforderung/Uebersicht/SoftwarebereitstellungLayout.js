@@ -28,7 +28,7 @@ export default {
 	<core-base-layout>
 		<template #main>			
 			<softwarebereitstellung-templates></softwarebereitstellung-templates>	
-				
+			
 			<softwarebereitstellung-lvs></softwarebereitstellung-lvs>						
 		</template>
 	</core-base-layout>

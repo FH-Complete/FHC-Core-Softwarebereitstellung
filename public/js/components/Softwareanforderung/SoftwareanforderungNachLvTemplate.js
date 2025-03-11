@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
 
 // Fields used to restructure table data for dataTree
@@ -12,7 +11,7 @@ export default {
 		SoftwareanforderungForm
 	},
 	inject: [
-		'selectedStudiensemester',
+		'selectedStudienjahr',
 		'currentTab'
 	],
 	data: function() {
@@ -26,16 +25,16 @@ export default {
 	watch: {
 		cbGroupStartOpen(newVal){
 			this.table.setGroupStartOpen(newVal);
-			this.table.setData();
+			this.table.replaceData();
 		},
-		selectedStudiensemester(newVal) {
+		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwareanforderungNachLvTemplate" && this.table) {
-				this.replaceTableData();
+				this.table.replaceData();
 			}
 		},
 		currentTab(newVal) {
-			if (newVal === 'softwareanforderungNachLvTemplate' && this.selectedStudiensemester && this.table) {
-				this.replaceTableData();
+			if (newVal === 'softwareanforderungNachLvTemplate' && this.selectedStudienjahr && this.table) {
+				this.table.replaceData();
 			}
 		}
 	},
@@ -43,7 +42,14 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				// NOTE: data is set on table built to await preselected actual Studiensemester
+				ajaxURL: self.$fhcApi.getUri(
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests'
+				),
+				ajaxParams: () => {
+					return {
+						studienjahr_kurzbz: self.selectedStudienjahr
+					}
+				},
 				ajaxResponse(url, params, response){
 					return self.cbDataTree
 						? self.prepDataTreeData(response.data) // Prepare data for dataTree view
@@ -55,24 +61,44 @@ export default {
 				index: 'lehrveranstaltung_id',
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: self.cbDataTreeStartExpanded,
+				dataTreeElementColumn: 'lv_bezeichnung',
 				dataTreeChildIndent: 15, //indent child rows by 15 px
 				dataTreeSelectPropagate:true, //propagate selection events from parent rows to children
 				persistence:{
 					filter: false, //persist filter sorting
 				},
+				selectableRangeMode: 'click',
+				rowFormatter: (row) => {
+					const data = row.getData();
+					const selectionCell = row.getCell('selection');
+
+					// Hide children checkboxes for children SwLvs
+					if (selectionCell) {
+						const checkbox = selectionCell.getElement().querySelector("input[type='checkbox']");
+						if (checkbox && data.lehrtyp_kurzbz !== 'tpl') checkbox.style.display = "none";
+					}
+				},
 				columns: [
+					{
+						field: 'selection',
+						formatter: 'rowSelection',
+						headerSort: false,
+						width: 70,
+						visible: true
+					},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
-					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 120},
-					{title: 'Lehrtyp Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:true, width: 70},
-					{title: 'Studiengang', field: 'stg_bezeichnung', headerFilter: true, visible: false, width: 250},
-					{title: 'Studiengangtyp', field: 'stg_typ_bezeichnung', headerFilter: true, width: 250},
+					{title: 'Lehrtyp Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:false, width: 70},
+					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 350},
+					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:true, width: 90},
+					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
 					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 70},
 					{title: 'Semester', field: 'semester', headerFilter: true, width: 50},
-					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, minWidth: 250},
+					{title: 'Studiengang', field: 'stg_bezeichnung', headerFilter: true, visible: false, width: 250},
+					{title: 'Studiengangtyp', field: 'stg_typ_bezeichnung', headerFilter: true, width: 250},
 					{title: 'Studienplan', field: 'studienplan_bezeichnung', headerFilter: true, visible:true, width: 220},
 					{title: 'LE-Gruppen', field: 'lehreinheitgruppen_bezeichnung', headerFilter: true, width: 200},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false, minWidth: 80},
-					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200}
+					{title: 'Quellkurs-OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200}
 				]
 			}
 		}
@@ -87,31 +113,14 @@ export default {
 				return;
 			}
 
-			this.$refs.softwareanforderungForm.openModalLvTemplateToSw(selectedData, this.selectedStudiensemester);
+			this.$refs.softwareanforderungForm.openModalLvTemplateToSw(selectedData);
 		},
 		onFormClosed(){
 			// Deselect all rows
 			this.table.deselectRow();
 		},
-		setTableData(){
-			this.table.setData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			)
-		},
-		replaceTableData(){
-			this.table.replaceData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsForTplRequests' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			)
-		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungNachLvTemplateTable.tabulator;
-			this.setTableData();
 
 			// Await phrases categories
 			await this.$p.loadCategory(['lehre']);
@@ -122,71 +131,61 @@ export default {
 
 		},
 		onRowClick(e, row){
-			// Only if first level (= lv template) is clicked
-			if (row.getTreeParent() === false)
-			{
-				// First deselect all rows
-				row.getTable().deselectRow();
+			let parent = row.getTreeParent();
 
-				// Select lv template row and its children lvs (due to option setting datatree propagate)
-				row.select();
-
-				// Expand to show the selected children lvs
-				row.treeExpand();
+			if (parent) {
+				// If child row is clicked, prevent selection
+				return;
 			}
+
+			// Deselect all rows first to enforce "one parent at a time"
+			this.table.deselectRow();
+
+			// Select the parent row (children will be selected automatically due to propagation)
+			row.select();
+		},
+		onRowDblClick(e, row) {
+			row.treeToggle();
 		},
 		prepDataTreeData(data){
-			let toDelete = [];
+			let structuredData = [];
+			let qkSwParentLevel = new Set();	// Quellkurs + Software pair
 
-			// loop through all data
-			for (let childIdx = 0; childIdx < data.length; childIdx++)
-			{
-				let child = data[childIdx];
+			// Iterate over the data array
+			data.forEach((item, index) => {
+				// Only process valid Quellkurs + Software pairs
+				if (item.lehrtyp_kurzbz === 'tpl' && item.software_id !== null) {
+					let parentKey = `${item.lehrveranstaltung_id}-${item.software_id}`;
 
-				// if it has parent id, it is a child
-				if (child[parentIdField])
-				{
-					// append the child on the right place. If parent found, mark original sw child on 0 level for deleting
-					if (this._appendChild(data, child)) toDelete.push(childIdx);
+					// Ensure each Quellkurs + Software pair is unique
+					if (!qkSwParentLevel.has(parentKey)) {
+						qkSwParentLevel.add(parentKey); // Track Quellkurs-Software pairs
+
+						let parentItem = {
+							...item,
+							_children: []  // Initialize children array
+						};
+
+						// Attach Zuordnungen (assignments) directly under this parent
+						this._appendSwLvZuordnung(data, parentItem);
+
+						structuredData.push(parentItem); // Add to final structured data
+					}
 				}
-			}
+			});
 
-			// delete the marked children from 0 level
-			for (let counter = 0; counter < toDelete.length; counter++)
-			{
-				// decrease index by counter as index of data array changes after every deletion
-				data.splice(toDelete[counter] - counter, 1);
-			}
-
-			return data;
+			return structuredData;
 		},
-		_appendChild(data, child) {
-			// get parent id
-			let parentId = child[parentIdField];
+		_appendSwLvZuordnung (data, parentItem) {
+			//Attach LV-SW Zuordnungen directly under the Quellkurs + Software parent
+			data.forEach((item) => {
+				// If the current item is a software assignment related to the parent
+				if (item[parentIdField] === parentItem[idField] &&
+					item.software_id === parentItem.software_id) {
 
-			// loop thorugh all data
-			for (let parentIdx = 0; parentIdx < data.length; parentIdx++)
-			{
-				let parent = data[parentIdx];
-
-				// if it's the parent
-				if (parent[idField] == parentId)
-				{
-					// create children array if not done yet
-					if (!parent._children) parent._children = [];
-
-					// if child is not included in children array, append the child
-					if (!parent._children.includes(child)) parent._children.push(child);
-
-					// parent found
-					return true;
+					parentItem._children.push({...item}); // Add as child
 				}
-				// search children for parents
-				else if (parent._children) this._appendChild(parent._children, child);
-			}
-
-			// parent not found
-			return false;
+			});
 		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungNachLvTemplateTable.tabulator !== null && this.$refs.softwareanforderungNachLvTemplateTable.tabulator !== undefined)
@@ -203,7 +202,7 @@ export default {
 	template: `
 <div class="softwareanforderungNachStandardLvTemplate overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-12 h4">Software bestellen für Quellkurse {{ selectedStudiensemester }}</div>
+		<div class="col-12 h4">Software bestellen für Quellkurse {{ selectedStudienjahr }}</div>
 	</div>
 	<div class="row mb-5">
 		<div class="col">
@@ -215,7 +214,8 @@ export default {
 				:tabulator-options="tabulatorOptions"
 				:tabulator-events="[
 					{event: 'tableBuilt', handler: onTableBuilt},
-					{event: 'rowClick', handler: onRowClick}
+					{event: 'rowClick', handler: onRowClick},
+					{event: 'rowDblClick', handler: onRowDblClick}
 				]">
 				<template v-slot:actions>
 					<button class="btn btn-primary" @click="openSoftwareanforderungForm()">SW für Quellkurs anfordern</button>
@@ -226,7 +226,7 @@ export default {
 							v-model="cbDataTreeStartExpanded"
 							:checked="cbDataTreeStartExpanded"
 							@change="reloadTabulator">
-						<label class="form-check-label">Templates {{ $p.t('global/aufgeklappt') }}</label>
+						<label class="form-check-label">Quellkurse {{ $p.t('global/aufgeklappt') }}</label>
 					</div>
 				</template>
 			</core-filter-cmpt>						

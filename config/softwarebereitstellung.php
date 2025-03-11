@@ -1,6 +1,6 @@
 <?php
 // Define Studienjahr to start in Studienjahr-Dropdownlist.
-$config['studienjahr_dropdown_startdate'] = '2024/25';
+$config['studienjahr_dropdown_startdate'] = '2025/26';
 
 // Define OTOBO link for requesting new Software.
 $config['otobo_url'] = 'https://services.technikum-wien.at/otobo/customer.pl?Action=CustomerTicketMessage;ServiceID=87;TypeID=6';

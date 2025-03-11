@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
 
 export default {
@@ -8,7 +7,7 @@ export default {
 		SoftwareanforderungForm
 	},
 	inject: [
-		'selectedStudiensemester',
+		'selectedStudienjahr',
 		'currentTab'
 	],
 	data: function() {
@@ -17,22 +16,32 @@ export default {
 		}
 	},
 	watch: {
-		selectedStudiensemester(newVal) {
+		selectedStudienjahr(newVal) {
 			if(newVal && this.currentTab === "softwareanforderungNachLv" && this.table) {
-				this.setTableData();
+				this.table.replaceData();
 			}
 		},
 		currentTab(newVal) {
-			if (newVal === 'softwareanforderungNachLv' && this.selectedStudiensemester && this.table) {
-				this.setTableData();
+			if (newVal === 'softwareanforderungNachLv' && this.selectedStudienjahr && this.table) {
+				this.table.replaceData();
 			}
 		}
 	},
 	computed: {
 		tabulatorOptions() {
+		const self = this;
 			return {
-				// NOTE: data is set on table built to await preselected actual Studiensemester
-				ajaxResponse(url, params, response){ return response.data },
+				ajaxURL: self.$fhcApi.getUri(
+					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getNonQuellkursLvs'
+				),
+				ajaxParams: () => {
+					return {
+						studienjahr_kurzbz: self.selectedStudienjahr
+					}
+				},
+				ajaxResponse(url, params, response){
+					return response.data
+				},
 				layout: 'fitColumns',
 				autoResize:false, // prevent auto resizing of table
 				resizableColumnFit:true, //maintain the fit of columns when resizing
@@ -50,36 +59,17 @@ export default {
 						width: 70
 					},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
+					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, minWidth: 350},
+					{title: 'Studiensemester', field: 'studiensemester_kurzbz', headerFilter: true, visible:true, width: 90},
 					{title: 'STG Kurzbz', field: 'stg_typ_kurzbz', headerFilter: true, visible:true, width: 70},
-					{title: 'Studiengang', field: 'stg_bezeichnung', headerFilter: true, width: 250},
-					{title: 'Studiengangtyp', field: 'stg_typ_bezeichnung', headerFilter: true, width: 250},
 					{title: 'OrgForm', field: 'orgform_kurzbz', headerFilter: true, width: 70},
 					{title: 'Semester', field: 'semester', headerFilter: true, width: 50},
-					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, minWidth: 250},
+					{title: 'Studiengang', field: 'stg_bezeichnung', headerFilter: true, width: 250, visible:false},
+					{title: 'Studiengangtyp', field: 'stg_typ_bezeichnung', headerFilter: true, width: 250, visible: false},
+					{title: 'Studienplan', field: 'studienplan_bezeichnung', headerFilter: true, visible:true, width: 220},
 					{title: 'LE-Gruppen', field: 'lehreinheitgruppen_bezeichnung', headerFilter: true, width: 200},
 					{title: 'OE Kurzbz', field: 'lv_oe_kurzbz', headerFilter: true, visible:false, minWidth: 80},
-					{title: 'OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200},
-					{
-						title: 'Quellkurs-LV',
-						field: 'lehrveranstaltung_template_id',
-						formatter: function(cell) {
-							const value = cell.getValue();
-							return value !== null && value !== undefined && value !== ""
-								? '<i class="fa fa-check text-success"></i>'
-								: '<i class="fa fa-xmark text-danger"></i>';
-						},
-						headerFilter: 'tickCross',
-						headerFilterParams:{ tristate: true },
-						headerFilterFunc: function(headerValue, rowValue) {
-							return headerValue === ""
-								? true // Show all
-								: headerValue === true
-									? (rowValue !== null && rowValue !== undefined && rowValue !== "") // Show numbers
-									: (rowValue === null || rowValue === ""); // Show null
-						},
-						width: 70,
-						hozAlign: 'center'
-					}
+					{title: 'LV-OE', field: 'lv_oe_bezeichnung', headerFilter: true, minWidth: 200}
 				]
 			}
 		}
@@ -94,45 +84,25 @@ export default {
 				return;
 			}
 
-			this.$refs.softwareanforderungForm.openModalLvToSw(selectedData, this.selectedStudiensemester);
+			this.$refs.softwareanforderungForm.openModalLvToSw(selectedData);
 		},
 		onFormClosed(){
 			// Deselect all rows
 			this.table.deselectRow();
 		},
-		setTableData(){
-			this.table.setData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			)
-		},
-		replaceTableData(){
-			this.table.replaceData(
-				CoreRESTClient._generateRouterURI(
-					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe' +
-					'?studiensemester_kurzbz=' + this.selectedStudiensemester
-				),
-			)
-		},
 		async onTableBuilt(){
 			this.table = this.$refs.softwareanforderungNachLvTable.tabulator;
 
-			this.setTableData();
-			// Await phrases categories
-			await this.$p.loadCategory(['lehre']);
-
 			// Replace column titles with phrasen
+			await this.$p.loadCategory(['lehre']);
 			this.table.updateColumnDefinition('lv_bezeichnung', {title: this.$p.t('lehre', 'lehrveranstaltung')});
 			this.table.updateColumnDefinition('stg_bezeichnung', {title: this.$p.t('lehre', 'studiengang')});
-
 		},
 	},
 	template: `
 <div class="softwareanforderungNachLv overflow-hidden">
 	<div class="row d-flex my-3">
-		<div class="col-12 h4">Software bestellen für einzelne LVs {{ selectedStudiensemester }} </div>
+		<div class="col-12 h4">Software bestellen für einzelne LVs {{ selectedStudienjahr }} </div>
 	</div>
 	<div class="row mb-5">
 		<div class="col">

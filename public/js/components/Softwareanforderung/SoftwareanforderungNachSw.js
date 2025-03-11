@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {Raumzuordnung} from "../SoftwareManagement/Raumzuordnung.js";
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
 
@@ -23,17 +22,17 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				ajaxURL: CoreRESTClient._generateRouterURI('extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelistData'),
+				ajaxURL:  self.$fhcApi.getUri(
+					'extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelistData'
+				),
 				ajaxResponse(url, params, response){
 					// If dataTree checkbox is checked
 					return self.cbDataTree
-						? self.prepDataTreeData(CoreRESTClient.getData(response)) // Prepare data for dataTree view
-						: CoreRESTClient.getData(response); // else return data for normal list view
+						? self.prepDataTreeData(response.retval) // Prepare data for dataTree view
+						: response.retval; // else return data for normal list view
 				},
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: self.cbDataTreeStartExpanded,
-				selectable: true,
-				selectableRangeMode: 'click',
 				layout: 'fitColumns',
 				autoResize:false, // prevent auto resizing of table
 				resizableColumnFit:true, //maintain the fit of columns when resizing
@@ -42,13 +41,6 @@ export default {
 					filter: false, //persist filter sorting
 				},
 				columns: [
-					{
-						formatter: 'rowSelection',
-						titleFormatter: 'rowSelection',
-						titleFormatterParams: { rowRange: "active"},
-						width: 70,
-						frozen: true
-					},
 					{title: 'ID', field: 'software_id', headerFilter: true, visible: false, frozen: true},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
 						frozen: true,
@@ -116,17 +108,6 @@ export default {
 			let offcanvasElement = new bootstrap.Offcanvas(document.getElementById('softwarelisteOffcanvas'));
 			offcanvasElement.show();
 		},
-		openSoftwareanforderungForm(){
-			let selectedData = this.$refs.softwareanforderungNachSwTable.tabulator.getSelectedData();
-
-			if (selectedData.length == 0)
-			{
-				this.$fhcAlert.alertWarning( this.$p.t('global/zeilenAuswaehlen'));
-				return;
-			}
-
-			this.$refs.softwareanforderungForm.openModalSwToLv(selectedData);
-		},
 		reloadTabulator() {
 			if (this.$refs.softwareanforderungNachSwTable.tabulator !== null && this.$refs.softwareanforderungNachSwTable.tabulator !== undefined)
 			{
@@ -191,10 +172,6 @@ export default {
 			// parent not found
 			return false;
 		},
-		onFormClosed(){
-			// Deselect all rows
-			this.$refs.softwareanforderungNachSwTable.tabulator.deselectRow();
-		},
 		openOtoboLink(){
 			this.$fhcApi
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getOtoboUrl')
@@ -205,11 +182,9 @@ export default {
 	template: `
 <div class="softwareanforderungNachSw overflow-hidden">
 	<div class="row d-flex my-3 align-items-center">
-		<div class="col-sm-9 col-md-10 h4">{{ $p.t('global/swAnforderungUeberAuswahlVonSw') }}</div>
+		<div class="col-sm-9 col-md-10 h4">{{ $p.t('global/softwareliste') }}</div>
 		<div class="col-sm-3 col-md-2 d-flex justify-content-end">
-		<!-- TODO phrase exists, but not breaking line properly -->
-		<!--<button class="btn btn-secondary text-start ms-auto" @click="">{{ $p.t('global/swNichtGefundenHierBestellen') }}</button>--> 
-			<button class="btn btn-secondary text-start" @click="openOtoboLink">Software nicht gefunden?<br>Hier bei IT-Services bestellen</button>
+			<button class="btn btn-primary text-start" @click="openOtoboLink">Software nicht gefunden?<br>Hier bei IT-Services bestellen</button>
 		</div>
 	</div>
 	<div class="row mb-5">
@@ -221,7 +196,10 @@ export default {
 				:side-menu="false"
 				:tabulator-options="tabulatorOptions">
 				<template v-slot:actions>
+<!--
+					// NOTE: Keep in case of later necessity. 
 					<button class="btn btn-primary" @click="openSoftwareanforderungForm()">{{ $p.t('global/swFuerLvAnfordern') }}</button>
+-->
 					<div class="form-check form-check-inline">
 						<input
 							class="form-check-input"
@@ -244,9 +222,6 @@ export default {
 			</core-filter-cmpt>						
 		</div>
 	</div>
-	
-	<!-- Form -->
-	<softwareanforderung-form ref="softwareanforderungForm" @form-closed="onFormClosed"></softwareanforderung-form>
 	
 	<!-- Software Raumverfügbarkeit  -->
 	<div class="offcanvas offcanvas-start w-50" tabindex="-1" id="softwarelisteOffcanvas">

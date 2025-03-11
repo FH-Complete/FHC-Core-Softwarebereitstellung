@@ -29,11 +29,13 @@ export default {
 	},
 	provide() {
 		return {
-			selectedStudiensemester: Vue.computed(() => this.selectedStudiensemester),
+			selectedStudienjahr: Vue.computed(() => this.selectedStudienjahr),
 			currentTab: Vue.computed(() => this.currentTab),
 		};
 	},
-	inject: ['STUDIENSEMESTER_DROPDOWN_STARTDATE'],
+	inject: [
+		'STUDIENJAHR_DROPDOWN_STARTDATE'
+	],
 	data() {
 		return {
 			tabs: {
@@ -44,20 +46,22 @@ export default {
 				softwarebereitstellungUebersicht: { title: Vue.computed(() => this.$p.t('global/softwarebereitstellung') + ' ' + this.$p.t('global/uebersicht')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js' }
 			},
 			currentTab: 'softwarebereitstellungUebersicht',
-			studiensemester: [],
-			selectedStudiensemester: ''
+			studienjahre: [],
+			selectedStudienjahr: ''
 		}
 	},
 	created(){
-		this.loadAndSetStudiensemester();
+		this.loadAndSetStudienjahr();
 	},
 	methods: {
-		loadAndSetStudiensemester(){
+		loadAndSetStudienjahr(){
 			this.$fhcApi
-				.get('api/frontend/v1/organisation/Studiensemester/getAll', {start: this.STUDIENSEMESTER_DROPDOWN_STARTDATE})
-				.then( result => this.studiensemester = result.data )
-				.then( () => this.$fhcApi.get('api/frontend/v1/organisation/Studiensemester/getAktNext') ) // Get actual Studiensemester
-				.then( result => this.selectedStudiensemester = result.data[0].studiensemester_kurzbz ) // Preselect Studiensemester
+				.get('api/frontend/v1/organisation/Studienjahr/getAll', {
+					studienjahr_kurzbz: this.STUDIENJAHR_DROPDOWN_STARTDATE
+				})
+				.then( result => this.studienjahre = result.data )
+				.then(() => this.$fhcApi.get('api/frontend/v1/organisation/Studienjahr/getNext'))
+				.then( result => this.selectedStudienjahr = result.data.studienjahr_kurzbz)
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		onTabChange(tab) {
@@ -75,13 +79,13 @@ export default {
 				<div class="col-2 ms-auto">
 					<core-form-input
 						type="select"
-						v-model="selectedStudiensemester"
-						name="studiensemester">
+						v-model="selectedStudienjahr"
+						name="studienjahre">
 						<option 
-						v-for="(studSem, index) in studiensemester"
+						v-for="(studJahr, index) in studienjahre"
 						:key="index" 
-						:value="studSem.studiensemester_kurzbz">
-							{{studSem.studiensemester_kurzbz}}
+						:value="studJahr.studienjahr_kurzbz">
+							{{studJahr.studienjahr_kurzbz}}
 						</option>
 					</core-form-input>
 				</div>

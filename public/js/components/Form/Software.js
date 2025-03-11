@@ -162,7 +162,7 @@ export const SoftwareForm = {
 
 				// Get current Studienjahr
 				this.$fhcApi
-					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/getAktOrNextStudienjahr')
+					.get('api/frontend/v1/organisation/Studienjahr/getNext')
 					.then(result => this.selStudienjahr = result.data.studienjahr_kurzbz)
 					.then(() => this.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(
 						this.softwareId,

@@ -10,6 +10,9 @@ export default {
 		CoreFormValidation,
 		CoreBsModal
 	},
+	inject: [
+		'selectedStudienjahr',
+	],
 	emit: [
 		'onSaved'
 	],
@@ -18,9 +21,6 @@ export default {
 			modalTitel: this.$p.t('global', 'swFuerLvAendern'),
 			autocompleteAbortController: null,
 			swSuggestions: [],
-			studiensemester: [],
-			selectedStudiensemester: '',
-			selectedRow: {},
 			selectedLvs: [],
 			selectedSw: {},
 			selectedTemplate: {},
@@ -30,116 +30,114 @@ export default {
 	},
 	methods: {
 		updateSwLvs() {
-
 			// Return if no SW is selected
 			this.errorMsg = null;
 			if (this.selectedSw === null) return this.errorMsg = this.$p.t('global', 'softwareAuswaehlen');
 
-			// Prepare data for backend
-			const postData = {
-				...this.selectedRow,
-				...this.selectedSw,
-				studiensemester_kurzbz: this.selectedStudiensemester
-			};
-
-			// Update Software
-			if (this.$refs.form) {
-				let apiUrl = 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateSwLvs';
-
-				this.$refs.form
-					.post(apiUrl, postData)
-					.then(result => {
-						this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
-						this.$emit('onSaved');
-					})
-					.catch(error => this.$fhcAlert.handleSystemError(error));
+			// Update Software for Quellkurs swlv and its assigend swlvs
+			if (this.requestModus === 'tpl') {
+				if (this.$refs.form) {
+					this.$refs.form
+						.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateSoftwareByTpl',
+							{
+								tpl_software_lv_id: this.selectedTemplate.software_lv_id,
+								software_id: this.selectedSw.software_id,
+								studienjahr_kurzbz: this.selectedStudienjahr
+							}
+						)
+						.then(result => {
+							this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
+							this.$refs.modalContainer.hide();
+							this.$emit('onSaved');
+						})
+						.then(() => {
+							this.$fhcApi.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareUpdated',
+							{
+								tpl_software_lv_id: this.selectedTemplate.software_lv_id,
+								software_id: this.selectedSw.software_id,
+							})
+						})
+						.catch(error => this.$fhcAlert.handleSystemError(error));
+				}
+			}
+			// Update Software for single swlv
+			else {
+				if (this.$refs.form) {
+					this.$refs.form
+						.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateSoftwareByLv',
+							{
+								software_lv_id: this.selectedLvs[0].software_lv_id,
+								software_id: this.selectedSw.software_id,
+								studienjahr_kurzbz: this.selectedStudienjahr
+							}
+						)
+						.then(result => {
+							this.$fhcAlert.alertSuccess(this.$p.t('ui', 'gespeichert'));
+							this.$refs.modalContainer.hide();
+							this.$emit('onSaved');
+						})
+						.catch(error => this.$fhcAlert.handleSystemError(error));
+				}
 			}
 		},
-		openModalUpdateSwByLv(selectedRow, selectedStudiensemester) {
+		openModalUpdateSwByLv(selectedData) {
 			this.resetForm();
 
-			// Store selected row data
-			this.selectedRow = {
-				'software_lv_id': selectedRow.software_lv_id,
-				'lv_oe_bezeichnung': selectedRow.lv_oe_bezeichnung,
-				'lehrveranstaltung_id': selectedRow.lehrveranstaltung_id,
-				'lehrveranstaltung_template_id': selectedRow.lehrveranstaltung_template_id,
-				'lv_bezeichnung': selectedRow.lv_bezeichnung + ' [ ' + selectedRow.orgform_kurzbz + ' ]',
-				'studiengang_kz': selectedRow.studiengang_kz,
-				'stg_bezeichnung': selectedRow.stg_bezeichnung
-			};
-
 			// Prefill Lehrveranstaltung with selected row data
-			this.selectedLvs = [this.selectedRow]; // must be array for autoselect
+			this.selectedLvs = [
+				{
+				'software_lv_id': selectedData.software_lv_id,
+				'lehrveranstaltung_id': selectedData.lehrveranstaltung_id,
+				'studiensemester_kurzbz': selectedData.studiensemester_kurzbz,
+				'lv_bezeichnung': selectedData.lv_bezeichnung + ' [ ' + selectedData.orgform_kurzbz + ' ]',
+				'stg_bezeichnung': selectedData.stg_bezeichnung
+				}
+			];	// must be array for autoselect
 
 			// Prefill software with selected row data
 			this.selectedSw = {
-				'software_id': selectedRow.software_id,
-				'software_kurzbz': selectedRow.software_kurzbz
+				'software_id': selectedData.software_id,
+				'software_kurzbz': selectedData.software_kurzbz
 			};
-
-			// Load Studiensemester to populate dropdown
-			this.loadAndSetStudiensemester(selectedStudiensemester);
 
 			// Open modal
 			this.$refs.modalContainer.show();
 		},
-		openModalUpdateSwByTemplate(selectedRow, selectedStudiensemester) {
+		openModalUpdateSwByTemplate(selectedData) {
 			this.resetForm();
 
 			this.requestModus = 'tpl';
 
 			// Get LV Template from selected row
-			this.selectedTemplate = selectedRow;
-
-			// Store selected row data
-			this.selectedRow = {
-				'software_lv_id': selectedRow.software_lv_id,
-				'lv_oe_bezeichnung': selectedRow.lv_oe_bezeichnung,
-				'lehrveranstaltung_id': selectedRow.lehrveranstaltung_id,
-				'lehrveranstaltung_template_id': selectedRow.lehrveranstaltung_template_id,
-				'lv_bezeichnung': selectedRow.lv_bezeichnung + ' [ ' + selectedRow.orgform_kurzbz + ' ]',
-				'studiengang_kz': selectedRow.studiengang_kz,
-				'stg_bezeichnung': selectedRow.stg_bezeichnung
+			this.selectedTemplate = {
+				'software_lv_id': selectedData.software_lv_id,
+				'lehrveranstaltung_id': selectedData.lehrveranstaltung_id,
+				'studiensemester_kurzbz': selectedData.studiensemester_kurzbz,
+				'lv_bezeichnung': selectedData.lv_bezeichnung
 			};
 
 			// Prefill Lehrveranstaltungen dropdown
-			if (Array.isArray(selectedRow._children) && selectedRow._children.length > 0)
+			if (Array.isArray(selectedData._children) && selectedData._children.length > 0)
 			{
-				this.selectedLvs = selectedRow._children.map(data => ({
-					'software_lv_id': selectedRow.software_lv_id,
-					'lv_oe_bezeichnung': data.lv_oe_bezeichnung,
-					'lehrveranstaltung_id': data.lehrveranstaltung_id,
-					'lehrveranstaltung_template_id': data.lehrveranstaltung_template_id,
-					'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
-					'studiengang_kz': data.studiengang_kz,
-					'stg_bezeichnung': data.stg_bezeichnung
-				}));
+				this.selectedLvs = selectedData._children.map(data => (
+					{
+						'software_lv_id': data.software_lv_id,
+						'lehrveranstaltung_id': data.lehrveranstaltung_id,
+						'studiensemester_kurzbz': data.studiensemester_kurzbz,
+						'lv_bezeichnung': data.lv_bezeichnung + ' [ ' + data.orgform_kurzbz + ' ]',
+						'stg_bezeichnung': data.stg_bezeichnung,
+					}
+				));
 			}
 
 			// Prefill software dropdown
 			this.selectedSw = {
-				'software_id': selectedRow.software_id,
-				'software_kurzbz': selectedRow.software_kurzbz
+				'software_id': selectedData.software_id,
+				'software_kurzbz': selectedData.software_kurzbz
 			};
-
-			// Load Studiensemester to populate dropdown
-			this.loadAndSetStudiensemester(selectedStudiensemester);
 
 			// Open modal
 			this.$refs.modalContainer.show();
-		},
-		loadAndSetStudiensemester(selectedStudiensemester = null){
-			this.$fhcApi
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getAktAndFutureSemester')
-				.then( result => {
-					this.studiensemester = result.data;
-
-					this.selectedStudiensemester = selectedStudiensemester !== null
-						? selectedStudiensemester
-						: this.studiensemester[0].studiensemester_kurzbz
-				})
-				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		searchSw(event) {
 			if (event.query || !this.swSuggestions.length) {
@@ -165,8 +163,6 @@ export default {
 		},
 		resetForm(){
 			this.$refs.form.clearValidation();
-			this.selectedStudiensemester = this.studiensemester.length > 0 ? this.studiensemester[0].studiensemester_kurzbz : '';
-			this.selectedRow = {};
 			this.selectedLvs = [];
 			this.selectedSw = {};
 			this.selectedTemplate = {};
@@ -183,26 +179,11 @@ export default {
 					<!-- Formular -->
 					<core-form-validation></core-form-validation>
 					<div class="row">
-						<div class="col-2 mb-3">
-							<core-form-input
-								type="select"
-								v-model="selectedStudiensemester"
-								name="studiensemester"
-								:label="$p.t('lehre', 'studiensemester')"
-								disabled>
-								<option 
-								v-for="(studSem, index) in studiensemester"
-								:key="index" 
-								:value="studSem.studiensemester_kurzbz">
-									{{studSem.studiensemester_kurzbz}}
-								</option>
-							</core-form-input>
-						</div>
-						<div class="col-2 mb-3 align-self-start" v-if="requestModus == 'tpl'">
+						<div class="col-4 mb-3 align-self-start" v-if="requestModus == 'tpl'">
 						 	<core-form-input
 								v-model="selectedTemplate.lv_bezeichnung"
 								name="selectedTemplate"
-								:label="$p.t('global/standardLvTemplate')"
+								:label="$p.t('global/quellkurs')"
 								readonly>
 							</core-form-input>
 						</div>

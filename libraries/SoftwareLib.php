@@ -77,9 +77,9 @@ class SoftwareLib
 	 * @param $studiensemester_kurzbz
 	 * @return bool
 	 */
-	public function isPlanningDeadlinePast($studiensemester_kurzbz = null)
+	public function isPlanningDeadlinePast()
 	{
-		$planungDeadline = $this->getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz);
+		$planungDeadline = $this->getPlanungDeadline();
 		if (isError($planungDeadline)) return getError($planungDeadline);
 
 		$today = new DateTime();
@@ -94,9 +94,10 @@ class SoftwareLib
 	 * @param null $studiensemester_kurzbz
 	 * @return bool
 	 */
-	public function isTwoWeeksBeforePlanningDeadline($studiensemester_kurzbz = null)
+	public function isTwoWeeksBeforePlanningDeadline()
 	{
-		$planungDeadline = $this->getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz);
+		$planungDeadline = $this->getPlanungDeadline();
+
 		if (isError($planungDeadline)) return getError($planungDeadline);
 		$planungDeadline = getData($planungDeadline);
 
@@ -130,28 +131,18 @@ class SoftwareLib
 	}
 
 	/**
-	 * Get Planungsdeadline of actual Studienjahr.
+	 * Get Planungsdeadline of next Studienjahr.
 	 *
 	 * @param $studiensemester_kurzbz
 	 * @return mixed
 	 */
-	public function getPlanungDeadlineOfActStudjahr($studiensemester_kurzbz = null)
+	public function getPlanungDeadline()
 	{
-		// Get Studienjahr by Studiensemester
-		if (is_string($studiensemester_kurzbz))
-		{
-			$this->_ci->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
-			$result = $this->_ci->StudiensemesterModel->getStudienjahrByStudiensemester($studiensemester_kurzbz);
-			$startstudienjahr = hasData($result) ? getData($result)->startstudienjahr : '';
-		}
-		// Or get current Studienjahr
-		else
-		{
-			$this->_ci->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
-			$result = $this->_ci->StudienjahrModel->getCurrStudienjahr();
-			$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
-			$startstudienjahr = substr($studienjahr_kurzbz, 0, 4);
-		}
+		// Get next Studienjahr
+		$this->_ci->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
+		$result = $this->_ci->StudienjahrModel->getNextStudienjahr();
+		$studienjahr_kurzbz = getData($result)[0]->studienjahr_kurzbz;
+		$startstudienjahr = substr($studienjahr_kurzbz, 0, 4);
 
 		// Get Planungsdeadline of requested Studienjahr
 		if ($this->_ci->config->item('planung_deadline'))
@@ -172,6 +163,27 @@ class SoftwareLib
 		}
 	}
 
+	public function addStudiensemesterOfNextStudjahr($softwareLvIds)
+	{
+		// NOTE: Mixed data: SWLV data of given swlvId, but studiensemester is from Next year!
+		$this->_ci->SoftwareLvModel->addSelect('software_lv_id');
+		$this->_ci->SoftwareLvModel->addSelect('lehrveranstaltung_id');
+		$this->_ci->SoftwareLvModel->addSelect('software_id');
+		$this->_ci->SoftwareLvModel->addSelect('lizenzanzahl');
+		$this->_ci->SoftwareLvModel->addSelect('
+			(
+				SELECT studiensemester_kurzbz
+				FROM public.tbl_studiensemester
+				WHERE studiensemester_kurzbz > extension.tbl_software_lv.studiensemester_kurzbz
+				ORDER BY studiensemester_kurzbz
+				LIMIT 1
+	  		) AS studiensemester_kurzbz
+		');
+
+		return $this->_ci->SoftwareLvModel->loadWhere('
+			software_lv_id IN ('. implode(', ', $softwareLvIds). ')
+		');
+	}
 	// -----------------------------------------------------------------------------------------------------------------
 	// JOBS & ALERTS
 	// -----------------------------------------------------------------------------------------------------------------
@@ -183,7 +195,7 @@ class SoftwareLib
 	 *
 	 * @return array
 	 */
-	public function getStudiengaengeWithFakultaet(){
+	public function getOeTypToFakultaetMap($organisationseinheittyp_kurzbz){
 
 		// Load all Studiengang Oes
 		$this->_ci->load->model('organisation/Organisationseinheit_model', 'OrganisationseinheitModel');
@@ -191,34 +203,34 @@ class SoftwareLib
 		$this->_ci->OrganisationseinheitModel->addSelect('oe_kurzbz, oe_parent_kurzbz');
 		$this->_ci->OrganisationseinheitModel->addOrder('oe_parent_kurzbz');
 		$result = $this->_ci->OrganisationseinheitModel->loadWhere([
-			'organisationseinheittyp_kurzbz' => 'Studiengang',
+			'organisationseinheittyp_kurzbz' => $organisationseinheittyp_kurzbz,
 			'aktiv' => true
 		]);
-		$stg_oe_arr = hasData($result) ? getData($result) : [];
+		$oe_arr = hasData($result) ? getData($result) : [];
 
 		// Iterate Studiengang Oes
-		foreach ($stg_oe_arr as $stg_oe) {
+		foreach ($oe_arr as $oe) {
 
 			// Get parents
-			$result = $this->_ci->OrganisationseinheitModel->getParents($stg_oe->oe_kurzbz);
+			$result = $this->_ci->OrganisationseinheitModel->getParents($oe->oe_kurzbz);
 
 			// Iterate parents
 			foreach (getData($result) as $parent_oe) {
 
 				// Find and add Fakultät
 				if (strpos($parent_oe->oe_kurzbz, 'fak') === 0) {
-					$stg_oe->stg_fak_oe_kurzbz = $parent_oe->oe_kurzbz;
+					$oe->fak_oe_kurzbz = $parent_oe->oe_kurzbz;
 					break;  // Stop after finding the first match
 				}
 
 				// else set null
 				else{
-					$stg_oe->stg_fak_oe_kurzbz = NULL;
+					$oe->fak_oe_kurzbz = NULL;
 				}
 			}
 		}
 		// Return result or []
-		return $stg_oe_arr;
+		return $oe_arr;
 	}
 
 	/**
@@ -268,24 +280,47 @@ class SoftwareLib
 	}
 
 	/**
-	 * Helper to group LVs by Fakultät of the LV Studiengang.
+	 * Helper to group LVs by Fakultät of the LV Studiengang OE.
 	 *
 	 * @param $lv_arr
 	 * @param $stg_oe_arr
 	 * @return array
 	 */
-	public function groupLvsByFakultaet($lv_arr, $stg_oe_arr)
+	public function groupLvsByFakultaetOfLvOe($lv_arr, $oeToFakMap_arr)
 	{
 		$grouped = [];
 
-		foreach ($lv_arr as $item) {
-			foreach ($stg_oe_arr as $stg_oe) {
-				if ($item->stg_oe_kurzbz === $stg_oe->oe_kurzbz) {
-					// Add FAK OE of lvs' stg
-					$item->stg_fak_oe_kurzbz = $stg_oe->stg_fak_oe_kurzbz;
+		foreach ($lv_arr as $lv) {
+			foreach ($oeToFakMap_arr as $item) {
+				if ($lv->oe_kurzbz === $item->oe_kurzbz) {
+					// Group by FAK OE of lvs' oe
+					$grouped[$item->fak_oe_kurzbz][] = $lv;
 				}
 			}
-			$grouped[$item->stg_fak_oe_kurzbz][] = $item;
+		}
+
+		return $grouped;
+	}
+
+	/**
+	 * Helper to group LVs by Fakultät of the LVs OE.
+	 *
+	 * @param $lv_arr
+	 * @param $stg_oe_arr
+	 * @return array
+	 */
+	public function groupLvsByFakultaetOfLvStgOe($lv_arr, $oeToFakMap_arr)
+	{
+		$grouped = [];
+
+		foreach ($lv_arr as $lv) {
+			foreach ($oeToFakMap_arr as $item) {
+				// Check against LV oe
+				if ($lv->stg_oe_kurzbz === $item->oe_kurzbz) {
+					// Group by FAK OE of lvs' stg oe
+					$grouped[$item->fak_oe_kurzbz][] = $lv;
+				}
+			}
 		}
 
 		return $grouped;
@@ -378,8 +413,7 @@ class SoftwareLib
 
 			$message = "
 				<p>
-					<b>Lizenzpflichtige Software ohne User-Anzahl</b></br>
-					Bitte tragen Sie die angeforderte User-Anzahl ein.
+					<b>Lizenzpflichtige Software ohne User-Anzahl</b>
 				</p>
 			";
 			$message .= $table;
@@ -425,8 +459,8 @@ class SoftwareLib
 
 			$message = "
 				<p>
-					<b>Softwarebestellungen (bald) nicht mehr möglich.</b></br>
-					Der Softwarestatus wurde für folgende SW-Bestellungen geändert und kann nicht mehr erneut bestellt werden.
+					<b>Ablaufende Software</b></br>
+					Der Softwarestatus wurde auf 'End of Life' oder 'Nicht verfügbar' geändert und kann nicht mehr bestellt werden.
 				</p>
 			";
 			$message .= $table;
@@ -853,9 +887,8 @@ class SoftwareLib
 
 			$message = "
 					<p>
-					<b>Bestellte SW muss für kommendes Studiensemester installiert werden</b><br>
-					Im kommenden Studiensemester ist Software bestellt, wo der Status noch nicht 'Verfügbar' ist.<br>
-					Prüfen Sie, ob die Software schon installiert wurde und/oder ändern Sie den Status.
+					<b>Bestellte SW noch nicht verfügbar</b><br>
+					Prüfen/ändern Sie den Status. Gegebenenfalls muss die SW noch installiert werden.
 					</p>
 				";
 			$message .= $table;

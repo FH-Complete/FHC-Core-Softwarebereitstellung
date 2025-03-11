@@ -8,7 +8,6 @@ if (! defined('BASEPATH')) exit('No direct script access allowed');
 class Softwareanforderung extends FHCAPI_Controller
 {
 	private $_uid;
-	const BERECHTIGUNG_SOFTWAREANFORDERUNG = 'extension/software_bestellen';
 	const NOT_ZUORDENBARE_STATI = ['endoflife', 'nichtverfuegbar'];
 
 	/**
@@ -20,26 +19,36 @@ class Softwareanforderung extends FHCAPI_Controller
 			array(
 				'getSwLvsRequestedByLv' => 'extension/software_bestellen:rw',
 				'getSwLvsRequestedByTpl' => 'extension/software_bestellen:rw',
-				'updateSwLvs' => 'extension/software_bestellen:rw',
-				'deleteSwLvs' => 'extension/software_bestellen:rw',
+				'updateSoftwareByLv' => 'extension/software_bestellen:rw',
+				'updateSoftwareByTpl' => 'extension/software_bestellen:rw',
+				'sendMailSoftwareUpdated' => 'extension/software_bestellen:rw',
+				'deleteSwLvsByLv' => 'extension/software_bestellen:rw',
+				'deleteSwLvsByTpl' => 'extension/software_bestellen:rw',
 				'checkAndGetExistingSwLvs' => 'extension/software_bestellen:rw',
-				'getLvsByStgOe' => 'extension/software_bestellen:rw',
+				'getNonQuellkursLvs' => 'extension/software_bestellen:rw',
 				'getLvsForTplRequests' => 'extension/software_bestellen:rw',
 				'saveSwRequestByLvs' => 'extension/software_bestellen:rw',
 				'saveSwRequestByTpl' => 'extension/software_bestellen:rw',
 				'abbestellenSwLvs' => 'extension/software_bestellen:rw',
+				'sendMailSoftwareAbbestellt' => 'extension/software_bestellen:rw',
+				'vorrueckSwLvsByLvs' => 'extension/software_bestellen:rw',
+				'vorrueckSwLvsByTpl' => 'extension/software_bestellen:rw',
+				'validateVorrueckSwLvsForLvs' => 'extension/software_bestellen:rw',
+				'validateVorrueckSwLvsForTpl' => 'extension/software_bestellen:rw',
 				'updateLizenzanzahl' => 'extension/software_bestellen:rw',
 				'autocompleteSwSuggestions' => 'extension/software_bestellen:rw',
-				'autocompleteLvSuggestionsByStudsem' => 'extension/software_bestellen:rw',
+				'autocompleteLvSuggestionsByStudjahr' => 'extension/software_bestellen:rw',
 				'getAktAndFutureSemester' => 'extension/software_bestellen:rw',
-				'getVorrueckStudiensemester' => 'extension/software_bestellen:rw',
+				'getVorrueckStudienjahr' => 'extension/software_bestellen:rw',
 				'getOtoboUrl' => 'extension/software_bestellen:rw',
-				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw',
-				'sendMailToSoftwarebeauftragte' => 'extension/software_bestellen:rw'
+				'isPlanningDeadlinePast' => 'extension/software_bestellen:rw'
 			)
 		);
 
 		$this->_setAuthUID(); // sets property uid
+
+		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
+		$this->entitledOes = $this->permissionlib->getOE_isEntitledFor('extension/software_bestellen') ?: [];
 
 		// Load models
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/SoftwareLv_model', 'SoftwareLvModel');
@@ -67,14 +76,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * the user has permission to view. Permission is checked against lv oes.
 	 */
 	public function getSwLvsRequestedByTpl(){
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $entitledOes = [];
-
 		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
 		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
-			$this->input->get('studiensemester_kurzbz'),
-			$entitledOes,
+			$this->input->get('studienjahr_kurzbz'),
+			$this->entitledOes,
 			null,
 			true
 		);
@@ -89,23 +94,19 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * the user has permission to view. Permission is checked against lv's stg oes.
 	 */
 	public function getSwLvsRequestedByLv(){
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $entitledOes = [];
-
 		// Get SW-LV-Zuordnungen berechtigt by lvs' stg
 		$lvs = $this->SoftwareLvModel->getSwLvs(
-			$this->input->get('studiensemester_kurzbz'),
+			$this->input->get('studienjahr_kurzbz'),
 			null,
-			$entitledOes
+			$this->entitledOes
 		);
 
 		$lvs = hasData($lvs) ? getData($lvs) : [];
 
 		// Get SW-LV-Zuordnungen where user is Quellkursverantwortlicher
 		$qkvLvs = $this->SoftwareLvModel->getSwLvs(
-			$this->input->get('studiensemester_kurzbz'),
-			$entitledOes,
+			$this->input->get('studienjahr_kurzbz'),
+			$this->entitledOes,
 			null,
 			true
 		);
@@ -130,27 +131,31 @@ class Softwareanforderung extends FHCAPI_Controller
 	}
 
 	/**
-	 * Get all Lehrveranstaltungen of a given Studiensemester limited to
+	 * Get all Lehrveranstaltungen of a given Studienjahr limited to
 	 * the OEs for which the user has the necessary permissions
 	 */
-	public function getLvsByStgOe()
+	public function getNonQuellkursLvs()
 	{
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $entitledOes = [];
-
-		// Get all Lvs
-		// Filter query by studiensemester and permitted oes
-		$result = $this->LehrveranstaltungModel->getLvs(
-			$this->input->get('studiensemester_kurzbz'),
-			null,
-			$entitledOes,	// check against stg oes
-			$this->input->get('lv_ids') ?  $this->input->get('lv_ids') : null  // Set to null if not provided
-		);
+		// Get given lvs that are not assigned to a Quellkurs
+		if ($this->input->get('lv_ids'))
+		{
+			$result = $this->SoftwareLvModel->getNonQuellkursLvs(
+				$this->input->get('studienjahr_kurzbz'),
+				$this->entitledOes,	// check against stg oes
+				$this->input->get('lv_ids')
+			);
+		}
+		// Get all lvs that are not assigned to a Quellkurs
+		else
+		{
+			$result = $this->SoftwareLvModel->getNonQuellkursLvs(
+				$this->input->get('studienjahr_kurzbz'),
+				$this->entitledOes	// check against stg oes
+			);
+		}
 
 		// Return
-		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data);
+		$this->terminateWithSuccess(hasData($result) ? getData($result) : []);
 	}
 
 	/**
@@ -159,15 +164,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	public function getLvsForTplRequests()
 	{
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $entitledOes = [];
-
-		// Get all Lvs
-		// Filter query by studiensemester and permitted oes
 		$result = $this->LehrveranstaltungModel->getTemplateLvTree(
-			$this->input->get('studiensemester_kurzbz'),
-			$entitledOes
+			null,
+			$this->entitledOes,
+			$this->input->get('studienjahr_kurzbz')
 		);
 
 		// Return
@@ -181,6 +181,9 @@ class Softwareanforderung extends FHCAPI_Controller
 	public function saveSwRequestByLvs(){
 
 		$this->_validateLizenzanzahl($this->input->post());
+
+		// Validate duplicate entries before inserting
+		$this->_validateDupliacateEntries($this->input->post());
 
 		// Check if posted SW LV Zuordnungen already exists
 		$result = $this->_checkAndGetExistingSwLvs($this->input->post());
@@ -274,35 +277,29 @@ class Softwareanforderung extends FHCAPI_Controller
 		$this->terminateWithSuccess();
 	}
 
+
 	/**
-	 * Updates changed Software for given Template Lvs or standalone LV after some checks:
-	 * No update if Bearbeitung is gesperrt.
+	 * Update changed Software for Quellkurs swlv and its assigned swlvs. Sends mail to SWB.
+	 *
+	 * No update if Planungsdeadline is past.
 	 * No update if SW is already assigend.
-	 * If given software_lv_id is a template, all zugehoerige Lvs are retrieved and SW is changed for all.
-	 * If given software_lv_id is standalone lv, SW is changed for this lv.
 	 */
-	public function updateSwLvs(){
-		$software_lv_id = $this->input->post('software_lv_id');
-		$updated_software_id = $this->input->post('software_id');
-		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
+	public function updateSoftwareByTpl(){
 
 		// Check if deletion is allowed
-		if ($this->softwarelib->isPlanningDeadlinePast($studiensemester_kurzbz)) exit;
+		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'))) exit;
 
-		// Get Lehrveranstaltung and Software by software_lv_id
-		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
-		$result = $this->SoftwareLvModel->load($software_lv_id);
-		$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
-		$software_id = getData($result)[0]->software_id;
+		// Get Quellkurs swlv
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
+		$result = $this->SoftwareLvModel->load($this->input->post('tpl_software_lv_id'));
+		$tpl = current(getData($result));
 
 		// Check if posted SW LV Zuordnungen already exists
-		$result = $this->_checkAndGetExistingSwLvs([
-			[
-				'lehrveranstaltung_id' => $lehrveranstaltung_id,
-				'software_id' => $updated_software_id,
-				'studiensemester_kurzbz' => $studiensemester_kurzbz
-			]
-		]);
+		$result = $this->_checkAndGetExistingSwLvs([[
+			'lehrveranstaltung_id' => $tpl->lehrveranstaltung_id,
+			'software_id' => $this->input->post('software_id'),
+			'studiensemester_kurzbz' => $tpl->studiensemester_kurzbz
+		]]);
 
 		// Return if at least one SW LV Zuordnung exists
 		if(count($result) > 0)
@@ -310,53 +307,26 @@ class Softwareanforderung extends FHCAPI_Controller
 			$this->terminateWithValidationErrors(['selectedSw' => $this->p->t('global', 'zuordnungExistiertBereits')]);
 		}
 
-		// Check if Lehrveranstaltung is a Quellkurs
-		$result = $this->LehrveranstaltungModel->checkIsTemplate($lehrveranstaltung_id);
-		$isTemplate = $this->getDataOrTerminateWithError($result);
+		// Get assigned swlvs
+		$result = $this->SoftwareLvModel->getSwLvsByTemplate(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id,
+			$tpl->studiensemester_kurzbz
+		);
+		$assignedSwLvs = hasData($result) ? getData($result) : [];
 
-		$updateSoftwareLvIds = [];
-
-		// If is Quellkurs
-		if ($isTemplate)
-		{
-			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
-			$assignedSwLvs = hasData($result) ? getData($result) : [];
-
-			// Store software_lv_ids for update
-			$updateSoftwareLvIds = array_merge(
-				[$this->input->post('software_lv_id')], // template
-				array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
-			);
-
-			// Send mail to other Softwarebeauftragte concerned
-			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
-			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
-			$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
-			$msg = $this->softwarelib->formatMsgQuellkursSwLvEdited($lehrveranstaltung_id, $software_id, $updated_software_id);		// Format message
-
-			foreach (array_keys($grouped) as $fak_oe_kurzbz)
-			{
-				// If not the users own Fakultät
-				if (!in_array($fak_oe_kurzbz, $entitledOes))
-				{
-					// Send mail to other concerned SWB
-					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
-				}
-			}
-		}
-		// Else is not a Quellkurs. Its a single Lehrveranstaltung.
-		else
-		{
-			// Store software_lv_id for update
-			$updateSoftwareLvIds = [$this->input->post('software_lv_id')];	// lv
-		}
+		// Combine template and assigned swlvs for update
+		$updateSoftwareLvIds = array_merge(
+			[$this->input->post('tpl_software_lv_id')], // template
+			array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
+		);
 
 		// Prepare data for batch update
 		$updateData = [];
-		foreach ($updateSoftwareLvIds as $id) {
+		foreach ($updateSoftwareLvIds as $softwareLvId) {
 			$updateData[] = [
-				'software_lv_id' => $id,
-				'software_id' => $updated_software_id
+				'software_lv_id' => $softwareLvId,
+				'software_id' => $this->input->post('software_id')
 			];
 		}
 
@@ -365,8 +335,89 @@ class Softwareanforderung extends FHCAPI_Controller
 			$result = $this->SoftwareLvModel->updateBatch($updateData);
 
 			// On error
-			$this->getDataOrTerminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 		}
+
+		// On success
+		$this->terminateWithSuccess();
+	}
+
+
+	public function sendMailSoftwareUpdated(){
+		// Get Quellkurs swlv
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
+		$result = $this->SoftwareLvModel->load($this->input->post('tpl_software_lv_id'));
+		$tpl = current(getData($result));
+
+		// Get assigned swlvs
+		$result = $this->SoftwareLvModel->getSwLvsByTemplate(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id,
+			$tpl->studiensemester_kurzbz
+		);
+		$assignedSwLvs = hasData($result) ? getData($result) : [];
+
+		// Send mail to other Softwarebeauftragte concerned
+		$studiengangToFakultaetMap = $this->softwarelib->getOeTypToFakultaetMap('Studiengang');
+		$grouped = $this->softwarelib->groupLvsByFakultaetOfLvStgOe($assignedSwLvs , $studiengangToFakultaetMap);
+
+		// Format message
+		$msg = $this->softwarelib->formatMsgQuellkursSwLvEdited(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id,
+			$this->input->post('software_id')
+		);
+
+		foreach (array_keys($grouped) as $fak_oe_kurzbz)
+		{
+			// If not the users own Fakultät
+			if (!in_array($fak_oe_kurzbz, $this->entitledOes))
+			{
+				// Send mail to other concerned SWB
+				$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
+			}
+		}
+	}
+
+	/**
+	 * Update changed Software for single swlv.
+	 *
+	 * No update if Planungsdeadline is past.
+	 * No update if SW is already assigend.
+	 */
+	public function updateSoftwareByLv(){
+
+		// Check if deletion is allowed
+		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'))) exit;
+
+		// Get Swlv
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
+		$result = $this->SoftwareLvModel->load($this->input->post('software_lv_id'));
+		$swlv = current(getData($result));
+
+		// Check if posted SW LV Zuordnungen already exists
+		$result = $this->_checkAndGetExistingSwLvs([[
+			'lehrveranstaltung_id' => $swlv->lehrveranstaltung_id,
+			'software_id' => $this->input->post('software_id'),
+			'studiensemester_kurzbz' => $swlv->studiensemester_kurzbz
+		]]);
+
+		// Return if at least one SW LV Zuordnung exists
+		if(count($result) > 0)
+		{
+			$this->terminateWithValidationErrors(['selectedSw' => $this->p->t('global', 'zuordnungExistiertBereits')]);
+		}
+
+		// Update
+		$result = $this->SoftwareLvModel->update(
+			$this->input->post('software_lv_id'),
+			[
+				'software_id' => $this->input->post('software_id')
+			]
+		);
+
+		// On error
+		if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
 
 		// On success
 		$this->terminateWithSuccess();
@@ -387,7 +438,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		}
 	}
 
-	public function sendMailToSoftwarebeauftragte()
+	public function sendMailSoftwareAbbestellt()
 	{
 		$software_lv_ids = $this->input->post('data');
 
@@ -399,9 +450,9 @@ class Softwareanforderung extends FHCAPI_Controller
 		$data = getData($result);
 
 		// Send mail to other Softwarebeauftragte concerned
-		$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
-		$grouped = $this->softwarelib->groupLvsByFakultaet($data, $studiengangToFakultaetMap);
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
+		$studiengangToFakultaetMap = $this->softwarelib->getOeTypToFakultaetMap('Studiengang');
+		$grouped = $this->softwarelib->groupLvsByFakultaetOfLvStgOe($data, $studiengangToFakultaetMap);
+
 		$msg = $this->softwarelib->formatMsgAbbestellteSwLvs($grouped);		// Format message
 
 		if (count($msg) > 0)
@@ -413,11 +464,192 @@ class Softwareanforderung extends FHCAPI_Controller
 			foreach ($messagesGroupedByFak as $fak_oe_kurzbz => $message) {
 
 				// If not the users own Fakultät
-				if (!in_array($fak_oe_kurzbz, $entitledOes)) {
+				if (!in_array($fak_oe_kurzbz, $this->entitledOes)) {
 					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $message);
 				}
 			}
 		}
+	}
+
+	public function validateVorrueckSwLvsForLvs(){
+		$software_lv_ids = $this->input->post('software_lv_ids');
+		$vorrueck_studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		if (empty($software_lv_ids)) $this->terminateWithSuccess();
+
+		// Get lv and software of given swlvs, also set lizenzanzahl 0 and next years studiensemester
+		$result = $this->softwarelib->addStudiensemesterOfNextStudjahr($software_lv_ids);
+
+		// Convert object array to assoc array
+		$selectedSwLvs = hasData($result)
+			? array_map(function($obj) {return (array) $obj; }, getData($result))
+			: [];
+
+		// Check and exit if vorrueck swlvs already exist in next year
+		$existing_swlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
+
+		// Check if lvids do exist in next studienjahr
+		$isMissingLvNextYear_software_lv_ids = [];
+		$isVorgerrueckt_software_lv_ids = [];
+
+		$result = $this->SoftwareLvModel->getNonQuellkursLvs($vorrueck_studienjahr_kurzbz);
+		$nextYearLvs = hasData($result) ? getData($result) : [];
+		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
+
+		foreach ($selectedSwLvs as $selectedSwLv) {
+			if (!in_array($selectedSwLv['lehrveranstaltung_id'], $nextYearLvIds)) {
+				$isMissingLvNextYear_software_lv_ids[]= $selectedSwLv['software_lv_id'];
+			}
+
+			foreach ($existing_swlvs as $existing) {
+				if ($selectedSwLv["lehrveranstaltung_id"] == $existing->lehrveranstaltung_id &&
+					$selectedSwLv["software_id"] == $existing->software_id) {
+					$isVorgerrueckt_software_lv_ids[] = $selectedSwLv["software_lv_id"];
+					break; // No need to check further once a match is found
+				}
+			}
+		}
+
+		$this->terminateWithSuccess([
+			'isVorgerrueckt_software_lv_ids' => $isVorgerrueckt_software_lv_ids,
+			'isMissingLvNextYear_software_lv_ids' => $isMissingLvNextYear_software_lv_ids,
+		]);
+	}
+
+	public function validateVorrueckSwLvsForTpl(){
+		$software_lv_ids = $this->input->post('software_lv_ids');
+		$vorrueck_studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		if (empty($software_lv_ids)) return;
+
+		// Get lv and software of given swlvs, also set lizenzanzahl 0 and next years studiensemester
+		$result = $this->softwarelib->addStudiensemesterOfNextStudjahr($software_lv_ids);
+
+		// Convert object array to assoc array
+		$selectedSwLvs = hasData($result)
+			? array_map(function($obj) {return (array) $obj; }, getData($result))
+			: [];
+
+		// Check and exit if vorrueck swlvs already exist in next year
+		$existing_swlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
+
+		// Check if lvids do exist in next studienjahr
+		$isMissingLvNextYear_software_lv_ids = [];
+		$isVorgerrueckt_software_lv_ids = [];
+
+		$result = $this->LehrveranstaltungModel->getTemplateLvTree(true, true, $vorrueck_studienjahr_kurzbz);
+		$nextYearLvs = hasData($result) ? getData($result) : [];
+		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
+
+		foreach ($selectedSwLvs as $selectedSwLv) {
+			if (!in_array($selectedSwLv['lehrveranstaltung_id'], $nextYearLvIds)) {
+				$isMissingLvNextYear_software_lv_ids[]= $selectedSwLv['software_lv_id'];
+			}
+
+			foreach ($existing_swlvs as $existing) {
+				if ($selectedSwLv["lehrveranstaltung_id"] == $existing->lehrveranstaltung_id &&
+					$selectedSwLv["software_id"] == $existing->software_id) {
+					$isVorgerrueckt_software_lv_ids[] = $selectedSwLv["software_lv_id"];
+					break; // No need to check further once a match is found
+				}
+			}
+		}
+
+		$this->terminateWithSuccess([
+			'isVorgerrueckt_software_lv_ids' => $isVorgerrueckt_software_lv_ids,
+			'isMissingLvNextYear_software_lv_ids' => $isMissingLvNextYear_software_lv_ids,
+		]);
+	}
+
+	public function vorrueckSwLvsByTpl(){
+		$software_lv_ids = $this->input->post('software_lv_ids');
+		$vorrueck_studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		// Get lv and software of given swlvs, also set lizenzanzahl 0 and next years studiensemester
+		$result = $this->softwarelib->addStudiensemesterOfNextStudjahr($software_lv_ids);
+
+		// Convert object array to assoc array
+		$selectedSwLvs = hasData($result)
+			? array_map(function($obj) {return (array) $obj; }, getData($result))
+			: [];
+
+		// Check and exit if vorrueck swlvs already exist in next year
+		$existingSwlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
+
+		// Check if lvids do exist in next studienjahr
+		$result = $this->LehrveranstaltungModel->getTemplateLvTree(null, null, $vorrueck_studienjahr_kurzbz);
+		$nextYearLvs = hasData($result) ? getData($result) : [];
+		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
+
+		// Store swlvs that do not already exist and where lehrveranstaltung is already set for next year
+		$vorrueckSwLvs = [];
+		$isVorgerrueckt_software_lv_ids = [];
+
+		foreach ($selectedSwLvs as $swlv) {
+			if (in_array($swlv['lehrveranstaltung_id'], $nextYearLvIds) &&
+				!in_array($swlv['lehrveranstaltung_id'], array_column($existingSwlvs, 'lehrveranstaltung_id'))
+			)
+			{
+				$isVorgerrueckt_software_lv_ids[] = $swlv['software_lv_id']; // Store ID before unsetting
+				unset($swlv['software_lv_id']); // Remove for batch insert
+				$vorrueckSwLvs[] = $swlv;
+			}
+		}
+
+		if (!empty($vorrueckSwLvs))
+		{
+			$result = $this->SoftwareLvModel->insertBatch($vorrueckSwLvs);
+
+			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		}
+
+		// On success
+		$this->terminateWithSuccess($isVorgerrueckt_software_lv_ids);
+	}
+	public function vorrueckSwLvsByLvs(){
+		$software_lv_ids = $this->input->post('software_lv_ids');
+		$vorrueck_studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		// Get lv and software of given swlvs, also set lizenzanzahl 0 and next years studiensemester
+		$result = $this->softwarelib->addStudiensemesterOfNextStudjahr($software_lv_ids);
+
+		// Convert object array to assoc array
+		$selectedSwLvs = hasData($result)
+			? array_map(function($obj) {return (array) $obj; }, getData($result))
+			: [];
+
+		// Filter out swlvs that already exist for next years semester
+		$existingSwlvs = $this->_checkAndGetExistingSwLvs($selectedSwLvs);
+
+		// Check if lvids do exist in next studienjahr
+		$result = $this->SoftwareLvModel->getNonQuellkursLvs($vorrueck_studienjahr_kurzbz);
+		$nextYearLvs = hasData($result) ? getData($result) : [];
+		$nextYearLvIds = array_column($nextYearLvs, 'lehrveranstaltung_id');
+
+		// Store swlvs that do not already exist and where lehrveranstaltung is already set for next year
+		$vorrueckSwLvs = [];
+		$isVorgerrueckt_software_lv_ids = [];
+
+		foreach ($selectedSwLvs as $swlv) {
+			if (in_array($swlv['lehrveranstaltung_id'], $nextYearLvIds) &&
+				!in_array($swlv['lehrveranstaltung_id'], array_column($existingSwlvs, 'lehrveranstaltung_id'))
+			)
+			{
+				$isVorgerrueckt_software_lv_ids[] = $swlv['software_lv_id']; // Store ID before unsetting
+				unset($swlv['software_lv_id']); // Remove for batch insert
+				$vorrueckSwLvs[] = $swlv;
+			}
+		}
+
+		if (!empty($vorrueckSwLvs))
+		{
+			$result = $this->SoftwareLvModel->insertBatch($vorrueckSwLvs);
+
+			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+		}
+
+		// On success
+		$this->terminateWithSuccess($isVorgerrueckt_software_lv_ids);
 	}
 
 	/**
@@ -427,76 +659,69 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * If given software_lv_id is a template, all zugehoerige Lvs are retrieved and SW is deleted for all.
 	 * If given software_lv_id is standalone lv, SW is deleted for this lv.
 	 */
-	public function deleteSwLvs(){
+	public function deleteSwLvsByTpl(){
 		$software_lv_id = $this->input->post('software_lv_id');
-		$studiensemester_kurzbz = $this->input->post('studiensemester_kurzbz');
+		$studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
 
 		// Check if deletion is allowed
-		$planungDeadlinePast = $this->softwarelib->isPlanningDeadlinePast($studiensemester_kurzbz);
+		if ($this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz)) exit;
 
-		if ($planungDeadlinePast) exit;	// There is a frontend check too, no more explanation needed.
-
-		// Get Lehrveranstaltung and Software by software_lv_id
-		$lehrveranstaltung_id = null;
-		$software_id = null;
-
-		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id');
+		// Get Quellkurs swlv
+		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
 		$result = $this->SoftwareLvModel->load($software_lv_id);
+		$tpl = current(getData($result));
 
-		if (hasData($result))
-		{
-			$lehrveranstaltung_id = getData($result)[0]->lehrveranstaltung_id;
-			$software_id = getData($result)[0]->software_id;
-		}
+		// Get assigned swlvs
+		$result = $this->SoftwareLvModel->getSwLvsByTemplate(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id,
+			$tpl->studiensemester_kurzbz
+		);
+		$assignedSwLvs = hasData($result) ? getData($result) : [];
 
-		// Check if Lehrveranstaltung is a Quellkurs
-		$result = $this->LehrveranstaltungModel->checkIsTemplate($lehrveranstaltung_id);
-		$isTemplate = $this->getDataOrTerminateWithError($result);
-
-		// If is Quellkurs
-		if ($isTemplate)
-		{
-			$result = $this->SoftwareLvModel->getSwLvsByTemplate($lehrveranstaltung_id, $software_id, $studiensemester_kurzbz);
-			$assignedSwLvs = hasData($result) ? getData($result) : [];
-
-			// Store software_lv_ids for deletion
-			$deleteSoftwareLvIds = array_merge(
-				[$this->input->post('software_lv_id')], // template
-				array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
-			);
-
-			// Send mail to other Softwarebeauftragte concerned
-			$studiengangToFakultaetMap = $this->softwarelib->getStudiengaengeWithFakultaet();
-			$grouped = $this->softwarelib->groupLvsByFakultaet($assignedSwLvs, $studiengangToFakultaetMap);
-			$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);	// Get users entitled oes
-			$msg = $this->softwarelib->formatMsgQuellkursSwLvDeleted($lehrveranstaltung_id, $software_id);		// Format message
-
-			foreach (array_keys($grouped) as $fak_oe_kurzbz)
-			{
-				// If not the users own Fakultät
-				if (!in_array($fak_oe_kurzbz, $entitledOes))
-				{
-					// Send mail to other concerned SWB
-					$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
-				}
-			}
-		}
-		// Else is not a Quellkurs. Its a single Lehrveranstaltung.
-		else
-		{
-			// Store software_lv_id for deletion
-			$deleteSoftwareLvIds = [$this->input->post('software_lv_id')];	// lv
-		}
+		// Combine template and assigned swlvs for deletion
+		$deleteSoftwareLvIds = array_merge(
+			[$this->input->post('software_lv_id')], // template
+			array_column($assignedSwLvs, 'software_lv_id') // zugehörige lvs
+		);
 
 		// Delete software_lv_ids
-		$deleted = [];
 		foreach ($deleteSoftwareLvIds as $software_lv_id) {
 			$this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]);
-
-			$deleted[]= $software_lv_id;
 		}
 
-		$this->terminateWithSuccess($deleted);
+		// Send mail
+		$studiengangToFakultaetMap = $this->softwarelib->getOeTypToFakultaetMap('Studiengang');
+		$grouped = $this->softwarelib->groupLvsByFakultaetOfLvStgOe($assignedSwLvs, $studiengangToFakultaetMap);
+		$msg = $this->softwarelib->formatMsgQuellkursSwLvDeleted(
+			$tpl->lehrveranstaltung_id,
+			$tpl->software_id
+		);		// Format message
+
+		foreach (array_keys($grouped) as $fak_oe_kurzbz)
+		{
+			// If not the users own Fakultät
+			if (!in_array($fak_oe_kurzbz, $this->entitledOes))
+			{
+				// Send mail to other concerned SWB
+				$this->softwarelib->sendMailToSoftwarebeauftragte($fak_oe_kurzbz, $msg);
+			}
+		}
+
+		$this->terminateWithSuccess($tpl);
+	}
+
+	public function deleteSwLvsByLv(){
+		$software_lv_id = $this->input->post('software_lv_id');
+		$studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
+
+		// Check if deletion is allowed
+		if ($this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz)) exit;
+
+		// Delete software_lv_id
+		$this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]);
+
+		$this->terminateWithSuccess();
 	}
 
 	/**
@@ -530,22 +755,17 @@ class Softwareanforderung extends FHCAPI_Controller
 	 * Autocomplete Lehrveranstaltungen Suggestions
 	 * @return void
 	 */
-	public function autocompleteLvSuggestionsByStudsem($query = '')
+	public function autocompleteLvSuggestionsByStudjahr($query = '')
 	{
 		$query = strtolower(urldecode($query));
-
-		// Get OES, where user has BERECHTIGUNG_SOFTWAREANFORDERUNG
-		$entitledOes = $this->permissionlib->getOE_isEntitledFor(self::BERECHTIGUNG_SOFTWAREANFORDERUNG);
-		if(!$entitledOes) $oe_permissions = [];
 
 		// Get results for given lv search string
 		// Filter query by studiensemester and permitted oes
 		$this->load->model('education/Lehrveranstaltung_model', 'LehrveranstaltungModel');
-		$result = $this->LehrveranstaltungModel->getAutocompleteSuggestions(
+		$result = $this->SoftwareLvModel->getNonQuellkursLvsAutocompleteSuggestions(
 			$query,
-			$this->input->get('studiensemester_kurzbz'),
-			$entitledOes,
-			'lv'
+			$this->input->get('studienjahr_kurzbz'),
+			$this->entitledOes
 		);
 
 		// Return
@@ -567,7 +787,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	}
 
 	public function isPlanningDeadlinePast(){
-		$result = $this->softwarelib->isPlanningDeadlinePast($this->input->post('studiensemester_kurzbz'));
+		$result = $this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'));
 
 		$this->terminateWithSuccess($result); // return true or false
 	}
@@ -587,15 +807,16 @@ class Softwareanforderung extends FHCAPI_Controller
 	/**
 	 * Get Studiensemester one year next to selected Studiensemester (e.g. SS2024 -> get SS2025)
 	 */
-	public function getVorrueckStudiensemester(){
-		$this->load->model('organisation/Studiensemester_model', 'StudiensemesterModel');
+	public function getVorrueckStudienjahr(){
+		$this->load->model('organisation/Studienjahr_model', 'StudienjahrModel');
 
-		$result = $this->StudiensemesterModel->getNextFrom($this->input->get('studiensemester_kurzbz'));
-		$result = $this->StudiensemesterModel->getNextFrom(hasData($result) ? getData($result)[0]->studiensemester_kurzbz : '');
+		$result = $this->StudienjahrModel->getNextFrom($this->input->get('studienjahr_kurzbz'));
 
 		// Return
 		$data = $this->getDataOrTerminateWithError($result);
-		$this->terminateWithSuccess($data[0]->studiensemester_kurzbz);
+		$data = !empty($data) ? current($data)->studienjahr_kurzbz : '';
+
+		$this->terminateWithSuccess($data);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -660,6 +881,29 @@ class Softwareanforderung extends FHCAPI_Controller
 		if ($this->form_validation->run() == false)
 		{
 			$this->terminateWithValidationErrors($this->form_validation->error_array());
+		}
+	}
+	private function _validateDupliacateEntries($data)
+	{
+		$seen = [];
+		$duplicates = [];
+
+		foreach ($data as $item) {
+			$key = $item['lehrveranstaltung_id'] . '|' . $item['studiensemester_kurzbz'] . '|' . $item['software_id'];
+
+			if (isset($seen[$key])) {
+				$duplicates[] = $item['lehrveranstaltung_id'];
+			} else {
+				$seen[$key] = true;
+			}
+		}
+
+		if (!empty($duplicates))
+		{
+			$this->terminateWithError('
+				Abbruch: Doppelte LVs gefunden. Entfernen Sie diese erst und fordern erneut an.
+				Betroffene LV-IDs: ' . implode(', ', array_unique($duplicates))
+			);
 		}
 	}
 }
