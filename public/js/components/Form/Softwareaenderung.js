@@ -18,7 +18,7 @@ export default {
 	],
 	data() {
 		return {
-			modalTitel: this.$p.t('global', 'swFuerLvAendern'),
+			modalTitel: Vue.computed(() => this.$p.t('global', 'swFuerLvAendern')),
 			autocompleteAbortController: null,
 			swSuggestions: [],
 			selectedLvs: [],
