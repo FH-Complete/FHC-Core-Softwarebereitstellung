@@ -67,7 +67,6 @@ export default {
 				persistence:{
 					filter: false, //persist filter sorting
 				},
-				selectableRangeMode: 'click',
 				rowFormatter: (row) => {
 					const data = row.getData();
 					const selectionCell = row.getCell('selection');
@@ -79,13 +78,6 @@ export default {
 					}
 				},
 				columns: [
-					{
-						field: 'selection',
-						formatter: 'rowSelection',
-						headerSort: false,
-						width: 70,
-						visible: true
-					},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
 					{title: 'Lehrtyp Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:false, width: 70},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 350},
