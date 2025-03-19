@@ -71,3 +71,9 @@ BEGIN
 ALTER TABLE extension.tbl_software ADD COLUMN IF NOT EXISTS lizenzserver_port VARCHAR(32);
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
+
+DO $$
+BEGIN
+ALTER TABLE extension.tbl_software ADD COLUMN IF NOT EXISTS lizenzkategorie_kurzbz VARCHAR(32);
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
