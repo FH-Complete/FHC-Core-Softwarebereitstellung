@@ -58,6 +58,8 @@ export default {
 					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
 					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true},
+					{title: this.$p.t('global/lizenzkategorieKurzbz'), field: 'lizenzkategorie_kurzbz', visible: false, headerFilter: true},
+					{title: this.$p.t('global/lizenzkategorie'), field: 'lizenzkategorie_bezeichnung', visible: false, headerFilter: true},
 					{title: this.$p.t('global/lizenzart'), field: 'lizenzart', headerFilter: true},
 					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
 					{title: this.$p.t('global/lizenzserverPort'), field: 'lizenzserver_port', headerFilter: true},

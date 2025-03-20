@@ -30,6 +30,7 @@ class Software extends Auth_Controller
 				'changeSoftwarestatus' => 'extension/software_verwalten:rw',
 				'deleteSoftware' => 'extension/software_verwalten:rw',
 				'getSoftwarelizenztypen' => 'extension/software_verwalten:rw',
+				'getSoftwarelizenzkategorien' => 'extension/software_verwalten:rw',
 				'getSoftwarelistData' => 'extension/softwareliste:r'
 			)
 		);
@@ -344,6 +345,19 @@ class Software extends Auth_Controller
 	public function getSoftwarelizenztypen(){
 		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarelizenztyp_model', 'SoftwarelizenztypModel');
 		$result = $this->SoftwarelizenztypModel->load();
+
+		if (isError($result))
+		{
+			$this->terminateWithJsonError(getError($result));
+		}
+
+		$this->outputJsonSuccess(hasData($result) ? getData($result) : []);
+	}
+
+	/* Get all Softwarelizenzkategorien */
+	public function getSoftwarelizenzkategorien(){
+		$this->load->model('extensions/FHC-Core-Softwarebereitstellung/Softwarelizenzkategorie_model', 'SoftwarelizenzkategorieModel');
+		$result = $this->SoftwarelizenzkategorieModel->load();
 
 		if (isError($result))
 		{

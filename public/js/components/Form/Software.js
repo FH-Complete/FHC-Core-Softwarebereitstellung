@@ -21,6 +21,7 @@ export const SoftwareForm = {
 			software: {},
 			softwarestatus: {},
 			softwarelizenztypen: {},
+			softwarelizenzkategorien: {},
 			parentSoftwareSuggestions: [], // autocomplete suggestions
 			parentSoftware: null, // selected autocomplete value
 			softwareImageSuggestions: [], // autocomplete suggestions
@@ -66,6 +67,15 @@ export const SoftwareForm = {
 			.then(result => result.data)
 			.then(result => {
 				this.softwarelizenztypen = CoreRESTClient.hasData(result) ? CoreRESTClient.getData(result) : {};
+			})
+			.catch(error => { this.$fhcAlert.handleSystemError(error); });
+
+		// Get Softwarelizenzkategorien
+		CoreRESTClient
+			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelizenzkategorien')
+			.then(result => result.data)
+			.then(result => {
+				this.softwarelizenzkategorien = CoreRESTClient.hasData(result) ? CoreRESTClient.getData(result) : {};
 			})
 			.catch(error => { this.$fhcAlert.handleSystemError(error); });
 	},
@@ -387,6 +397,25 @@ export const SoftwareForm = {
 				this.software.anzahl_lizenzen = 0;
 				this.selKostentraegerOE = null;
 				this.software.lizenzkosten = null;
+				this.software.lizenzkategorie_kurzbz = 'opensource';
+			}
+			else {
+				if (this.software.lizenzkategorie_kurzbz === 'opensource') {
+					this.software.lizenzkategorie_kurzbz = '';
+				}
+			}
+		},
+		onChangeLizenzkategorie(e){
+	 		if (e.target.value === 'opensource'){
+				this.software.anzahl_lizenzen = 0;
+				this.selKostentraegerOE = null;
+				this.software.lizenzkosten = null;
+				this.software.lizenzart = 'opensource';
+			}
+		 	else {
+				 if (this.software.lizenzart === 'opensource'){
+					 this.software.lizenzart = '';
+				 }
 			}
 		}
 	},
@@ -525,7 +554,22 @@ export const SoftwareForm = {
 				>
 				</core-form-input>
 			</div>
-		 	<div class="col-sm-4">
+			<div class="col-sm-4">
+		 		<core-form-input
+		 			type="select"
+					v-model="software.lizenzkategorie_kurzbz"
+					name="lizenzkategorie_kurzbz"
+					:label="$p.t('global/lizenzkategorie')"
+					@change="onChangeLizenzkategorie"
+				>
+				<option v-for="softwarelizenzkategorie in softwarelizenzkategorien" 
+					:key="softwarelizenzkategorie.lizenzkategorie_kurzbz"
+					:value="softwarelizenzkategorie.lizenzkategorie_kurzbz">
+					{{ softwarelizenzkategorie.bezeichnung }}
+				</option>
+				</core-form-input>
+			</div>
+		 	<div class="col-sm-3">
 		 		<core-form-input
 		 			type="select"
 					v-model="software.lizenzart"
@@ -540,7 +584,7 @@ export const SoftwareForm = {
 				</option>
 				</core-form-input>
 			</div>
-			<div class="col-sm-6">
+			<div class="col-sm-3">
 				<core-form-input
 					type="autocomplete"
 					v-model="selLizenzserver"
