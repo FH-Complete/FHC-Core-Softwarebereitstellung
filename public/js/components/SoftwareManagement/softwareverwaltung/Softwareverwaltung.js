@@ -332,8 +332,7 @@ export default {
 					uniqueId="softwareTable"
 					:tabulator-options="softwareTabulatorOptions"
 					:tabulator-events="[
-						{event: 'cellEdited', handler: onTableCellEdited},
-						{event: 'rowClick', handler: onTableRowClick},
+						{event: 'cellEdited', handler: onTableCellEdited},	
 						{event: 'dataLoaded', handler: onTableDataLoaded}
 					]"
 					:side-menu="false"
