@@ -16,7 +16,7 @@ INSERT INTO extension.tbl_softwarelizenzkategorie(lizenzkategorie_kurzbz, bezeic
 ('demo', 'Demo License'),
 ('subscription', 'Subscription License'),
 ('perpetual', 'Perpetual License'),
-('campus', 'Campus License'),
+('campus', 'Campus License')
 ON CONFLICT (lizenzkategorie_kurzbz) DO NOTHING;
 
 COMMENT ON TABLE extension.tbl_softwarelizenzkategorie IS 'Software Lizenzkategorie';
