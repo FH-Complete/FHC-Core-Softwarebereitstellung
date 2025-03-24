@@ -67,6 +67,7 @@ export default {
 				persistence:{
 					filter: false, //persist filter sorting
 				},
+				selectableRangeMode: 'click',
 				rowFormatter: (row) => {
 					const data = row.getData();
 					const selectionCell = row.getCell('selection');
@@ -75,9 +76,38 @@ export default {
 					if (selectionCell) {
 						const checkbox = selectionCell.getElement().querySelector("input[type='checkbox']");
 						if (checkbox && data.lehrtyp_kurzbz !== 'tpl') checkbox.style.display = "none";
+
+						// Ensure only one checkbox is clicked at a time
+						checkbox.addEventListener('click', function (event) {
+							event.stopPropagation(); // Prevent row click event from interfering
+
+							let isChecked = checkbox.checked;
+
+							if (isChecked) {
+								// Uncheck all other rows before selecting the new one
+								self.table.getRows().forEach(r => {
+									if (r !== row) {
+										let otherCheckbox = r.getCell('selection')?.getElement().querySelector("input[type='checkbox']");
+										if (otherCheckbox) otherCheckbox.checked = false;
+										r.deselect();
+									}
+								});
+								// Select the new row
+								row.select();
+							} else {
+								row.deselect(); // Uncheck the row if deselected
+							}
+						});
 					}
 				},
 				columns: [
+					{
+						field: 'selection',
+						formatter: 'rowSelection',
+						headerSort: false,
+						width: 70,
+						visible: true
+					},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
 					{title: 'Lehrtyp Kurzbz', field: 'lehrtyp_kurzbz', headerFilter: true, visible:false, width: 70},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, width: 350},
