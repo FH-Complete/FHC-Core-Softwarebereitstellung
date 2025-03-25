@@ -31,14 +31,12 @@ export default {
 			if(newVal && this.currentTab === "softwarebereitstellungUebersicht" && this.table) {
 				this.table.replaceData();
 				this.setVorrueckStudienjahr(this.selectedStudienjahr);
-				if (this.isVorrueckMode) this.deactivateVorruecken();
 			}
 		},
 		currentTab(newVal) {
 			if (newVal === 'softwarebereitstellungUebersicht' && this.selectedStudienjahr && this.table) {
 				this.table.replaceData();
 				this.setVorrueckStudienjahr(this.selectedStudienjahr);
-				if (this.isVorrueckMode) this.deactivateVorruecken();
 			}
 		},
 		isEditMode(newVal){
