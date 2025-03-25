@@ -74,11 +74,12 @@ export default {
 					{title: this.$p.t('global/insertvon'), field: 'insertvon', headerFilter: true},
 					{title: this.$p.t('global/updateamum'), field: 'updateamum', hozAlign:"center", headerFilter: true},
 					{title: this.$p.t('global/updatevon'), field: 'updatevon', headerFilter: true},
-					{title: 'Software-Status', field: 'softwarestatus_kurzbz',
+					{
+						title: 'Software-Status', field: 'softwarestatus_kurzbz',
 						editor: "list",
-						editorParams:{ valuesLookup: this.getSoftwarestatus },
+						editorParams:{ values: this.softwarestatus },
 						headerFilter: true,
-						headerFilterParams:{ valuesLookup: this.getSoftwarestatus },
+						headerFilterParams:{ values: this.softwarestatus },
 						formatter: (cell) => this.softwarestatus
 							? this.softwarestatus[cell.getValue()]
 							: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1],
@@ -129,6 +130,18 @@ export default {
 			.then(result => result.data)
 			.then(result => { this.languageIndex = CoreRESTClient.getData(result);})
 			.catch( error => this.$fhcAlert.handleSystemError(error) );
+
+		// Get Softwarestati
+		CoreRESTClient
+			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus')
+			.then(result => result.data)
+			.then(result => {
+				// Reduce array of objects into one object
+				return this.softwarestatus = CoreRESTClient.getData(result).reduce((o, x) => {
+					o[x.softwarestatus_kurzbz] = x.bezeichnung;
+					return o;
+				}, {});
+			})
 	},
 	methods: {
 		handleHierarchyViewChange(showHierarchy) {
@@ -157,21 +170,10 @@ export default {
 			// get Softwarekurzbz
 			this.software_kurzbz = this.selectedTabulatorRow.getData().software_kurzbz;
 		},
-		getSoftwarestatus() {
-			return CoreRESTClient
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus')
-				.then(result => result.data)
-				.then(result => {
-					// Reduce array of objects into one object
-					return this.softwarestatus = CoreRESTClient.getData(result).reduce((o, x) => {
-						o[x.softwarestatus_kurzbz] = x.bezeichnung;
-						return o;
-					}, {});
-				})
-				.catch(error => this.$fhcAlert.handleSystemError(error));
-		},
 		changeStatus(softwarestatus_kurzbz, software_id = null) {
 			let software_ids = [];
+
+			if (softwarestatus_kurzbz === '') return;
 
 			// If software_id is provided
 			if (software_id !== null)
