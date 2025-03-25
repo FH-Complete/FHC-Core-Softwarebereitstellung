@@ -141,7 +141,7 @@ export default {
 						field: 'selection',
 						formatter: 'rowSelection',
 						headerSort: false,
-						width: 70,
+						width: 50,
 						visible: true
 					},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},
@@ -209,7 +209,7 @@ export default {
 								button.className = 'btn btn-outline-secondary';
 								button.innerHTML = '<i class="fa fa-xmark"></i>';
 								button.disabled = self.isPlanungDeadlinePast;
-								button.addEventListener('click', () =>
+								button.addEventListener('click', (event) =>
 									self.deleteSwLvs(cell.getRow().getIndex())
 								);
 								container.append(button);

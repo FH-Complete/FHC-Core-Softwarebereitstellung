@@ -105,7 +105,7 @@ export default {
 						field: 'selection',
 						formatter: 'rowSelection',
 						headerSort: false,
-						width: 70,
+						width: 50,
 						visible: true
 					},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},

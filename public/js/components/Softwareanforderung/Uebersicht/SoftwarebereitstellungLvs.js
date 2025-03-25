@@ -113,7 +113,7 @@ export default {
 					{
 						field: 'selection',
 						formatter: 'rowSelection',
-						width: 70,
+						width: 50,
 						visible: true
 					},
 					{title: 'SW-LV-ID', field: 'software_lv_id', headerFilter: true, visible: false},

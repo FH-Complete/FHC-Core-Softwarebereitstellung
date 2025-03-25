@@ -29,9 +29,7 @@ export default {
 				columns: [
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
 					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
-						width: 105,
-						minWidth: 105,
-						maxWidth: 105,
+						width: 300,
 						frozen: true
 					},
 					{title: this.$p.t('global/betriebssystem'), field: 'betriebssystem', headerFilter: true},

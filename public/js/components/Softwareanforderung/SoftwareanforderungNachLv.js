@@ -56,7 +56,7 @@ export default {
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
 						titleFormatterParams: { rowRange: "active"},
-						width: 70
+						width: 50
 					},
 					{title: 'LV-ID', field: 'lehrveranstaltung_id', headerFilter: true, visible: false},
 					{title: 'Lehrveranstaltung', field: 'lv_bezeichnung', headerFilter: true, minWidth: 350},

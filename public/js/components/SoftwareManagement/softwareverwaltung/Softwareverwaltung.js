@@ -35,13 +35,11 @@ export default {
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
 						titleFormatterParams: { rowRange: "active"},
-						width: 70,
+						width: 50,
 						frozen: true
 					},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
-						width: 150,
-						minWidth: 100,
-						maxWidth: 200,
+						width: 250,
 						frozen: true
 					},
 					{

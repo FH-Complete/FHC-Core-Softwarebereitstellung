@@ -18,14 +18,10 @@ export default {
 				columns: [
 					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true,
 						width: 150,
-						minWidth: 100,
-						maxWidth: 200,
 						frozen: true
 					},
 					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
-						width: 150,
-						minWidth: 100,
-						maxWidth: 200,
+						width: 280,
 						frozen: true
 					},
 					{title: 'Mac-Adresse', field: 'macadresse', headerFilter: true},
