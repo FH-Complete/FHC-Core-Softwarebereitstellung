@@ -71,12 +71,3 @@ BEGIN
 ALTER TABLE extension.tbl_software ADD COLUMN IF NOT EXISTS lizenzserver_port VARCHAR(32);
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
-
-DO $$
-BEGIN
-    ALTER TABLE extension.tbl_software ADD COLUMN IF NOT EXISTS lizenzkategorie_kurzbz VARCHAR(32);
-    ALTER TABLE extension.tbl_software ADD CONSTRAINT tbl_software_softwarelizenzkategorie_fk FOREIGN KEY (lizenzkategorie_kurzbz)
-    REFERENCES extension.tbl_softwarelizenzkategorie (lizenzkategorie_kurzbz) MATCH FULL
-    ON DELETE RESTRICT ON UPDATE CASCADE;
-    EXCEPTION WHEN OTHERS THEN NULL;
-END $$;
