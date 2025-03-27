@@ -36,6 +36,7 @@ export default {
 		},
 	},
 	template: `
+	<Teleport to="body">
 		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @hidden-bs-modal="$refs.raum.reset()">
 			<template v-slot:title>{{title}}</template>
 			<template v-slot:default>
@@ -45,5 +46,6 @@ export default {
 				<button type="button" class="btn btn-primary" @click="$refs.raum.save()">{{ $p.t('global/speichern') }} </button>
 			</template>
 		</bs-modal>
-	`
+	</Teleport>	
+`
 }

@@ -26,6 +26,8 @@ export default {
 			return {// tabulator options which can be modified after first render
 				index: 'software_id',
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				dataTreeStartExpanded: true,
 				dataTreeSelectPropagate: true, //propagate selection events from parent rows to children
 				columns: [
@@ -33,13 +35,11 @@ export default {
 						formatter: 'rowSelection',
 						titleFormatter: 'rowSelection',
 						titleFormatterParams: { rowRange: "active"},
-						width: 70,
+						width: 50,
 						frozen: true
 					},
 					{title: 'Software', field: 'software_kurzbz', headerFilter: true,
-						width: 150,
-						minWidth: 100,
-						maxWidth: 200,
+						width: 250,
 						frozen: true
 					},
 					{
@@ -56,25 +56,28 @@ export default {
 					{title: this.$p.t('global/hersteller'), field: 'hersteller', headerFilter: true},
 					{title: this.$p.t('global/betriebssystem'), field: 'os', headerFilter: true},
 					{title: this.$p.t('global/verantwortliche'), field: 'verantwortliche', headerFilter: true},
+					{title: this.$p.t('global/lizenzkategorieKurzbz'), field: 'lizenzkategorie_kurzbz', visible: false, headerFilter: true},
+					{title: this.$p.t('global/lizenzkategorie'), field: 'lizenzkategorie_bezeichnung', visible: false, headerFilter: true},
 					{title: this.$p.t('global/lizenzart'), field: 'lizenzart', headerFilter: true},
 					{title: this.$p.t('global/lizenzserver'), field: 'lizenzserver_kurzbz', headerFilter: true},
 					{title: this.$p.t('global/lizenzserverPort'), field: 'lizenzserver_port', headerFilter: true},
-					{title: this.$p.t('global/lizenzAnzahl'), field: 'anzahl_lizenzen', headerFilter: true},
+					{title: this.$p.t('global/userAnzahl'), field: 'anzahl_lizenzen', headerFilter: true, hozAlign: 'right', width: 100},
 					{title: this.$p.t('global/lizenzLaufzeit'), field: 'lizenzlaufzeit', headerFilter: true},
 					{title: this.$p.t('global/lizenzKosten'), field: 'lizenzkosten', headerFilter: true, hozAlign: 'right', formatter: "money", formatterParams: { symbol: "€", precision: 2, thousand: ".", decimal: "," }},
 					{title: this.$p.t('global/anmerkungIntern'), field: 'anmerkung_intern', headerFilter: true},
-					{title: 'ID', field: 'software_id', headerFilter: true},
+					{title: 'Software-ID', field: 'software_id', headerFilter: true},
 					{title: 'Übergeordnete Software ID', field: 'software_id_parent', headerFilter: true},
 					{title: this.$p.t('global/uebergeordneteSoftware'), field: 'software_kurzbz_parent', headerFilter: true},
 					{title: this.$p.t('global/insertamum'), field: 'insertamum', hozAlign:"center", headerFilter: true},
 					{title: this.$p.t('global/insertvon'), field: 'insertvon', headerFilter: true},
 					{title: this.$p.t('global/updateamum'), field: 'updateamum', hozAlign:"center", headerFilter: true},
 					{title: this.$p.t('global/updatevon'), field: 'updatevon', headerFilter: true},
-					{title: 'Software-Status', field: 'softwarestatus_kurzbz',
+					{
+						title: 'Software-Status', field: 'softwarestatus_kurzbz',
 						editor: "list",
-						editorParams:{ valuesLookup: this.getSoftwarestatus },
+						editorParams:{ values: this.softwarestatus },
 						headerFilter: true,
-						headerFilterParams:{ valuesLookup: this.getSoftwarestatus },
+						headerFilterParams:{ values: this.softwarestatus },
 						formatter: (cell) => this.softwarestatus
 							? this.softwarestatus[cell.getValue()]
 							: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1],
@@ -124,7 +127,19 @@ export default {
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex', null)
 			.then(result => result.data)
 			.then(result => { this.languageIndex = CoreRESTClient.getData(result);})
-			.catch( error => { this.$fhcAlert.handleSystemError(error); } );
+			.catch( error => this.$fhcAlert.handleSystemError(error) );
+
+		// Get Softwarestati
+		CoreRESTClient
+			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus')
+			.then(result => result.data)
+			.then(result => {
+				// Reduce array of objects into one object
+				return this.softwarestatus = CoreRESTClient.getData(result).reduce((o, x) => {
+					o[x.softwarestatus_kurzbz] = x.bezeichnung;
+					return o;
+				}, {});
+			})
 	},
 	methods: {
 		handleHierarchyViewChange(showHierarchy) {
@@ -153,23 +168,10 @@ export default {
 			// get Softwarekurzbz
 			this.software_kurzbz = this.selectedTabulatorRow.getData().software_kurzbz;
 		},
-		getSoftwarestatus() {
-			return CoreRESTClient
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus')
-				.then(result => result.data)
-				.then(result => {
-					// Reduce array of objects into one object
-					return this.softwarestatus = CoreRESTClient.getData(result).reduce((o, x) => {
-						o[x.softwarestatus_kurzbz] = x.bezeichnung;
-						return o;
-					}, {});
-				})
-				.catch(error => {
-					this.$fhcAlert.handleSystemError(error);
-				});
-		},
 		changeStatus(softwarestatus_kurzbz, software_id = null) {
 			let software_ids = [];
+
+			if (softwarestatus_kurzbz === '') return;
 
 			// If software_id is provided
 			if (software_id !== null)
@@ -222,7 +224,7 @@ export default {
 					}
 
 					this.$refs.softwareTable.reloadTable(); }) // TODO use row update instead of reloadTable after solving datatree issues
-				.catch( error => { this.$fhcAlert.handleSystemError(error); });
+				.catch( error => this.$fhcAlert.handleSystemError(error));
 		},
 		editSoftware(event, software_id){
 			this.openModal(event, software_id);
@@ -240,7 +242,7 @@ export default {
 				.then(result => {
 					if (CoreRESTClient.isError(result))
 					{
-						this.$fhcAlert.handleSystemMessage(result.retval);
+						this.$fhcAlert.alertDefault('warn', 'Löschen nicht möglich', result.retval[0], true);
 					}
 					else
 					{
@@ -248,9 +250,7 @@ export default {
 						this.$refs.softwareTable.reloadTable();
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		promoteChildren(children, resultArr) {
 			for (let child of children) {
@@ -287,8 +287,8 @@ export default {
 			// get row data
 			this.getSoftwareRowDetails();
 
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.raumzuordnung._.vnode.el.offsetTop);
+			let offcanvasElement = new bootstrap.Offcanvas(document.getElementById('softwareverwaltungOffcanvas'));
+			offcanvasElement.show();
 		},
 		onTableDataLoaded(data){
 			// no promoting of children if hierarchy shown
@@ -332,8 +332,7 @@ export default {
 					uniqueId="softwareTable"
 					:tabulator-options="softwareTabulatorOptions"
 					:tabulator-events="[
-						{event: 'cellEdited', handler: onTableCellEdited},
-						{event: 'rowClick', handler: onTableRowClick},
+						{event: 'cellEdited', handler: onTableCellEdited},	
 						{event: 'dataLoaded', handler: onTableDataLoaded}
 					]"
 					:side-menu="false"
@@ -359,10 +358,11 @@ export default {
 			</div>
 		</div>
 		<!-- Software Details -->
-		<div class="row mb-5">				
-			<div class="col-md-6">
-				<raumzuordnung ref="raumzuordnung"></raumzuordnung>
+		<div class="offcanvas offcanvas-start w-50" tabindex="-1" id="softwareverwaltungOffcanvas">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 			</div>
+			<raumzuordnung ref="raumzuordnung"></raumzuordnung>
 		</div>
 		<!-- Software modal component -->
 		<software-modal

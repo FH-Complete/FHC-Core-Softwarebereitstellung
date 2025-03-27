@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Navigation.js';
 import CoreBaseLayout from "../../../../../js/components/layout/BaseLayout.js";
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
@@ -31,6 +30,9 @@ export default {
 		return {
 			selectedStudienjahr: Vue.computed(() => this.selectedStudienjahr),
 			currentTab: Vue.computed(() => this.currentTab),
+			changeTab: tab => {
+				this.$refs.tabs.change(tab);
+			},
 		};
 	},
 	inject: [
@@ -39,11 +41,26 @@ export default {
 	data() {
 		return {
 			tabs: {
-				tab1: { title: Vue.computed(() => this.$p.t('global/softwareverwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwareverwaltung/Softwareverwaltung.js' },
-				tab2: { title: Vue.computed(() => this.$p.t('global/imageverwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/imageverwaltung/Imageverwaltung.js' },
-				tab3: { title: Vue.computed(() => this.$p.t('global/lizenzserververwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/lizenzserververwaltung/Lizenzserververwaltung.js' },
-				tab4: { title: Vue.computed(() => this.$p.t('global/sucheNachRaum')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js' },
-				softwarebereitstellungUebersicht: { title: Vue.computed(() => this.$p.t('global/softwarebereitstellung') + ' ' + this.$p.t('global/uebersicht')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js' }
+				softwarebereitstellungUebersicht: {
+					title: Vue.computed(() => this.$p.t('global/softwarebereitstellung') + ' ' + this.$p.t('global/uebersicht')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js'
+				},
+				softwareanforderungNachLvTemplate: {
+					title: Vue.computed(() => this.$p.t('global/anforderungNachQuellkurs')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLvTemplate.js'
+				},
+				softwareanforderungNachLv: {
+					title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
+				},
+				softwareanforderungNachSw: {
+					title: Vue.computed(() => this.$p.t('global/softwareliste')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachSw.js'
+				},
+				softwaresuche: {
+					title: Vue.computed(() => this.$p.t('global/sucheNachRaum')),
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche'
+				}
 			},
 			currentTab: 'softwarebereitstellungUebersicht',
 			studienjahre: [],
@@ -59,7 +76,7 @@ export default {
 				.get('api/frontend/v1/organisation/Studienjahr/getAll', {
 					studienjahr_kurzbz: this.STUDIENJAHR_DROPDOWN_STARTDATE
 				})
-				.then( result => this.studienjahre = result.data )
+				.then(result => this.studienjahre = result.data )
 				.then(() => this.$fhcApi.get('api/frontend/v1/organisation/Studienjahr/getNext'))
 				.then( result => this.selectedStudienjahr = result.data.studienjahr_kurzbz)
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
@@ -72,7 +89,7 @@ export default {
 	<!-- Navigation component -->
 	<core-navigation-cmpt></core-navigation-cmpt>
 	
-	<core-base-layout :title="$p.t('global/softwareUndLizenzManagement')">
+	<core-base-layout :title="$p.t('global/softwarebereitstellung')" :subtitle="$p.t('global/softwarebereitstellungSubtitle')">
 		<template #main>
 			<div class="row">
 				<div class="col-10"></div>
@@ -90,7 +107,9 @@ export default {
 					</core-form-input>
 				</div>
 			</div>
-			<core-tabs :config="tabs" v-model="currentTab" @change="onTabChange"></core-tabs>									
+			
+			<core-tabs ref="tabs" :config="tabs" v-model="currentTab" @change="onTabChange"></core-tabs>	
+										
 		</template>
 	</core-base-layout>
 	`

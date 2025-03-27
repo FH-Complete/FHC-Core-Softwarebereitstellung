@@ -44,9 +44,7 @@ export const Softwareimage = {
 							}
 						}
 					}
-				).catch(
-					error => { this.$fhcAlert.handleSystemError(error); }
-				);
+				).catch(error => this.$fhcAlert.handleSystemError(error));
 
 			}
 		},
@@ -80,7 +78,7 @@ export const Softwareimage = {
 						}
 						this.$emit('onSaved');
 					})
-					.catch(this.$fhcAlert.handleSystemError);
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		reset(){
 			this.$refs.softwareimageForm.clearValidation();

@@ -82,9 +82,7 @@ export const Raumzuordnung = {
 						this.$emit('onSaved', -1);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOrteBySoftware(software_id, software_titel) {
 			CoreRESTClient.get(
@@ -101,9 +99,7 @@ export const Raumzuordnung = {
 					}
 					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result));
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOrteByImage(softwareimage_id) {
 			CoreRESTClient.get(
@@ -119,9 +115,7 @@ export const Raumzuordnung = {
 					}
 					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result));
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onRaumzuordnungSaved(raumanzahlDifferenz) {
 			this.$refs.raumModal.hide();

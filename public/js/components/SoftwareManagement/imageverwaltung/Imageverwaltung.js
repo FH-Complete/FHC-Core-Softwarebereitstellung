@@ -22,14 +22,14 @@ export default {
 		return {
 			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'softwareimage_id',
 				selectable: false,
 				columns: [
 					{title: 'ImageID', field: 'softwareimage_id', visible: false, headerFilter: true, frozen: true},
 					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
-						width: 105,
-						minWidth: 105,
-						maxWidth: 105,
+						width: 300,
 						frozen: true
 					},
 					{title: this.$p.t('global/betriebssystem'), field: 'betriebssystem', headerFilter: true},
@@ -120,9 +120,7 @@ export default {
 						this.$refs.softwarezuordnung.getSoftwareByImage(null);
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onRaumzuordnungSaved(raumanzahlDifferenz) {
 
@@ -142,9 +140,8 @@ export default {
 			this.softwareimageId = row.getData().softwareimage_id;
 			this.softwareimage_bezeichnung = row.getData().bezeichnung;
 
-
-			// Scroll to Detail
-			window.scrollTo(0, this.$refs.softwarezuordnung._.vnode.el.offsetTop);
+			let offcanvasElement = new bootstrap.Offcanvas(document.getElementById('imageverwaltungOffcanvas'));
+			offcanvasElement.show();
 		}
 	},
 	template: `
@@ -168,15 +165,20 @@ export default {
 				</core-filter-cmpt>
 			</div>
 		</div>
-		<!-- Softwareimage Details -->			
-		<div class="row mb-5">
-			<div class="col-md-6">
-				<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>								
-			</div>							
-			<div class="col-md-6">						
-				<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>		
-			</div>							
-		</div>
+		<!-- Softwareimage Details -->	
+		<div class="offcanvas offcanvas-start w-75" tabindex="-1" id="imageverwaltungOffcanvas">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="row">
+				<div class="col-6">
+					<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>
+				</div>
+				<div class="col-6">
+					<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>	
+				</div>
+			</div>
+		</div>		
 		<!-- Softwareimage modal component -->
 		<softwareimage-modal
 		class="fade"

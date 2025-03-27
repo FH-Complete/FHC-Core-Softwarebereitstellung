@@ -1,6 +1,8 @@
 <?php
 class Softwarestatus_model extends DB_Model
 {
+	const STATUSES_EXPIRED = ['endoflife', 'nichtverfuegbar']; // Statuses unavailable for further Software Requests.
+	const STATUSES_BEFORE_INSTALLATION = ['inbearbeitung', 'zumtestenbereit']; // Statuses applicable before Software Installation.
 
 	/**
 	 * Constructor

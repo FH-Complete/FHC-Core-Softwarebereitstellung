@@ -15,6 +15,8 @@
 					sw.hersteller,
 					sw.os,
 					sw.verantwortliche,
+					sw.lizenzkategorie_kurzbz,
+					swlizkat.bezeichnung AS lizenzkategorie_bezeichnung,
 					sw.lizenzart,
 					sw.lizenzserver_kurzbz,
 					sw.lizenzserver_port,
@@ -51,6 +53,7 @@
 				FROM
 					extension.tbl_software sw
 					JOIN extension.tbl_softwaretyp sw_typ USING (softwaretyp_kurzbz)
+					LEFT JOIN extension.tbl_softwarelizenzkategorie swlizkat USING (lizenzkategorie_kurzbz)
 					LEFT JOIN extension.tbl_software_softwarestatus sw_swstatus USING (software_id)
 					LEFT JOIN extension.tbl_softwarestatus sw_status USING (softwarestatus_kurzbz)
 					LEFT JOIN extension.tbl_software sw_parent ON sw.software_id_parent = sw_parent.software_id

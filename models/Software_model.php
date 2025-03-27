@@ -17,8 +17,10 @@ class Software_model extends DB_Model
 	 * Get initial table data.
 	 * @return mixed
 	 */
-	public function getSoftwarelistData()
+	public function getSoftwarelistData($exclStatusArr = null)
 	{
+		$params = [];
+
 		$query= "
 			SELECT * FROM (
 				SELECT
@@ -65,10 +67,17 @@ class Software_model extends DB_Model
 					LEFT JOIN extension.tbl_software sw_parent ON sw.software_id_parent = sw_parent.software_id
 				ORDER BY
 					sw.software_id DESC, sw_swstatus.datum DESC, sw_swstatus.software_status_id DESC
-			) software
-			ORDER BY software_kurzbz, version DESC NULLS LAST, software_id DESC";
+			) software";
 
-		return $this->execQuery($query);
+		 	if (is_array($exclStatusArr))
+			{
+				$query.= "  WHERE softwarestatus_kurzbz NOT IN ?";
+				$params[]= $exclStatusArr;
+			}
+
+			$query.= " ORDER BY software_kurzbz, version DESC NULLS LAST, software_id DESC";
+
+		return $this->execQuery($query, $params);
 	}
 
 	/**
@@ -225,7 +234,6 @@ class Software_model extends DB_Model
 		return $this->execQuery($query, array($software_id));
 	}
 
-
 	/**
 	 * Get all children software of given software.
 	 *
@@ -319,11 +327,55 @@ class Software_model extends DB_Model
 	}
 
 	/**
+	 * @param string $eventQuery
+	 * @param array | null $exclStatusArr Softwarestati to exclude from query
+	 * @return mixed
+	 */
+	public function getAutocompleteSuggestions($eventQuery, $exclStatusArr = null){
+		$params[] = '%' . $eventQuery . '%';
+
+		$qry = '
+			SELECT DISTINCT on (software_id) software_id, software_kurzbz
+			FROM extension.tbl_software sw
+			JOIN extension.tbl_software_softwarestatus swstat using (software_id)
+			WHERE software_kurzbz ILIKE ? ';
+
+		/* filter by input string */
+		if (is_array($exclStatusArr)) {
+			$qry.= ' AND swstat.software_id NOT IN (
+				SELECT
+				  software_id
+				FROM
+				  (
+					SELECT
+					  DISTINCT ON (software_id) software_id,
+					  softwarestatus_kurzbz
+					FROM
+					  extension.tbl_software_softwarestatus
+					ORDER BY
+					  software_id,
+					  software_status_id DESC
+				  ) ordered_subquery
+				WHERE
+				  softwarestatus_kurzbz IN ?
+			  ) ';
+
+			$params[] = $exclStatusArr;
+		}
+
+		$qry.='	
+			ORDER BY software_id, swstat.software_status_id DESC, software_kurzbz
+		';
+
+		return $this->execQuery($qry, $params);
+	}
+
+	/**
 	 * Gets dependencies of a software (needed e.g. for checks if a software can be deleted).
 	 * @param software_id
 	 * @return object success or error
 	 */
-	public function getSoftwareDependencies($software_id)
+	public function getSoftwareImageDependencies($software_id)
 	{
 		return $this->execQuery('
 			SELECT
@@ -341,7 +393,7 @@ class Software_model extends DB_Model
 	}
 
 	/**
-	 * Get software licenses with expiration within the specified interval.
+	 * Get lizenpflichtige software licenses with expiration within the specified interval.
 	 * @param string | null $interval The time interval to check for license expiration.
 	 * @return mixed The result of the query or an error message if interval is null.
 	 */
@@ -360,9 +412,103 @@ class Software_model extends DB_Model
 		);
 		$this->addJoin('extension.tbl_softwaretyp swt', 'softwaretyp_kurzbz');
 
-		return $this->loadWhere(
-			'lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE'
+		return $this->loadWhere("
+			(lizenzart IS NULL OR lizenzart != 'opensource') AND
+			lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE
+		");
+	}
+
+	/**
+	 * Get lizenzpflichtige SW entries where Lizenzlaufzeit has ended on given date.
+	 *
+	 * @param string $date Can be 'TODAY', 'YESTERDAY' or '2025-01-10'
+	 */
+	public function getSoftwareLizenzAbgelaufen($date = 'YESTERDAY')
+	{
+		$this->addSelect('
+			software_id,
+			swt.bezeichnung[(' . $this->_getLanguageIndex() . ')],
+			software_kurzbz,
+			lizenzart,
+			lizenzlaufzeit'
 		);
+		$this->addJoin('extension.tbl_softwaretyp swt', 'softwaretyp_kurzbz');
+
+		return $this->loadWhere("
+			(lizenzart IS NULL OR lizenzart != 'opensource') AND
+			lizenzlaufzeit = DATE '" . $date . "'
+		"
+		);
+	}
+
+	/**
+	 * Get Software with its last Softwarestatus, that is requested on given Studiensemester.
+	 * Can be filtered by given Softwarestatus Array.
+	 *
+	 * @param $studiensemester_kurzbz	Studiensemester the SW was requested for
+	 * @param null | array $softwarestatus_kurzbz
+	 * @return mixed
+	 */
+	public function getSoftwareByStatusAndSemester($studiensemester_kurzbz, $softwarestatus_kurzbz = null)
+	{
+		$params = [];
+
+		$qry = '
+			-- Find swlvs requested on given studiensemester
+			WITH requested_sw AS (
+			  SELECT
+				DISTINCT swlv.software_id
+			  FROM
+				extension.tbl_software_lv swlv
+			  WHERE
+				swlv.studiensemester_kurzbz = ?
+			),
+			
+			-- Get all sw with its latest status			
+			latest_status AS (
+  				SELECT
+					swswstat.software_id,
+					swstat.softwarestatus_kurzbz,
+					swstat.bezeichnung [(' . $this->_getLanguageIndex() . ')] AS softwarestatus_bezeichnung
+			  	FROM
+					extension.tbl_software_softwarestatus swswstat
+					JOIN extension.tbl_softwarestatus swstat USING (softwarestatus_kurzbz)
+			  	WHERE (swswstat.software_id, swswstat.software_status_id) IN (
+					SELECT
+						software_id,
+						MAX(software_status_id)
+					FROM
+						extension.tbl_software_softwarestatus
+					GROUP BY
+						software_id
+				)
+			)
+			
+			-- Join requested_sw with latest_status and filter by the given status
+			SELECT
+				sw.software_id,
+				sw.software_kurzbz,
+				sw.version,
+				latest_status.softwarestatus_kurzbz,
+				latest_status.softwarestatus_bezeichnung
+			FROM
+				extension.tbl_software sw
+				JOIN requested_sw ON sw.software_id = requested_sw.software_id
+				JOIN latest_status ON latest_status.software_id = sw.software_id
+			WHERE
+				1 = 1
+		';
+
+		// Add Studiensemester
+		$params[]= $studiensemester_kurzbz;
+
+		// Add Status
+		if (is_array($softwarestatus_kurzbz)){
+			$qry.= ' AND softwarestatus_kurzbz IN ?';
+			$params[]= $softwarestatus_kurzbz;
+		}
+
+		return $this->execQuery($qry, $params);
 	}
 
 	private function _getLanguageIndex()

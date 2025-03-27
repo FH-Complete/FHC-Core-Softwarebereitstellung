@@ -11,19 +11,17 @@ export default {
 		return {
 			lizenzserverTabulatorOptions: { // tabulator options which can be modified after first render
 				layout: 'fitColumns',
+				autoResize:false, // prevent auto resizing of table
+				resizableColumnFit:true, //maintain the fit of columns when resizing
 				index: 'lizenzserver_kurzbz',
 				selectable: false,
 				columns: [
 					{title: this.$p.t('global/lizenzserverKurzbz'), field: 'lizenzserver_kurzbz', headerFilter: true,
 						width: 150,
-						minWidth: 100,
-						maxWidth: 200,
 						frozen: true
 					},
 					{title: this.$p.t('global/bezeichnung'), field: 'bezeichnung', headerFilter: true,
-						width: 150,
-						minWidth: 100,
-						maxWidth: 200,
+						width: 280,
 						frozen: true
 					},
 					{title: 'Mac-Adresse', field: 'macadresse', headerFilter: true},
@@ -92,9 +90,7 @@ export default {
 						this.$refs.lizenzserverTable.reloadTable();
 					}
 				}
-			).catch(
-				error => { this.$fhcAlert.handleSystemError(error); }
-			);
+			).catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `

@@ -40,12 +40,7 @@ export const Lizenzserver = {
 							}
 						}
 					}
-				).catch(
-					error => {
-						this.$fhcAlert.handleSystemError(error);
-					}
-				);
-
+				).catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		save(){
