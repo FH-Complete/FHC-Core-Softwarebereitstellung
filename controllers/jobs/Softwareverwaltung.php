@@ -123,9 +123,14 @@ class Softwareverwaltung extends JOB_Controller
 		if ($allMessages !== '')
 		{
 			// Send email
-			$this->softwarelib->sendMailToSoftwaremanager($allMessages);
-
-			$this->logInfo('End execJobsAndMailToSoftwaremanager: Messages were sent by email.');
+			if($this->softwarelib->sendMailToSoftwaremanager($allMessages))
+			{
+				$this->logInfo('End execJobsAndMailToSoftwaremanager: Messages were sent by email.');
+			}
+			else
+			{
+				$this->logInfo('End execJobsAndMailToSoftwaremanager: Messages sent by email failed.');
+			}
 		}
 		else
 		{
@@ -139,7 +144,8 @@ class Softwareverwaltung extends JOB_Controller
 	 * 1. task: Assign software to newly added standardized LVs whose LV templates are already linked to a software.
 	 *
 	 */
-	public function execJobsAndMailToSoftwarebeauftragte(){
+	public function execJobsAndMailToSoftwarebeauftragte()
+	{
 
 		$this->logInfo('Start execJobsAndMailToSoftwarebeauftragte');
 
@@ -225,8 +231,12 @@ class Softwareverwaltung extends JOB_Controller
 			$messagesGroupedByFak = $this->softwarelib->groupMessagesByFakultaet($allMessages);
 
 			// Send emails grouped by Fakultät
-			foreach ($messagesGroupedByFak as $oe_kurzbz => $messages) {
-				$this->softwarelib->sendMailToSoftwarebeauftragte($oe_kurzbz, $messages);
+			foreach ($messagesGroupedByFak as $oe_kurzbz => $messages)
+			{
+				if($oe_kurzbz!='' && !$this->softwarelib->sendMailToSoftwarebeauftragte($oe_kurzbz, $messages))
+				{
+					$this->logInfo('Failed to send Message to OE: '.$oe_kurzbz);
+				}
 			}
 
 			$this->logInfo('End execJobsAndMailToSoftwarebeauftragte: : Messages were sent by email.');

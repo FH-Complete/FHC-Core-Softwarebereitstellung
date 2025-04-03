@@ -245,12 +245,12 @@ class Software_model extends DB_Model
 			WITH RECURSIVE software(software_id, software_id_parent) as
 			(
 				SELECT software_id, software_id_parent FROM extension.tbl_software
-				WHERE software_id = ? 
+				WHERE software_id = ?
 				UNION ALL
 				SELECT s.software_id, s.software_id_parent FROM extension.tbl_software s
-    			JOIN software ON s.software_id_parent = software.software_id 
+    			JOIN software ON s.software_id_parent = software.software_id
 			)
-			
+
 			SELECT software_id
 			FROM software s
 			WHERE software_id != ?;
@@ -363,7 +363,7 @@ class Software_model extends DB_Model
 			$params[] = $exclStatusArr;
 		}
 
-		$qry.='	
+		$qry.='
 			ORDER BY software_id, swstat.software_status_id DESC, software_kurzbz
 		';
 
@@ -414,7 +414,7 @@ class Software_model extends DB_Model
 
 		return $this->loadWhere("
 			(lizenzart IS NULL OR lizenzart != 'opensource') AND
-			lizenzlaufzeit = ( NOW() + INTERVAL '. $this->escape($interval). ' )::DATE
+			lizenzlaufzeit = ( NOW() + INTERVAL ". $this->escape($interval). " )::DATE
 		");
 	}
 
@@ -463,8 +463,8 @@ class Software_model extends DB_Model
 			  WHERE
 				swlv.studiensemester_kurzbz = ?
 			),
-			
-			-- Get all sw with its latest status			
+
+			-- Get all sw with its latest status
 			latest_status AS (
   				SELECT
 					swswstat.software_id,
@@ -483,7 +483,7 @@ class Software_model extends DB_Model
 						software_id
 				)
 			)
-			
+
 			-- Join requested_sw with latest_status and filter by the given status
 			SELECT
 				sw.software_id,
