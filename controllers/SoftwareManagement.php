@@ -14,9 +14,14 @@ class SoftwareManagement extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'extension/software_verwalten:rw'
+				'index' => [
+					'extension/software_bestellen:rw',
+					'extension/software_verwalten:rw'
+				]
 			)
 		);
+
+		$this->load->library('PermissionLib');
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -27,7 +32,15 @@ class SoftwareManagement extends Auth_Controller
 	 */
 	public function index()
 	{
-		$this->load->view('extensions/FHC-Core-Softwarebereitstellung/softwareManagement.php');
+		if ($this->permissionlib->isBerechtigt('extension/software_bestellen:rw'))
+		{
+			$this->load->view('extensions/FHC-Core-Softwarebereitstellung/softwareanforderung.php');
+		}
+
+		if ($this->permissionlib->isBerechtigt('extension/software_verwalten:rw'))
+		{
+			$this->load->view('extensions/FHC-Core-Softwarebereitstellung/softwareManagement.php');
+		}
 	}
 }
 
