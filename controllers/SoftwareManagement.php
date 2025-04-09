@@ -32,15 +32,15 @@ class SoftwareManagement extends Auth_Controller
 	 */
 	public function index()
 	{
-		if ($this->permissionlib->isBerechtigt('extension/software_bestellen:rw'))
-		{
-			$this->load->view('extensions/FHC-Core-Softwarebereitstellung/softwareanforderung.php');
-		}
 
 		if ($this->permissionlib->isBerechtigt('extension/software_verwalten:rw'))
 		{
 			$this->load->view('extensions/FHC-Core-Softwarebereitstellung/softwareManagement.php');
 		}
+		elseif ($this->permissionlib->isBerechtigt('extension/software_bestellen:rw'))
+		{
+			redirect('extensions/FHC-Core-Softwarebereitstellung/Softwareanforderung');
+		}
+
 	}
 }
-
