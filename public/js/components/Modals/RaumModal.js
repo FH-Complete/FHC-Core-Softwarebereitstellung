@@ -1,5 +1,5 @@
 import BsModal from '../../../../../js/components/Bootstrap/Modal.js';
-import {Raum} from "../Form/Raum";
+import {Raum} from "../Form/Raum.js";
 
 export default {
 	components: {
