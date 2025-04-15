@@ -38,7 +38,7 @@ export default {
 				},
 				softwaresuche: {
 					title: Vue.computed(() => this.$p.t('global/sucheNachRaum')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche'
+					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js'
 				}
 			}
 		}
