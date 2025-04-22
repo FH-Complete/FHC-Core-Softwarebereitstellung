@@ -5,7 +5,10 @@ $config['navigation_header']['*']['Lehre']['children']['SoftwareManagement'] = a
 	'sort' => 30,
 	'description' => 'Softwarebereitstellung',
 	'expand' => false,
-	'requiredPermissions' => 'extension/software_verwalten:rw'
+	'requiredPermissions' => [
+		'extension/software_bestellen:rw',
+		'extension/software_verwalten:rw'
+	]
 );
 
 // Add Side-Menu-Entry to Main Page
