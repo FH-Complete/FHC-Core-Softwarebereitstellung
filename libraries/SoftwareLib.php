@@ -17,6 +17,8 @@ class SoftwareLib
 
 		// Load config
 		$this->_ci->load->config('extensions/FHC-Core-Softwarebereitstellung/softwarebereitstellung');
+
+		$this->_ci->load->library('MailLib');
 	}
 
 	/**
@@ -154,7 +156,7 @@ class SoftwareLib
 				$this->_ci->config->item('planung_deadline')['day']
 			);
 			$planungDeadline->setTime(0,0,0);
-			
+
 			return success($planungDeadline);
 		}
 		else
@@ -195,7 +197,8 @@ class SoftwareLib
 	 *
 	 * @return array
 	 */
-	public function getOeTypToFakultaetMap($organisationseinheittyp_kurzbz){
+	public function getOeTypToFakultaetMap($organisationseinheittyp_kurzbz)
+	{
 
 		// Load all Studiengang Oes
 		$this->_ci->load->model('organisation/Organisationseinheit_model', 'OrganisationseinheitModel');
@@ -209,23 +212,35 @@ class SoftwareLib
 		$oe_arr = hasData($result) ? getData($result) : [];
 
 		// Iterate Studiengang Oes
-		foreach ($oe_arr as $oe) {
-
+		foreach ($oe_arr as $oe)
+		{
 			// Get parents
 			$result = $this->_ci->OrganisationseinheitModel->getParents($oe->oe_kurzbz);
 
-			// Iterate parents
-			foreach (getData($result) as $parent_oe) {
+			if(isSuccess($result) && hasData($result))
+			{
+				$data = getData($result);
 
-				// Find and add Fakultät
-				if (strpos($parent_oe->oe_kurzbz, 'fak') === 0) {
-					$oe->fak_oe_kurzbz = $parent_oe->oe_kurzbz;
-					break;  // Stop after finding the first match
-				}
+				// Iterate parents
+				foreach ($data as $parent_oe)
+				{
+					$result_oe = $this->_ci->OrganisationseinheitModel->load($parent_oe->oe_kurzbz);
+					if(hasData($result_oe))
+					{
+						$parent_oe_object = getData($result_oe)[0];
+						// Find and add Fakultät
+						if ($parent_oe_object->organisationseinheittyp_kurzbz == 'Fakultaet')
+						{
+							$oe->fak_oe_kurzbz = $parent_oe->oe_kurzbz;
+							break;  // Stop after finding the first match
+						}
 
-				// else set null
-				else{
-					$oe->fak_oe_kurzbz = NULL;
+						// else set null
+						else
+						{
+							$oe->fak_oe_kurzbz = NULL;
+						}
+					}
 				}
 			}
 		}
@@ -342,8 +357,8 @@ class SoftwareLib
 			// Start table tag
 			$table = '<table style="border-collapse: collapse; width: 100%;">';
 			$table .= '<tr>
-						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
-						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th>
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th>
 						<th style="border: 1px solid #000; padding: 8px;">Neue standardisierte LV</th>
 						<th style="border: 1px solid #000; padding: 8px;">Software</th>
 						<th style="border: 1px solid #000; padding: 8px;">User-Anzahl</th>
@@ -391,8 +406,8 @@ class SoftwareLib
 			// Start table tag
 			$table = '<table style="border-collapse: collapse; width: 100%;">';
 			$table .= '<tr>
-						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
-						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th>
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th>
 						<th style="border: 1px solid #000; padding: 8px;">Lehrveranstaltung</th>
 						<th style="border: 1px solid #000; padding: 8px;">Software</th>
 						<th style="border: 1px solid #000; padding: 8px;">User-Anzahl</th>
@@ -439,8 +454,8 @@ class SoftwareLib
 			// Start table tag
 			$table = '<table style="border-collapse: collapse; width: 100%;">';
 			$table .= '<tr>
-						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
-						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th>
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th>
 						<th style="border: 1px solid #000; padding: 8px;">Lehrveranstaltung</th>
 						<th style="border: 1px solid #000; padding: 8px;">Software</th>
 					</tr>';
@@ -511,8 +526,8 @@ class SoftwareLib
 			// Start table tag
 			$table = '<table style="border-collapse: collapse; width: 100%;">';
 			$table .= '<tr>
-						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th> 
-						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+						<th style="border: 1px solid #000; padding: 8px;">Studiengang-OE</th>
+						<th style="border: 1px solid #000; padding: 8px;">OrgForm</th>
 						<th style="border: 1px solid #000; padding: 8px;">Lehrveranstaltung</th>
 						<th style="border: 1px solid #000; padding: 8px;">Software</th>
 					</tr>';
@@ -599,12 +614,12 @@ class SoftwareLib
 		$subject = "Softwarebereitstellung - Updates";
 		$message = is_array($messages) ? implode('<br>', $messages) : $messages;
 
-		// Additional headers
-		$headers = "MIME-Version: 1.0" . "\r\n";
-		$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-
-		// Send mail
-		mail($to, $subject, $message, $headers);
+		return $this->_ci->maillib->send(
+			'', // From
+			$to,
+			$subject,
+			$message
+		);
 	}
 
 
@@ -667,9 +682,9 @@ class SoftwareLib
 			// Start table tag
 			$table = '<table style="border-collapse: collapse; width: 100%;">';
 			$table .= '<tr>
-							<th style="border: 1px solid #000; padding: 8px;">Studiensemester</th> 
-							<th style="border: 1px solid #000; padding: 8px;">OE</th> 
-							<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+							<th style="border: 1px solid #000; padding: 8px;">Studiensemester</th>
+							<th style="border: 1px solid #000; padding: 8px;">OE</th>
+							<th style="border: 1px solid #000; padding: 8px;">OrgForm</th>
 							<th style="border: 1px solid #000; padding: 8px;">LV</th>
 							<th style="border: 1px solid #000; padding: 8px;">Software</th>
 							<th style="border: 1px solid #000; padding: 8px;">User-Anzahl</th>
@@ -716,9 +731,9 @@ class SoftwareLib
 			// Start table tag
 			$table = '<table style="border-collapse: collapse; width: 100%;">';
 			$table .= '<tr>
-							<th style="border: 1px solid #000; padding: 8px;">Studiensemester</th> 
-							<th style="border: 1px solid #000; padding: 8px;">OE</th> 
-							<th style="border: 1px solid #000; padding: 8px;">OrgForm</th> 
+							<th style="border: 1px solid #000; padding: 8px;">Studiensemester</th>
+							<th style="border: 1px solid #000; padding: 8px;">OE</th>
+							<th style="border: 1px solid #000; padding: 8px;">OrgForm</th>
 							<th style="border: 1px solid #000; padding: 8px;">LV</th>
 							<th style="border: 1px solid #000; padding: 8px;">Software</th>
 							<th style="border: 1px solid #000; padding: 8px;">User-Anzahl</th>
@@ -938,12 +953,12 @@ class SoftwareLib
 		$subject = "Softwarebereitstellung - Updates";
 		$message = is_array($messages) ? implode('<br>', $messages) : $messages;
 
-		// Additional headers
-		$headers = "MIME-Version: 1.0" . "\r\n";
-		$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-
-		// Send mail
-		mail($to, $subject, $message, $headers);
+		return $this->_ci->maillib->send(
+			'', // From
+			$to,
+			$subject,
+			$message
+		);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
