@@ -1,4 +1,3 @@
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
@@ -28,19 +27,19 @@ export const Softwareimage = {
 
 			if (Number.isInteger(this.softwareimageId)) {
 				// Get softwareimage
-				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImage',
+				this.$api.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImage',
 					{
 						softwareimage_id: softwareimage_id
 					}
 				).then(
 					result => {
-						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						if (result.error) {
+							this.$fhcAlert.alertWarning(result.retval);
 						}
 						else {
-							if (CoreRESTClient.hasData(result.data)) {
+							if (result.retval) {
 								// Prefill form with softwareimage
-								this.softwareimage = CoreRESTClient.getData(result.data);
+								this.softwareimage = result.retval;
 							}
 						}
 					}
