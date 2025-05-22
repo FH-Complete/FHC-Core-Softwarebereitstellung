@@ -1,11 +1,9 @@
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import RaumModal from "../Modals/RaumModal.js";
 import {Actions} from "./imageverwaltung/Actions.js";
 
 export const Raumzuordnung = {
 	components: {
-		CoreRESTClient,
 		CoreFilterCmpt,
 		RaumModal,
 		Actions
@@ -60,14 +58,13 @@ export const Raumzuordnung = {
 
 			if (await this.$fhcAlert.confirmDelete() === false) return;
 
-			CoreRESTClient.post(
+			this.$api.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/deleteImageort',
 				{
 					softwareimageort_id: softwareimageort_id
 				})
-				.then(result => result.data)
 				.then(result => {
-					if (CoreRESTClient.isError(result))
+					if (result.error)
 					{
 						this.$fhcAlert.alertSystemMessage(Object.values(result.retval).join('; '));  // TODO backend result anpassen
 					}
@@ -85,35 +82,33 @@ export const Raumzuordnung = {
 			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOrteBySoftware(software_id, software_titel) {
-			CoreRESTClient.get(
+			this.$api.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteBySoftware',
 				{
 					software_id: software_id
 				})
-				.then(result => result.data)
 				.then(result => {
 					this.orte = [];
 					this.softwareTitel = software_titel
-					if (CoreRESTClient.hasData(result)) {
-						this.orte = CoreRESTClient.getData(result);
+					if (result.retval) {
+						this.orte = result.retval;
 					}
-					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result));
+					this.$refs.raumTable.tabulator.setData(result.retval);
 				}
 			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOrteByImage(softwareimage_id) {
-			CoreRESTClient.get(
+			this.$api.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
 				{
 					softwareimage_id: softwareimage_id
 				})
-				.then(result => result.data)
 				.then(result => {
 					this.orte = [];
-					if (CoreRESTClient.hasData(result)) {
-						this.orte = CoreRESTClient.getData(result);
+					if (result.retval) {
+						this.orte = result.retval;
 					}
-					this.$refs.raumTable.tabulator.setData(CoreRESTClient.getData(result));
+					this.$refs.raumTable.tabulator.setData(result.retval);
 				}
 			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
