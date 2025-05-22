@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareModal from "../../Modals/SoftwareModal.js";
 import {Actions} from "./Actions.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
@@ -123,19 +122,17 @@ export default {
 		},
 	},
 	beforeCreate() {
-		CoreRESTClient
+		this.$api
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex', null)
-			.then(result => result.data)
-			.then(result => { this.languageIndex = CoreRESTClient.getData(result);})
-			.catch( error => this.$fhcAlert.handleSystemError(error) );
+			.then(result => this.languageIndex = result.retval)
+			.catch(error => this.$fhcAlert.handleSystemError(error))
 
 		// Get Softwarestati
-		CoreRESTClient
+		this.$api
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus')
-			.then(result => result.data)
 			.then(result => {
 				// Reduce array of objects into one object
-				return this.softwarestatus = CoreRESTClient.getData(result).reduce((o, x) => {
+				return this.softwarestatus = result.retval.reduce((o, x) => {
 					o[x.softwarestatus_kurzbz] = x.bezeichnung;
 					return o;
 				}, {});
@@ -192,7 +189,7 @@ export default {
 				software_ids = selectedData.map(data => data.software_id);
 			}
 
-			CoreRESTClient
+			this.$api
 				.post(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/changeSoftwarestatus',
 					{
@@ -200,7 +197,6 @@ export default {
 						softwarestatus_kurzbz: softwarestatus_kurzbz
 					}
 				)
-				.then(result => result.data)
 				.then(result => {
 					if (result.retval.parentArray.length > 0)
 					{
@@ -233,14 +229,11 @@ export default {
 
 			if (await this.$fhcAlert.confirmDelete() === false) return;
 
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
-				{
-					software_id: software_id
-				})
-				.then(result => result.data)
+			this.$api
+				.post('/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
+					{software_id: software_id})
 				.then(result => {
-					if (CoreRESTClient.isError(result))
+					if (result.error)
 					{
 						this.$fhcAlert.alertDefault('warn', 'Löschen nicht möglich', result.retval[0], true);
 					}
@@ -250,7 +243,8 @@ export default {
 						this.$refs.softwareTable.reloadTable();
 					}
 				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				)
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		promoteChildren(children, resultArr) {
 			for (let child of children) {
