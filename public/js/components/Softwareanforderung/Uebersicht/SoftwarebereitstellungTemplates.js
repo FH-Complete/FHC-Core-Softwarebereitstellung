@@ -61,7 +61,7 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				ajaxURL: self.$fhcApi.getUri(
+				ajaxURL: self.$api.getUri(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getSwLvsRequestedByTpl'
 				),
 				ajaxParams: () => {
@@ -72,7 +72,7 @@ export default {
 				ajaxRequestFunc: (url, config, params) => {
 					return self
 						.setIsPlanungDeadlinePast()
-						.then(() => self.$fhcApi.get(url, params))
+						.then(() => self.$api.get(url, params))
 						.then(response => {
 							if (response.data.length > 0) {
 								return this.setVorrueckStudienjahr(this.selectedStudienjahr)
@@ -247,7 +247,7 @@ export default {
 		async deleteSwLvs(software_lv_id){
 			if (!await this.$fhcAlert.confirmDelete()) return;
 
-			this.$fhcApi
+			this.$api
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvsByTpl', {
 					software_lv_id: software_lv_id,
 					studienjahr_kurzbz: this.selectedStudienjahr
@@ -263,7 +263,7 @@ export default {
 			if (selectedData.length === 0) return;
 
 			// Save vorgerueckte swlvs
-			this.$fhcApi
+			this.$api
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/vorrueckSwLvsByTpl', {
 					software_lv_ids: selectedData.map((item) => item.software_lv_id),
 					studienjahr_kurzbz: this.vorrueckStudienjahr
@@ -296,7 +296,7 @@ export default {
 			let selectedData = this.table.getSelectedData();
 
 			// Cancel SW-LV-Bestellungen (abbestellen)
-			this.$fhcApi
+			this.$api
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/abbestellenSwLvs', {
 					data: selectedData.map((item) => item.software_lv_id)
 				})
@@ -334,7 +334,7 @@ export default {
 				})
 				.then((data) => {
 					if (data && Array.isArray(data) && data.length > 0) {
-						this.$fhcApi
+						this.$api
 							.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareAbbestellt', {
 								data: data.map((item) => item.software_lv_id)
 							})
@@ -357,7 +357,7 @@ export default {
 			this.table.redraw(true);
 		},
 		_addVorrueckTableData(tableData){
-			return this.$fhcApi
+			return this.$api
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/validateVorrueckSwLvsForTpl', {
 					software_lv_ids: tableData.map(row => row.software_lv_id),
 					studienjahr_kurzbz: this.vorrueckStudienjahr
@@ -396,7 +396,7 @@ export default {
 			return '';
 		},
 		setVorrueckStudienjahr(selectedStudienjahr){
-			return this.$fhcApi
+			return this.$api
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudienjahr', {
 					studienjahr_kurzbz: selectedStudienjahr
 				})
@@ -408,7 +408,7 @@ export default {
 		},
 		setIsPlanungDeadlinePast(){
 			if (this.selectedStudienjahr) {
-				return this.$fhcApi
+				return this.$api
 					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/isPlanningDeadlinePast', {
 						studienjahr_kurzbz: this.selectedStudienjahr
 					})
@@ -433,7 +433,7 @@ export default {
 		},
 		onCellEdited(cell) {
 			if (cell.getData().lehrtyp_kurzbz !== 'tpl') {
-				this.$fhcApi
+				this.$api
 					.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/updateLizenzanzahl', [{
 						software_lv_id: cell.getData().software_lv_id,
 						lizenzanzahl: cell.getData().anzahl_lizenzen,

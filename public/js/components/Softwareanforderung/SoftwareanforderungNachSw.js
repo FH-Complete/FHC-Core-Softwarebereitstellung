@@ -22,7 +22,7 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				ajaxURL:  self.$fhcApi.getUri(
+				ajaxURL:  self.$api.getUri(
 					'extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelistData'
 				),
 				ajaxResponse(url, params, response){
@@ -173,7 +173,7 @@ export default {
 			return false;
 		},
 		openOtoboLink(){
-			this.$fhcApi
+			this.$api
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getOtoboUrl')
 				.then(result => { window.open(result.data, '_blank'); })
 				.catch(error => this.$fhcAlert.handleSystemError(error) );

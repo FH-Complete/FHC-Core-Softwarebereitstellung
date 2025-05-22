@@ -51,7 +51,7 @@ export default {
 							this.$emit('onSaved');
 						})
 						.then(() => {
-							this.$fhcApi.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareUpdated',
+							this.$api.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareUpdated',
 							{
 								tpl_software_lv_id: this.selectedTemplate.software_lv_id,
 								software_id: this.selectedSw.software_id,
@@ -145,7 +145,7 @@ export default {
 					this.autocompleteAbortController.abort();
 				this.autocompleteAbortController = new AbortController();
 
-				this.$fhcApi
+				this.$api
 					.get(
 						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteSwSuggestions/' + encodeURIComponent(event.query),
 						null,

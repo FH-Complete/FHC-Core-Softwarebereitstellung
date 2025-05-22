@@ -31,7 +31,7 @@ export default {
 		tabulatorOptions() {
 		const self = this;
 			return {
-				ajaxURL: self.$fhcApi.getUri(
+				ajaxURL: self.$api.getUri(
 					'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getNonQuellkursLvs'
 				),
 				ajaxParams: () => {

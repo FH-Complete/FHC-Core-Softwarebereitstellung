@@ -165,13 +165,13 @@ export const SoftwareForm = {
 				).catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get Studienjahre for Dropdown
-				this.$fhcApi
+				this.$api
 					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/getStudienjahre')
 					.then(result => this.studienjahre = result.data )
 					.catch(error => this.$fhcAlert.handleSystemError(error) );
 
 				// Get current Studienjahr
-				this.$fhcApi
+				this.$api
 					.get('api/frontend/v1/organisation/Studienjahr/getNext')
 					.then(result => this.selStudienjahr = result.data.studienjahr_kurzbz)
 					.then(() => this.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(
@@ -372,7 +372,7 @@ export const SoftwareForm = {
 			this.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(this.softwareId, this.selStudienjahr);
 		},
 		getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(software_id, studienjahr_kurzbz) {
-			this.$fhcApi
+			this.$api
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/getSwLizenzenSumAndPercentageShareByOeAndStudienjahr', {
 					software_id: software_id,
 					studienjahr_kurzbz: studienjahr_kurzbz

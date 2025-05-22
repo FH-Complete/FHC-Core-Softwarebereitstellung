@@ -166,7 +166,7 @@ export default {
 					this.autocompleteAbortController.abort();
 				this.autocompleteAbortController = new AbortController();
 
-				this.$fhcApi
+				this.$api
 					.get(
 						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteSwSuggestions/' + encodeURIComponent(event.query),
 						null,
@@ -187,7 +187,7 @@ export default {
 				if (this.autocompleteAbortController)
 					this.autocompleteAbortController.abort();
 				this.autocompleteAbortController = new AbortController();
-				this.$fhcApi
+				this.$api
 					.get(
 						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteLvSuggestionsByStudjahr/' + encodeURIComponent(event.query),
 						{
@@ -276,7 +276,7 @@ export default {
 
 		},
 		flagAndSortExistingSwLvs(){
-			this.$fhcApi
+			this.$api
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvs', this.formData)
 				.then( result => {
 					if (result.data.length > 0)

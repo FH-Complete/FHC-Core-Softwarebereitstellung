@@ -55,12 +55,12 @@ export default {
 	},
 	methods: {
 		loadAndSetStudienjahr(){
-			this.$fhcApi
+			this.$api
 				.get('api/frontend/v1/organisation/Studienjahr/getAll', {
 					studienjahr_kurzbz: this.STUDIENJAHR_DROPDOWN_STARTDATE
 				})
 				.then( result => this.studienjahre = result.data )
-				.then(() => this.$fhcApi.get('api/frontend/v1/organisation/Studienjahr/getNext'))
+				.then(() => this.$api.get('api/frontend/v1/organisation/Studienjahr/getNext'))
 				.then( result => this.selectedStudienjahr = result.data.studienjahr_kurzbz)
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},

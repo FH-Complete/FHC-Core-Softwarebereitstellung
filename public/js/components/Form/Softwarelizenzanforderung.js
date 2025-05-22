@@ -171,14 +171,14 @@ export default {
 			this.$refs.modalContainer.show();
 		},
 		loadAndSetStudiensemester(selectedStudiensemester){
-			this.$fhcApi
+			this.$api
 				.get('api/frontend/v1/organisation/Studiensemester/getAll', {start: this.STUDIENSEMESTER_DROPDOWN_STARTDATE})
 				.then(result => this.studiensemester = result.data)
 				.then(() => this.selectedStudiensemester = selectedStudiensemester)
 				.catch(error => this.$fhcAlert.handleSystemError(error) );
 		},
 		async setVorrueckStudiensemester(selectedStudiensemester){
-			 const result = await this.$fhcApi
+			 const result = await this.$api
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getVorrueckStudiensemester',
 					{ studiensemester_kurzbz: selectedStudiensemester })
 				.then(result => {
@@ -195,7 +195,7 @@ export default {
 				}
 			})
 
-			this.$fhcApi
+			this.$api
 				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvs', postData)
 				.then( result => {
 					if (result.data.length > 0)
@@ -228,7 +228,7 @@ export default {
 				lv_ids: this.formData.map(fd => fd.lehrveranstaltung_id)
 			}
 
-			this.$fhcApi
+			this.$api
 				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getLvsByStgOe', postData)
 				.then( result => result.data)
 				.then (data =>
