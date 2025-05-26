@@ -1,9 +1,7 @@
-import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 
 export const Softwarezuordnung = {
 	components: {
-		CoreRESTClient,
 		CoreFilterCmpt
 	},
 	data() {
@@ -45,20 +43,19 @@ export const Softwarezuordnung = {
 
 			this.softwareimage_bezeichnung = softwareimage_bezeichnung;
 
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByImage',
+			this.$api
+				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByImage',
 				{
 					softwareimage_id: softwareimage_id
 				})
-				.then(result => result.data)
 				.then(result => {
 					this.softwarezuordnung = [];
-					if (CoreRESTClient.hasData(result)) {
-						this.softwarezuordnung = CoreRESTClient.getData(result);
+					if (result.retval) {
+						this.softwarezuordnung = result.retval;
 					}
-					this.$refs.zuordnungTable.tabulator.setData(CoreRESTClient.getData(result));
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+					this.$refs.zuordnungTable.tabulator.setData(result.retval);
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `
