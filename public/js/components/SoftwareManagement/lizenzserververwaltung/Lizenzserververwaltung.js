@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import LizenzserverModal from "../../Modals/LizenzserverModal.js";
 
 export default {
@@ -74,15 +73,15 @@ export default {
 
 			if (await this.$fhcAlert.confirmDelete() === false) return;
 
-			CoreRESTClient.post(
+			this.$api.post(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/deleteLizenzserver',
 				{
 					lizenzserver_kurzbz: lizenzserver_kurzbz
 				}
 			).then(
 				result => {
-					if (CoreRESTClient.isError(result.data)) {
-						this.$fhcAlert.alertWarning(result.data.retval);
+					if (result.error) {
+						this.$fhcAlert.alertWarning(result.retval);
 					}
 					else
 					{
