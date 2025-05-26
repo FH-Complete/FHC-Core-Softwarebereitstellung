@@ -424,7 +424,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	}
 
 	public function abbestellenSwLvs(){
-		$software_lv_ids = $this->input->post('data');
+		$software_lv_ids = $this->input->post('software_lv_ids');
 
 		if ($software_lv_ids) {
 			// Abbestellen batch
@@ -440,7 +440,7 @@ class Softwareanforderung extends FHCAPI_Controller
 
 	public function sendMailSoftwareAbbestellt()
 	{
-		$software_lv_ids = $this->input->post('data');
+		$software_lv_ids = $this->input->post('$software_lv_ids');
 
 		$this->SoftwareLvModel->addSelect('lv.lehrveranstaltung_id, lv.bezeichnung, lv.orgform_kurzbz, sw.software_kurzbz, stg.oe_kurzbz AS "stg_oe_kurzbz"');
 		$this->SoftwareLvModel->addJoin('lehre.tbl_lehrveranstaltung AS lv', 'lehrveranstaltung_id');
@@ -864,6 +864,7 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	private function _validateLizenzanzahl($data)
 	{
+		$this->addMeta('debug', $data);
 		// load ci validation lib
 		$this->load->library('form_validation');
 
