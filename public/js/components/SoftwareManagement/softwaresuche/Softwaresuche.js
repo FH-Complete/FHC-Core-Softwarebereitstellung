@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 
 export default {
 	components: {
@@ -53,13 +52,13 @@ export default {
 	},
 	methods: {
 		getSoftwareByOrt(ort_kurzbz){
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByOrt',
-				{
-					ort_kurzbz: ort_kurzbz
-				})
-				.then(result => result.data)
-				.then(result => {this.$refs.softwaresucheTable.tabulator.setData(CoreRESTClient.getData(result));})
+			this.$api
+				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByOrt',
+					{
+						ort_kurzbz: ort_kurzbz
+					}
+				)
+				.then(result => {this.$refs.softwaresucheTable.tabulator.setData(result.retval);})
 				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onTableBuilt() {
@@ -69,22 +68,23 @@ export default {
 			}
 		},
 		onComplete(event) {
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
-				{
-					ort_kurzbz: event.query
-				}
-			).then(result => {
-					if (CoreRESTClient.isError(result.data))
+			this.$api
+				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
 					{
-						this.$fhcAlert.handleSystemMessage(result.data.retval);
+						ort_kurzbz: event.query
+					}
+				)
+				.then(result => {
+					if (result.error)
+					{
+						this.$fhcAlert.handleSystemMessage(result.retval);
 					}
 					else
 					{
-						this.ortSuggestions = CoreRESTClient.getData(result.data);
+						this.ortSuggestions = result.retval;
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	watch: {
