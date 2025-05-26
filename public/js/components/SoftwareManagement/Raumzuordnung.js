@@ -1,6 +1,7 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import RaumModal from "../Modals/RaumModal.js";
 import {Actions} from "./imageverwaltung/Actions.js";
+import ApiOrt from "../../api/ort.js";
 
 export const Raumzuordnung = {
 	components: {
@@ -58,11 +59,8 @@ export const Raumzuordnung = {
 
 			if (await this.$fhcAlert.confirmDelete() === false) return;
 
-			this.$api.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/deleteImageort',
-				{
-					softwareimageort_id: softwareimageort_id
-				})
+			this.$api
+				.call(ApiOrt.deleteImageort(softwareimageort_id))
 				.then(result => {
 					if (result.error)
 					{
@@ -78,15 +76,12 @@ export const Raumzuordnung = {
 						// Emit deleted Raumanzahl to be updated in Imagetabelle
 						this.$emit('onSaved', -1);
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOrteBySoftware(software_id, software_titel) {
-			this.$api.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteBySoftware',
-				{
-					software_id: software_id
-				})
+			this.$api
+				.call(ApiOrt.getOrteBySoftware(software_id))
 				.then(result => {
 					this.orte = [];
 					this.softwareTitel = software_titel
@@ -94,23 +89,20 @@ export const Raumzuordnung = {
 						this.orte = result.retval;
 					}
 					this.$refs.raumTable.tabulator.setData(result.retval);
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOrteByImage(softwareimage_id) {
-			this.$api.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
-				{
-					softwareimage_id: softwareimage_id
-				})
+			this.$api
+				.call(ApiOrt.getOrteByImage(softwareimage_id))
 				.then(result => {
 					this.orte = [];
 					if (result.retval) {
 						this.orte = result.retval;
 					}
 					this.$refs.raumTable.tabulator.setData(result.retval);
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onRaumzuordnungSaved(raumanzahlDifferenz) {
 			this.$refs.raumModal.hide();
