@@ -1,4 +1,3 @@
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
@@ -24,19 +23,19 @@ export const Lizenzserver = {
 
 			if (this.lizenzserver_kurzbz !== null) {
 				// Get Softwarelizenzserver
-				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserver',
+				this.$api.get('/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserver',
 					{
 						lizenzserver_kurzbz: lizenzserver_kurzbz
 					}
 				).then(
 					result => {
-						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						if (data.error) {
+							this.$fhcAlert.alertWarning(data.retval);
 						}
 						else {
-							if (CoreRESTClient.hasData(result.data)) {
+							if (result.retval) {
 								// Prefill form with softwareimage
-								this.lizenzserver = CoreRESTClient.getData(result.data);
+								this.lizenzserver = result.retval;
 							}
 						}
 					}
