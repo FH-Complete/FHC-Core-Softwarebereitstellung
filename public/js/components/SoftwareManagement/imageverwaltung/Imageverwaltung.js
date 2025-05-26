@@ -2,6 +2,7 @@ import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import SoftwareimageModal from "../../Modals/SoftwareimageModal.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
 import {Softwarezuordnung} from "./Softwarezuordnung.js";
+import ApiImage from "../../../api/image.js";
 
 export default {
 	componentName: 'Imageverwaltung',
@@ -98,11 +99,7 @@ export default {
 			if (await this.$fhcAlert.confirmDelete() === false) return;
 
 			this.$api
-				.post('/extensions/FHC-Core-Softwarebereitstellung/components/Image/deleteImage',
-					{
-						softwareimage_id: softwareimage_id
-					}
-				)
+				.call(ApiImage.deleteImage(softwareimage_id))
 				.then(result => {
 					if (result.error) {
 						this.$fhcAlert.alertWarning(result.retval);
