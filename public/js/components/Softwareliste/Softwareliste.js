@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import {Raumzuordnung} from "../SoftwareManagement/Raumzuordnung.js";
 // Fields used to restructure table data for dataTree
 const idField = 'software_id';
@@ -25,12 +24,15 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				ajaxURL: CoreRESTClient._generateRouterURI('extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelistData'),
+				// TODO check diese anpassungen...zeigt nichts in console.log oder im browser an
+				ajaxURL: self.$api.getUri('extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelistData'),
 				ajaxResponse(url, params, response){
+					console.log('ajaxResponse');
+					console.log(response);
 					// If dataTree checkbox is checked
 					return self.cbDataTree
-						? self.prepDataTreeData(CoreRESTClient.getData(response)) // Prepare data for dataTree view
-						: CoreRESTClient.getData(response); // else return data for normal list view
+						? self.prepDataTreeData(response.data) // Prepare data for dataTree view
+						: response.data; // else return data for normal list view
 				},
 				dataTree: self.cbDataTree,
 				dataTreeStartExpanded: self.cbDataTreeStartExpanded,
