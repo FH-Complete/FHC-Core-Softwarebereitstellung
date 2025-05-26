@@ -1,5 +1,6 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import LizenzserverModal from "../../Modals/LizenzserverModal.js";
+import ApiLizenzserver from "../../../api/lizenzserver.js";
 
 export default {
 	components: {
@@ -73,13 +74,9 @@ export default {
 
 			if (await this.$fhcAlert.confirmDelete() === false) return;
 
-			this.$api.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/deleteLizenzserver',
-				{
-					lizenzserver_kurzbz: lizenzserver_kurzbz
-				}
-			).then(
-				result => {
+			this.$api
+				.call(ApiLizenzserver.deleteLizenzserver(lizenzserver_kurzbz))
+				.then(result => {
 					if (result.error) {
 						this.$fhcAlert.alertWarning(result.retval);
 					}
@@ -88,8 +85,8 @@ export default {
 						this.$fhcAlert.alertSuccess(this.$p.t('global/geloescht'));
 						this.$refs.lizenzserverTable.reloadTable();
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `
