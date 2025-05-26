@@ -1,4 +1,3 @@
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
@@ -35,25 +34,25 @@ export const Raum = {
 				this.softwareimageorte_id = [softwareimageort_id];
 
 				// Get softwareimageort
-				CoreRESTClient.get('/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getImageort',
+				this.$api.get('/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getImageort',
 					{
 						softwareimageort_id: softwareimageort_id,
 					}
 				).then(
 					result => {
-						if (CoreRESTClient.isError(result.data)) {
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						if (result.error) {
+							this.$fhcAlert.alertWarning(result.retval);
 						}
 						else {
-							if (CoreRESTClient.hasData(result.data)) {
+							if (result.retval) {
 
 								// Prefill form with softwareimageort
-								let data = CoreRESTClient.getData(result.data);
+								let data = result.retval;
 								this.verfuegbarkeit_start = data.verfuegbarkeit_start;
 								this.verfuegbarkeit_ende = data.verfuegbarkeit_ende;
 
 								// Prefill form with Raum assigned to softwareimage
-								this.orte = [CoreRESTClient.getData(result.data)];
+								this.orte = [result.retval];
 							}
 						}
 					}
@@ -108,35 +107,35 @@ export const Raum = {
 		},
 		onComplete(event)
 		{
-			CoreRESTClient.get(
+			this.$api.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
 				{
 					ort_kurzbz: event.query
 				}
 			).then(result => {
-					if (CoreRESTClient.isError(result.data))
+					if (result.error)
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						this.$fhcAlert.alertWarning(result.retval);
 					}
 					else
 					{
-						this.ortSuggestions = CoreRESTClient.getData(result.data);
+						this.ortSuggestions = result.retval;
 					}
 				}
 			).catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		selectAllOrte(){
-			CoreRESTClient.get(
+			this.$api.get(
 				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrte',
 				null
 			).then(result => {
-					if (CoreRESTClient.isError(result.data))
+					if (result.error)
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						this.$fhcAlert.alertWarning(result.retval);
 					}
 					else
 					{
-						this.orte = CoreRESTClient.getData(result.data);
+						this.orte = result.retval;
 					}
 				}
 			).catch(error => this.$fhcAlert.handleSystemError(error));
