@@ -1,5 +1,4 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import {CoreRESTClient} from '../../../../../../js/RESTClient.js';
 import SoftwareimageModal from "../../Modals/SoftwareimageModal.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
 import {Softwarezuordnung} from "./Softwarezuordnung.js";
@@ -98,15 +97,15 @@ export default {
 
 			if (await this.$fhcAlert.confirmDelete() === false) return;
 
-			CoreRESTClient.post(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/deleteImage',
-				{
-					softwareimage_id: softwareimage_id
-				}
-			).then(
-				result => {
-					if (CoreRESTClient.isError(result.data)) {
-						this.$fhcAlert.alertWarning(result.data.retval);
+			this.$api
+				.post('/extensions/FHC-Core-Softwarebereitstellung/components/Image/deleteImage',
+					{
+						softwareimage_id: softwareimage_id
+					}
+				)
+				.then(result => {
+					if (result.error) {
+						this.$fhcAlert.alertWarning(result.retval);
 					}
 					else
 					{
@@ -119,8 +118,8 @@ export default {
 						// Empty Softwarezuordnungstabelle
 						this.$refs.softwarezuordnung.getSoftwareByImage(null);
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onRaumzuordnungSaved(raumanzahlDifferenz) {
 
