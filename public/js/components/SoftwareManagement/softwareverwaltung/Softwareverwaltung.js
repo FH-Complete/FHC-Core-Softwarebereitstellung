@@ -2,6 +2,7 @@ import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import SoftwareModal from "../../Modals/SoftwareModal.js";
 import {Actions} from "./Actions.js";
 import {Raumzuordnung} from "../Raumzuordnung.js";
+import ApiSoftware from "../../../api/software.js";
 
 export default {
 	componentName: 'Softwareverwaltung',
@@ -123,13 +124,13 @@ export default {
 	},
 	beforeCreate() {
 		this.$api
-			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLanguageIndex', null)
+			.call(ApiSoftware.getLanguageIndex())
 			.then(result => this.languageIndex = result.retval)
 			.catch(error => this.$fhcAlert.handleSystemError(error))
 
 		// Get Softwarestati
 		this.$api
-			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus')
+			.call(ApiSoftware.getStatus())
 			.then(result => {
 				// Reduce array of objects into one object
 				return this.softwarestatus = result.retval.reduce((o, x) => {
@@ -190,13 +191,7 @@ export default {
 			}
 
 			this.$api
-				.post(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/changeSoftwarestatus',
-					{
-						software_ids: software_ids,
-						softwarestatus_kurzbz: softwarestatus_kurzbz
-					}
-				)
+				.call(ApiSoftware.changeSoftwarestatus(software_ids, softwarestatus_kurzbz))
 				.then(result => {
 					if (result.retval.parentArray.length > 0)
 					{
@@ -230,8 +225,7 @@ export default {
 			if (await this.$fhcAlert.confirmDelete() === false) return;
 
 			this.$api
-				.post('/extensions/FHC-Core-Softwarebereitstellung/components/Software/deleteSoftware',
-					{software_id: software_id})
+				.call(ApiSoftware.deleteSoftware(software_id))
 				.then(result => {
 					if (result.error)
 					{
