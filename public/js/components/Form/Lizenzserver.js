@@ -23,13 +23,14 @@ export const Lizenzserver = {
 
 			if (this.lizenzserver_kurzbz !== null) {
 				// Get Softwarelizenzserver
-				this.$api.get('/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserver',
-					{
-						lizenzserver_kurzbz: lizenzserver_kurzbz
-					}
-				).then(
-					result => {
-						if (data.error) {
+				this.$api
+					.get('/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserver',
+						{
+							lizenzserver_kurzbz: lizenzserver_kurzbz
+						}
+					)
+					.then(result => {
+						if (result.error) {
 							this.$fhcAlert.alertWarning(data.retval);
 						}
 						else {
@@ -38,8 +39,8 @@ export const Lizenzserver = {
 								this.lizenzserver = result.retval;
 							}
 						}
-					}
-				).catch(error => this.$fhcAlert.handleSystemError(error));
+					})
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		save(){
