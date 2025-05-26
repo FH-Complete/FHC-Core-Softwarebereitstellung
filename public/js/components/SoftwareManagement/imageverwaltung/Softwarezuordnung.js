@@ -1,4 +1,5 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
+import ApiSoftware from "../../../api/software.js";
 
 export const Softwarezuordnung = {
 	components: {
@@ -44,10 +45,7 @@ export const Softwarezuordnung = {
 			this.softwareimage_bezeichnung = softwareimage_bezeichnung;
 
 			this.$api
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByImage',
-				{
-					softwareimage_id: softwareimage_id
-				})
+				.call(ApiSoftware.getSoftwareByImage(softwareimage_id))
 				.then(result => {
 					this.softwarezuordnung = [];
 					if (result.retval) {

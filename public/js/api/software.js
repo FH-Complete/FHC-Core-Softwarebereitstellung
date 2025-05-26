@@ -12,7 +12,13 @@ export default {
 			params: {ort_kurzbz: ort_kurzbz}
 		}
 	},
-
+	getSoftwareByImage(softwareimage_id) {
+		return {
+			method: 'get',
+			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByImage',
+			params: {softwareimage_id: softwareimage_id}
+		}
+	},
 	changeSoftwarestatus(software_ids, softwarestatus_kurzbz) {
 		return {
 			method: 'post',
