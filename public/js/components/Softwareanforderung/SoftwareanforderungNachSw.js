@@ -1,6 +1,7 @@
 import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import {Raumzuordnung} from "../SoftwareManagement/Raumzuordnung.js";
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
+import ApiSoftwareanforderung from "../../api/softwareanforderung.js";
 
 // Fields used to restructure table data for dataTree
 const idField = 'software_id';
@@ -174,9 +175,9 @@ export default {
 		},
 		openOtoboLink(){
 			this.$api
-				.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/getOtoboUrl')
-				.then(result => { window.open(result.data, '_blank'); })
-				.catch(error => this.$fhcAlert.handleSystemError(error) );
+				.call(ApiSoftwareanforderung.getOtoboUrl())
+				.then(result => window.open(result.data, '_blank'))
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `
