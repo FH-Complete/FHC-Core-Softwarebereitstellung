@@ -1,4 +1,3 @@
-import {CoreRESTClient} from '../../../../../js/RESTClient.js';
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
@@ -44,38 +43,35 @@ export const SoftwareForm = {
 		}
 	},
 	beforeCreate() {
-		CoreRESTClient.get(
+		this.$api.get(
 			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareMetadata', null)
-			.then(result => result.data)
 			.then(
 			result => {
 				// display errors
-				if (CoreRESTClient.isError(result))
+				if (result.error)
 				{
 					this.$fhcAlert.handleSystemMessage(result.retval);
 				}
 				else
 				{
-					this.softwareMetadata = CoreRESTClient.getData(result);
+					this.softwareMetadata = result.retval;
 				}
-			}
-		).catch(error => this.$fhcAlert.handleSystemError(error));
+			})
+			.catch(error => this.$fhcAlert.handleSystemError(error));
 
 		// Get Softwarelizenztypen
-		CoreRESTClient
+		this.$api
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelizenztypen')
-			.then(result => result.data)
 			.then(result => {
-				this.softwarelizenztypen = CoreRESTClient.hasData(result) ? CoreRESTClient.getData(result) : {};
+				this.softwarelizenztypen = result.retval ? result.retval : {};
 			})
 			.catch(error => { this.$fhcAlert.handleSystemError(error); });
 
 		// Get Softwarelizenzkategorien
-		CoreRESTClient
+		this.$api
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelizenzkategorien')
-			.then(result => result.data)
 			.then(result => {
-				this.softwarelizenzkategorien = CoreRESTClient.hasData(result) ? CoreRESTClient.getData(result) : {};
+				this.softwarelizenzkategorien = result.retval ? result.retval : {};
 			})
 			.catch(error => { this.$fhcAlert.handleSystemError(error); });
 	},
@@ -102,21 +98,21 @@ export const SoftwareForm = {
 			if (Number.isInteger(this.softwareId))
 			{
 				// Get software data
-				CoreRESTClient.get(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware',
-					{
-						software_id: software_id
-					}
-				).then(
-					result => {
-						if (CoreRESTClient.isError(result.data))
+				this.$api
+					.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware',
 						{
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+							software_id: software_id
+						}
+					)
+					.then (result => {
+						if (result.error)
+						{
+							this.$fhcAlert.alertWarning(result.retval);
 						}
 						else
 						{
-							if (CoreRESTClient.hasData(result.data)) {
-								let softwareData = CoreRESTClient.getData(result.data);
+							if (result.retval) {
+								let softwareData = result.retval;
 								this.software = softwareData.software;
 								this.selLizenzserver = softwareData.software.lizenzserver_kurzbz;
 								this.selKostentraegerOE = softwareData.software.kostentraeger_oe_kurzbz;
@@ -132,37 +128,36 @@ export const SoftwareForm = {
 								}
 							}
 						}
-					}
-				).catch(error => this.$fhcAlert.handleSystemError(error));
+					})
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get last softwarestatus data
-				CoreRESTClient.get(
+				this.$api.get(
 					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLastSoftwarestatus',
 					{
 						software_id: software_id
 					})
-					.then(result => result.data)
-					.then(result => {this.softwarestatus = CoreRESTClient.getData(result);})
-					.catch(error => { this.$fhcAlert.handleSystemError(error); });
+					.then(result => this.softwarestatus = result.retval)
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get images of software
-				CoreRESTClient.get(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesBySoftware',
-					{
-						software_id: software_id
-					})
-					.then(result => result.data)
+				this.$api
+					.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesBySoftware',
+						{
+							software_id: software_id
+						}
+					)
 					.then(result => {
-						if (CoreRESTClient.isError(result))
+						if (result.error)
 						{
-							this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
+							this.$fhcAlert.alertWarning(result.retval);
 						}
-						else if(CoreRESTClient.hasData(result))
+						else if(result.retval)
 						{
-							this.softwareImages = CoreRESTClient.getData(result);
+							this.softwareImages = result.retval;
 						}
-					}
-				).catch(error => this.$fhcAlert.handleSystemError(error));
+					})
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get Studienjahre for Dropdown
 				this.$api
@@ -258,21 +253,21 @@ export const SoftwareForm = {
 			this.lizenzenSumByStudienjahr = ''
 		},
 		getSoftwareByKurzbz(event) {
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
-				{
-					software_kurzbz: event.query
-				})
-				.then(result => result.data)
+			this.$api
+				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
+					{
+						software_kurzbz: event.query
+					}
+				)
 				.then(result => {
 					// display errors
-					if (CoreRESTClient.isError(result))
+					if (result.error)
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
+						this.$fhcAlert.alertWarning(result.retval);
 					}
 					else
 					{
-						let softwareList = CoreRESTClient.hasData(result) ? CoreRESTClient.getData(result) : [];
+						let softwareList = result.retval ? result.retval : [];
 
 						// set software_kurzbz_version for display of kurzbz and version in autocomple field
 						for (let sw of softwareList) {
@@ -280,25 +275,25 @@ export const SoftwareForm = {
 						}
 						this.parentSoftwareSuggestions = softwareList;
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getOeSuggestions(event) {
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getOeSuggestions',
-				{
-					eventQuery: event.query
-				})
-				.then(result => result.data)
+			this.$api
+				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getOeSuggestions',
+					{
+						eventQuery: event.query
+					}
+				)
 				.then(result => {
 					// display errors
-					if (CoreRESTClient.isError(result))
+					if (result.error)
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result));
+						this.$fhcAlert.alertWarning(result.retval);
 					}
 					else
 					{
-						let data = CoreRESTClient.getData(result);
+						let data = result.retval;
 
 						let groupedData = {};
 
@@ -325,48 +320,48 @@ export const SoftwareForm = {
 							this.oeSuggestions = Object.values(groupedData);
 						}
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getImagesByBezeichnung(event) {
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesByBezeichnung',
-				{
-					image_bezeichnung: event.query
-				}
-			).then(
-				result => {
-					// display errors
-					if (CoreRESTClient.isError(result.data))
+			this.$api
+				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesByBezeichnung',
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						image_bezeichnung: event.query
+					}
+				)
+				.then(result => {
+					// display errors
+					if (result.error)
+					{
+						this.$fhcAlert.alertWarning(result.retval);
 					}
 					else
 					{
-						this.softwareImageSuggestions = CoreRESTClient.getData(result.data);
+						this.softwareImageSuggestions = result.retval;
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getLizenzserverByKurzbz(event) {
-			CoreRESTClient.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserverByKurzbz',
-				{
-					lizenzserver_kurzbz: event.query
-				}
-			).then(
-				result => {
-					// display errors
-					if (CoreRESTClient.isError(result.data))
+			this.$api
+				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserverByKurzbz',
 					{
-						this.$fhcAlert.alertWarning(CoreRESTClient.getError(result.data));
+						lizenzserver_kurzbz: event.query
+					}
+				)
+				.then(result => {
+					// display errors
+					if (result.error)
+					{
+						this.$fhcAlert.alertWarning(result.retval);
 					}
 					else
 					{
-						this.lizenzserverSuggestions = CoreRESTClient.getData(result.data);
+						this.lizenzserverSuggestions = result.retval;
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		onChangeStudienjahr(){
 			this.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(this.softwareId, this.selStudienjahr);
