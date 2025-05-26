@@ -44,9 +44,9 @@ class Ort extends Auth_Controller
 	 */
 	public function autofill()
 	{
-		$ort_kurzbz = $this->input->get('ort_kurzbz');
+		$query = $this->input->get('query');
 		$this->OrtModel->addOrder('ort_kurzbz');
-		$result = $this->OrtModel->loadWhere("ort_kurzbz ILIKE '%".$this->OrtModel->escapeLike($ort_kurzbz)."%'");
+		$result = $this->OrtModel->loadWhere("ort_kurzbz ILIKE '%".$this->OrtModel->escapeLike($query)."%'");
 
 		if (isError($result))
 		{

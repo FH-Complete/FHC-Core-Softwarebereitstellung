@@ -1,4 +1,11 @@
 export default {
+	autofill(query){
+		return {
+			method: 'get',
+			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
+			params: {query: query}
+		}
+	},
 	getOrteBySoftware(software_id) {
 		return {
 			method: 'get',

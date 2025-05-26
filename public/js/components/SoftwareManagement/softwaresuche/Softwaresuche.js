@@ -1,4 +1,6 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
+import ApiSoftware from "../../../api/software.js";
+import ApiOrt from "../../../api/ort.js";
 
 export default {
 	components: {
@@ -53,11 +55,7 @@ export default {
 	methods: {
 		getSoftwareByOrt(ort_kurzbz){
 			this.$api
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByOrt',
-					{
-						ort_kurzbz: ort_kurzbz
-					}
-				)
+				.call(ApiSoftware.getSoftwareByOrt(ort_kurzbz))
 				.then(result => {this.$refs.softwaresucheTable.tabulator.setData(result.retval);})
 				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
@@ -69,11 +67,7 @@ export default {
 		},
 		onComplete(event) {
 			this.$api
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
-					{
-						ort_kurzbz: event.query
-					}
-				)
+				.call(ApiOrt.autofill(event.query))
 				.then(result => {
 					if (result.error)
 					{

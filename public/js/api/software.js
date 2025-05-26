@@ -5,6 +5,14 @@ export default {
 			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus'
 		}
 	},
+	getSoftwareByOrt(ort_kurzbz) {
+		return {
+			method: 'get',
+			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByOrt',
+			params: {ort_kurzbz: ort_kurzbz}
+		}
+	},
+
 	changeSoftwarestatus(software_ids, softwarestatus_kurzbz) {
 		return {
 			method: 'post',
