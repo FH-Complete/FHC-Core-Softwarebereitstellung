@@ -4,6 +4,7 @@ import CoreFormValidation from '../../../../../js/components/Form/Validation.js'
 import ApiSoftware from "../../api/software.js";
 import ApiImage from "../../api/image.js";
 import ApiLizenzserver from "../../api/lizenzserver.js";
+import ApiFhc from "../../api/fhc.js";
 
 export const SoftwareForm = {
 	components: {
@@ -160,7 +161,7 @@ export const SoftwareForm = {
 
 				// Get current Studienjahr
 				this.$api
-					.get('api/frontend/v1/organisation/Studienjahr/getNext')
+					.call(ApiFhc.Studienjahr.getNext())
 					.then(result => this.selStudienjahr = result.data.studienjahr_kurzbz)
 					.then(() => this.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(
 						this.softwareId,
