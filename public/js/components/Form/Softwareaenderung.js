@@ -2,6 +2,7 @@ import CoreForm from "../../../../../js/components/Form/Form.js";
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import CoreFormValidation from "../../../../../js/components/Form/Validation.js";
 import CoreBsModal from '../../../../../js/components/Bootstrap/Modal.js';
+import ApiSoftwareanforderung from "../../api/softwareanforderung.js";
 
 export default {
 	components: {
@@ -19,13 +20,15 @@ export default {
 	data() {
 		return {
 			modalTitel: Vue.computed(() => this.$p.t('global', 'swFuerLvAendern')),
-			autocompleteAbortController: null,
 			swSuggestions: [],
 			selectedLvs: [],
 			selectedSw: {},
 			selectedTemplate: {},
 			requestModus: '', // if Aenderung for Quellkurs, then set to 'tpl',
-			errorMsg: null
+			errorMsg: null,
+			abortController: {
+				swSuggestions: null,
+			}
 		};
 	},
 	methods: {
@@ -51,11 +54,11 @@ export default {
 							this.$emit('onSaved');
 						})
 						.then(() => {
-							this.$api.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareUpdated',
-							{
-								tpl_software_lv_id: this.selectedTemplate.software_lv_id,
-								software_id: this.selectedSw.software_id,
-							})
+							// Send mail
+							this.$api.call(ApiSoftwareanforderung.sendMailSoftwareUpdated(
+									this.selectedTemplate.software_lv_id,
+									this.selectedSw.software_id
+							))
 						})
 						.catch(error => this.$fhcAlert.handleSystemError(error));
 				}
@@ -140,22 +143,19 @@ export default {
 			this.$refs.modalContainer.show();
 		},
 		searchSw(event) {
-			if (event.query || !this.swSuggestions.length) {
-				if (this.autocompleteAbortController)
-					this.autocompleteAbortController.abort();
-				this.autocompleteAbortController = new AbortController();
+			if (this.abortController.swSuggestions)
+				this.abortController.swSuggestions.abort();
 
-				this.$api
-					.get(
-						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteSwSuggestions/' + encodeURIComponent(event.query),
-						null,
-						{
-							signal: this.autocompleteAbortController.signal
-						}
-					)
-					.then(result => {this.swSuggestions = result.data})
-					.catch(error => this.$fhcAlert.handleSystemError(error));
-			}
+			this.abortController.swSuggestions = new AbortController();
+
+			this.$api
+				.call(ApiSoftwareanforderung.autocompleteSwSuggestions(event.query),
+					{
+						signal: this.abortController.swSuggestions.signal
+					}
+				)
+				.then(result => {this.swSuggestions = result.data})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getSwOptionLabel(sw){
 			const version = sw.version ? sw.version : '-';

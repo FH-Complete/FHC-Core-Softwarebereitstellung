@@ -43,6 +43,16 @@ export default {
 			params: objectArray	// NOTE: Do NOT add object literals.
 		}
 	},
+	sendMailSoftwareUpdated(tpl_software_lv_id, software_id) {
+		return {
+			method: 'post',
+			url: 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/sendMailSoftwareUpdated',
+			params: {
+				tpl_software_lv_id: tpl_software_lv_id, // template softwareLv ID
+				software_id: software_id
+			}
+		}
+	},
 	deleteSwLvsByTpl(software_lv_id, studienjahr_kurzbz) {
 		return {
 			method: 'post',
