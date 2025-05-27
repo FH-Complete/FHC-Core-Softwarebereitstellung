@@ -287,7 +287,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	public function updateSoftwareByTpl(){
 
 		// Check if deletion is allowed
-		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'))) exit;
+		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz')))
+		{
+			$this->terminateWithError('Planning Deadline has past');
+		};
 
 		// Get Quellkurs swlv
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
@@ -388,7 +391,10 @@ class Softwareanforderung extends FHCAPI_Controller
 	public function updateSoftwareByLv(){
 
 		// Check if deletion is allowed
-		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz'))) exit;
+		if ($this->softwarelib->isPlanningDeadlinePast($this->input->post('studienjahr_kurzbz')))
+		{
+			$this->terminateWithError('Planning Deadline has past');
+		};
 
 		// Get Swlv
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
@@ -650,9 +656,6 @@ class Softwareanforderung extends FHCAPI_Controller
 			// On success
 			$this->terminateWithSuccess($isVorgerrueckt_software_lv_ids);
 		}
-
-		// On success
-		$this->terminateWithSuccess($isVorgerrueckt_software_lv_ids);
 	}
 
 	/**
@@ -667,7 +670,10 @@ class Softwareanforderung extends FHCAPI_Controller
 		$studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
 
 		// Check if deletion is allowed
-		if ($this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz)) exit;
+		if ($this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz))
+		{
+			$this->terminateWithError('Planning Deadline has past');
+		};
 
 		// Get Quellkurs swlv
 		$this->SoftwareLvModel->addSelect('lehrveranstaltung_id, software_id, studiensemester_kurzbz');
@@ -719,7 +725,10 @@ class Softwareanforderung extends FHCAPI_Controller
 		$studienjahr_kurzbz = $this->input->post('studienjahr_kurzbz');
 
 		// Check if deletion is allowed
-		if ($this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz)) exit;
+		if ($this->softwarelib->isPlanningDeadlinePast($studienjahr_kurzbz))
+		{
+			$this->terminateWithError('Planning Deadline has past');
+		}
 
 		// Delete software_lv_id
 		$this->SoftwareLvModel->delete(['software_lv_id' => $software_lv_id]);
@@ -870,7 +879,6 @@ class Softwareanforderung extends FHCAPI_Controller
 	 */
 	private function _validateLizenzanzahl($data)
 	{
-		$this->addMeta('debug', $data);
 		// load ci validation lib
 		$this->load->library('form_validation');
 
