@@ -24,7 +24,6 @@ export default {
 		tabulatorOptions() {
 			const self = this;
 			return {
-				// TODO check diese anpassungen...zeigt nichts in console.log oder im browser an
 				ajaxURL: self.$api.getUri('extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelistData'),
 				ajaxResponse(url, params, response){
 					console.log('ajaxResponse');
