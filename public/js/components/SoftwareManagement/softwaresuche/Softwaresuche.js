@@ -50,6 +50,9 @@ export default {
 			},
 			selOrt: null,
 			ortSuggestions: [],
+			abortController: {
+				ortSuggestions: null,
+			}
 		}
 	},
 	methods: {
@@ -65,9 +68,18 @@ export default {
 				this.getSoftwareByOrt(this.modelValue.ortKurzbz);
 			}
 		},
-		onComplete(event) {
+		searchOrt(event) {
+			if (this.abortController.ortSuggestions)
+				this.abortController.ortSuggestions.abort();
+
+			this.abortController.ortSuggestions = new AbortController();
+
 			this.$api
-				.call(ApiOrt.autofill(event.query))
+				.call(ApiOrt.searchOrt(event.query),
+					{
+						signal: this.abortController.ortSuggestions.signal
+					}
+				)
 				.then(result => {
 					if (result.error)
 					{
@@ -113,7 +125,7 @@ export default {
 								forceSelection
 								:suggestions="ortSuggestions"
 								placeholder="Suche nach Raum..."
-								@complete="onComplete">
+								@complete="searchOrt">
 							</auto-complete>		
 					</template>	
 				</core-filter-cmpt>

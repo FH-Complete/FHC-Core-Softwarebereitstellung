@@ -1,9 +1,9 @@
 export default {
-	autofill(query){
+	searchOrt(query){
 		return {
 			method: 'get',
-			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
-			params: {query: query}
+			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrtSuggestions',
+			params: {query: encodeURIComponent(query)}
 		}
 	},
 	getOrte(){

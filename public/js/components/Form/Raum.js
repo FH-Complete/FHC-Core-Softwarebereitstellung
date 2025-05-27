@@ -106,7 +106,7 @@ export const Raum = {
 			this.verfuegbarkeit_start = null;
 			this.verfuegbarkeit_ende = null;
 		},
-		searchOrte(event)
+		searchOrt(event)
 		{
 			if (this.abortController.ortSuggestions)
 				this.abortController.ortSuggestions.abort();
@@ -114,7 +114,7 @@ export const Raum = {
 			this.abortController.ortSuggestions = new AbortController();
 
 			this.$api
-				.call(ApiOrt.autofill(event.query),
+				.call(ApiOrt.searchOrt(event.query),
 					{
 						signal: this.abortController.ortSuggestions.signal
 					}
@@ -205,7 +205,7 @@ export const Raum = {
 					multiple
 					:disabled="ortSelectionDisabled"
 					:suggestions="ortSuggestions"
-					@complete="searchOrte"
+					@complete="searchOrt"
 					>
 					<template #header>
 						<button class="w-100 btn btn-secondary" @click="selectAllOrte">{{ $p.t('global/alleWaehlen') }}</button>
