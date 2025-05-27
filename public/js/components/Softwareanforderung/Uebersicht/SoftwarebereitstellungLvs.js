@@ -1,12 +1,10 @@
 import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
-import SoftwarelizenzanforderungForm from "../../Form/Softwarelizenzanforderung.js";
 import SoftwareaenderungForm from "../../Form/Softwareaenderung.js";
 import ApiSoftwareanforderung from "../../../api/softwareanforderung.js";
 
 export default {
 	components: {
 		CoreFilterCmpt,
-		SoftwarelizenzanforderungForm,
 		SoftwareaenderungForm
 	},
 	inject: [
