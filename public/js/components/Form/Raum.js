@@ -1,6 +1,7 @@
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
+import ApiOrt from "../../api/ort.js";
 
 export const Raum = {
 	components: {
@@ -21,7 +22,10 @@ export const Raum = {
 			orte: [],
 			ortSuggestions: [],
 			verfuegbarkeit_start: null,
-			verfuegbarkeit_ende: null
+			verfuegbarkeit_ende: null,
+			abortController: {
+				ortSuggestions: null,
+			}
 		}
 	},
 	computed: {
@@ -34,12 +38,9 @@ export const Raum = {
 				this.softwareimageorte_id = [softwareimageort_id];
 
 				// Get softwareimageort
-				this.$api.get('/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getImageort',
-					{
-						softwareimageort_id: softwareimageort_id,
-					}
-				).then(
-					result => {
+				this.$api
+					.call(ApiOrt.getImageort(softwareimageort_id))
+					.then(result => {
 						if (result.error) {
 							this.$fhcAlert.alertWarning(result.retval);
 						}
@@ -55,8 +56,8 @@ export const Raum = {
 								this.orte = [result.retval];
 							}
 						}
-					}
-				).catch(error => this.$fhcAlert.handleSystemError(error));
+					})
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		prefillOrte(selectedData){
@@ -105,14 +106,20 @@ export const Raum = {
 			this.verfuegbarkeit_start = null;
 			this.verfuegbarkeit_ende = null;
 		},
-		onComplete(event)
+		searchOrte(event)
 		{
-			this.$api.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/autofill',
-				{
-					ort_kurzbz: event.query
-				}
-			).then(result => {
+			if (this.abortController.ortSuggestions)
+				this.abortController.ortSuggestions.abort();
+
+			this.abortController.ortSuggestions = new AbortController();
+
+			this.$api
+				.call(ApiOrt.autofill(event.query),
+					{
+						signal: this.abortController.ortSuggestions.signal
+					}
+				)
+				.then(result => {
 					if (result.error)
 					{
 						this.$fhcAlert.alertWarning(result.retval);
@@ -121,14 +128,13 @@ export const Raum = {
 					{
 						this.ortSuggestions = result.retval;
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		selectAllOrte(){
-			this.$api.get(
-				'/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrte',
-				null
-			).then(result => {
+			this.$api
+				.call(ApiOrt.getOrte())
+				.then(result => {
 					if (result.error)
 					{
 						this.$fhcAlert.alertWarning(result.retval);
@@ -137,8 +143,8 @@ export const Raum = {
 					{
 						this.orte = result.retval;
 					}
-				}
-			).catch(error => this.$fhcAlert.handleSystemError(error));
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		}
 	},
 	template: `
@@ -199,7 +205,7 @@ export const Raum = {
 					multiple
 					:disabled="ortSelectionDisabled"
 					:suggestions="ortSuggestions"
-					@complete="onComplete"
+					@complete="searchOrte"
 					>
 					<template #header>
 						<button class="w-100 btn btn-secondary" @click="selectAllOrte">{{ $p.t('global/alleWaehlen') }}</button>

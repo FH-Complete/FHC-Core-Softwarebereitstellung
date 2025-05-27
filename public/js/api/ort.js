@@ -6,6 +6,12 @@ export default {
 			params: {query: query}
 		}
 	},
+	getOrte(){
+		return {
+			method: 'get',
+			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrte'
+		}
+	},
 	getOrteBySoftware(software_id) {
 		return {
 			method: 'get',
@@ -18,6 +24,13 @@ export default {
 			method: 'get',
 			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getOrteByImage',
 			params: {softwareimage_id: softwareimage_id}
+		}
+	},
+	getImageort(softwareimageort_id) {
+		return {
+			method: 'get',
+			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Ort/getImageort',
+			params: {softwareimageort_id: softwareimageort_id}
 		}
 	},
 	deleteImageort(softwareimageort_id) {
