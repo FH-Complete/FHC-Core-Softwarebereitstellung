@@ -12,6 +12,23 @@ export default {
 			params: {studienjahr_kurzbz: studienjahr_kurzbz}
 		}
 	},
+	autocompleteSwSuggestions(query) {
+		return {
+			method: 'get',
+			url: 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteSwSuggestions/',
+			params: {query: encodeURIComponent(query)}
+		}
+	},
+	autocompleteLvSuggestionsByStudjahr(query, studienjahr_kurzbz) {
+		return {
+			method: 'get',
+			url: 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteLvSuggestionsByStudjahr/',
+			params: {
+				query: encodeURIComponent(query),
+				studienjahr_kurzbz: studienjahr_kurzbz
+			}
+		}
+	},
 	isPlanningDeadlinePast(studienjahr_kurzbz) {
 		return {
 			method: 'post',
@@ -98,6 +115,13 @@ export default {
 				software_lv_ids: software_lv_ids,
 				studienjahr_kurzbz: studienjahr_kurzbz
 			}
+		}
+	},
+	checkAndGetExistingSwLvs(formData) {
+		return {
+			method: 'post',
+			url: 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvs',
+			params: formData
 		}
 	},
 }

@@ -2,6 +2,7 @@ import CoreForm from "../../../../../js/components/Form/Form.js";
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import CoreFormValidation from "../../../../../js/components/Form/Validation.js";
 import CoreBsModal from '../../../../../js/components/Bootstrap/Modal.js';
+import ApiSoftwareanforderung from "../../api/softwareanforderung.js";
 
 export default {
 	components: {
@@ -27,7 +28,11 @@ export default {
 			selectedSw: [],
 			selectedTemplate: {},
 			formData: [],
-			requestModus: '' // 'sw' if request by software, 'lv' if request by lv
+			requestModus: '', // 'sw' if request by software, 'lv' if request by lv
+			abortController: {
+				swSuggestions: null,
+				lvSuggestions: null
+			}
 		};
 	},
 	watch: {
@@ -161,72 +166,65 @@ export default {
 			this.$refs.modalContainer.show();
 		},
 		searchSw(event) {
-			if (event.query || !this.swSuggestions.length) {
-				if (this.autocompleteAbortController)
-					this.autocompleteAbortController.abort();
-				this.autocompleteAbortController = new AbortController();
+			if (this.abortController.swSuggestions)
+				this.abortController.swSuggestions.abort();
 
-				this.$api
-					.get(
-						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteSwSuggestions/' + encodeURIComponent(event.query),
-						null,
-						{
-							signal: this.autocompleteAbortController.signal
-						}
-					)
-					.then(result => {this.swSuggestions = result.data})
-					.catch(error => this.$fhcAlert.handleSystemError(error));
-			}
+			this.abortController.swSuggestions = new AbortController();
+
+			this.$api
+				.call(ApiSoftwareanforderung.autocompleteSwSuggestions(event.query),
+					{
+						signal: this.abortController.swSuggestions.signal
+					}
+				)
+				.then(result => {this.swSuggestions = result.data})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		getSwOptionLabel(sw){
 			const version = sw.version ? sw.version : '-';
 			return `${sw.software_kurzbz} [Version: ${version}]`;
 		},
 		searchLv(event) {
-			if (event.query || !this.lvSuggestions.length) {
-				if (this.autocompleteAbortController)
-					this.autocompleteAbortController.abort();
-				this.autocompleteAbortController = new AbortController();
-				this.$api
-					.get(
-						'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/autocompleteLvSuggestionsByStudjahr/' + encodeURIComponent(event.query),
-						{
-							studienjahr_kurzbz: this.selectedStudienjahr
-						},
-						{
-							signal: this.autocompleteAbortController.signal,
-						}
-					)
-					.then(result => {
-						let data = result.data;
-						let groupedData = {};
-						data.forEach(item => {
-							const key = item.stg_bezeichnung;
+			if (this.abortController.lvSuggestions)
+				this.abortController.lvSuggestions.abort();
 
-							if (!groupedData[key]) {
-								groupedData[key] = {
-									stg_bezeichnung: item.stg_bezeichnung,
-									lvs: []
-								};
-							}
+			this.abortController.lvSuggestions = new AbortController();
 
-							const lv = {
-								lehrveranstaltung_id: item.lehrveranstaltung_id,
-								lv_bezeichnung: item.lv_bezeichnung + ' [ ' + item.orgform_kurzbz + ' ]',
-								lv_oe_kurzbz: item.lv_oe_kurzbz,
-								lv_oe_bezeichnung: item.lv_oe_bezeichnung,
+			this.$api
+				.call(ApiSoftwareanforderung.autocompleteLvSuggestionsByStudjahr(event.query, this.selectedStudienjahr),
+					{
+						signal: this.abortController.lvSuggestions.signal,
+					}
+				)
+				.then(result => {
+					let data = result.data;
+					let groupedData = {};
+					data.forEach(item => {
+						const key = item.stg_bezeichnung;
+
+						if (!groupedData[key]) {
+							groupedData[key] = {
 								stg_bezeichnung: item.stg_bezeichnung,
-								stg_typ_kurzbz: item.stg_typ_kurzbz,
-								studiensemester_kurzbz: item.studiensemester_kurzbz
+								lvs: []
 							};
+						}
 
-							groupedData[key].lvs.push(lv);
+						const lv = {
+							lehrveranstaltung_id: item.lehrveranstaltung_id,
+							lv_bezeichnung: item.lv_bezeichnung + ' [ ' + item.orgform_kurzbz + ' ]',
+							lv_oe_kurzbz: item.lv_oe_kurzbz,
+							lv_oe_bezeichnung: item.lv_oe_bezeichnung,
+							stg_bezeichnung: item.stg_bezeichnung,
+							stg_typ_kurzbz: item.stg_typ_kurzbz,
+							studiensemester_kurzbz: item.studiensemester_kurzbz
+						};
 
-						})
-						this.lvSuggestions = Object.values(groupedData);
+						groupedData[key].lvs.push(lv);
+
 					})
-					.catch(error => this.$fhcAlert.handleSystemError(error));
-			}
+					this.lvSuggestions = Object.values(groupedData);
+				})
+				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
 		isLvSelected(option){
 			// Disable option if lv is selected
@@ -277,7 +275,7 @@ export default {
 		},
 		flagAndSortExistingSwLvs(){
 			this.$api
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/checkAndGetExistingSwLvs', this.formData)
+				.call(ApiSoftwareanforderung.checkAndGetExistingSwLvs(this.formData))
 				.then( result => {
 					if (result.data.length > 0)
 					{
