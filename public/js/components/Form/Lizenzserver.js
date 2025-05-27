@@ -1,6 +1,7 @@
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
+import ApiLizenzserver from "../../api/lizenzserver.js";
 
 export const Lizenzserver = {
 	components: {
@@ -24,11 +25,7 @@ export const Lizenzserver = {
 			if (this.lizenzserver_kurzbz !== null) {
 				// Get Softwarelizenzserver
 				this.$api
-					.get('/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserver',
-						{
-							lizenzserver_kurzbz: lizenzserver_kurzbz
-						}
-					)
+					.call(ApiLizenzserver.getLizenzserver(lizenzserver_kurzbz))
 					.then(result => {
 						if (result.error) {
 							this.$fhcAlert.alertWarning(data.retval);
