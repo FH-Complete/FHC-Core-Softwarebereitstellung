@@ -1,6 +1,7 @@
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
+import ApiImage from "../../api/image.js";
 
 export const Softwareimage = {
 	components: {
@@ -27,12 +28,9 @@ export const Softwareimage = {
 
 			if (Number.isInteger(this.softwareimageId)) {
 				// Get softwareimage
-				this.$api.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImage',
-					{
-						softwareimage_id: softwareimage_id
-					}
-				).then(
-					result => {
+				this.$api
+					.call(ApiImage.getImage(softwareimage_id))
+					.then(result => {
 						if (result.error) {
 							this.$fhcAlert.alertWarning(result.retval);
 						}
@@ -42,9 +40,8 @@ export const Softwareimage = {
 								this.softwareimage = result.retval;
 							}
 						}
-					}
-				).catch(error => this.$fhcAlert.handleSystemError(error));
-
+					})
+					.catch(error => this.$fhcAlert.handleSystemError(error));
 			}
 		},
 		save(){
