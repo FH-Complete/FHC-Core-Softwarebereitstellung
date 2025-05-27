@@ -16,9 +16,9 @@ class Ort extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'autofill' => array('extension/software_verwalten:rw','extension/softwareliste:r'),
+				'getOrtSuggestions' => array('extension/software_verwalten:rw','extension/softwareliste:r'),
 				'getOrte' => 'extension/software_verwalten:rw',
-				'getOrtSuggestions' => 'extension/software_verwalten:rw',
+				'getImageort' => 'extension/software_verwalten:rw',
 				'deleteImageort' => 'extension/software_verwalten:rw',
 				'getOrteBySoftware' => array('extension/software_verwalten:rw','extension/softwareliste:r'),
 				'getOrteByImage' => 'extension/software_verwalten:rw'
