@@ -18,7 +18,7 @@ class Lizenzserver extends Auth_Controller
 			array(
 				'getLizenzserver' => 'extension/software_verwalten:rw',
 				'deleteLizenzserver' => 'extension/software_verwalten:rw',
-				'getLizenzserverByKurzbz' => 'extension/software_verwalten:rw'
+				'getLizenzserverSuggestions' => 'extension/software_verwalten:rw'
 			)
 		);
 
@@ -82,14 +82,14 @@ class Lizenzserver extends Auth_Controller
 	/**
 	 * Get Softwarelizenzserver by autofill query for lizenzserver_kurzbz.
 	 */
-	public function getLizenzserverByKurzbz()
+	public function getLizenzserverSuggestions()
 	{
-		$lizenzserver_kurzbz = $this->input->get('lizenzserver_kurzbz');
+		$query = $this->input->get('query');
 
 		$this->SoftwarelizenzserverModel->addSelect('lizenzserver_kurzbz');
 		$this->SoftwarelizenzserverModel->addOrder('lizenzserver_kurzbz');
 		$result = $this->SoftwarelizenzserverModel->loadWhere(
-			"lizenzserver_kurzbz ILIKE '%".$this->SoftwarelizenzserverModel->escapeLike($lizenzserver_kurzbz)."%'"
+			"lizenzserver_kurzbz ILIKE '%".$this->SoftwarelizenzserverModel->escapeLike($query)."%'"
 		);
 
 		if (isError($result))

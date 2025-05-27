@@ -1,6 +1,9 @@
 import CoreForm from '../../../../../js/components/Form/Form.js';
 import CoreFormInput from '../../../../../js/components/Form/Input.js';
 import CoreFormValidation from '../../../../../js/components/Form/Validation.js';
+import ApiSoftware from "../../api/software.js";
+import ApiImage from "../../api/image.js";
+import ApiLizenzserver from "../../api/lizenzserver.js";
 
 export const SoftwareForm = {
 	components: {
@@ -32,7 +35,13 @@ export const SoftwareForm = {
 			studienjahre: [],
 			selStudienjahr: null,
 			lizenzenSumAndPercentageShareByOeAndStudienjahr: [],
-			lizenzenSumByStudienjahr: ''
+			lizenzenSumByStudienjahr: '',
+			abortController: {
+				swSuggestions: null,
+				oeSuggestions: null,
+				softwareImageSuggestions: null,
+				lizenzserverSuggestions: null,
+			}
 		}
 	},
 	computed: {
@@ -43,10 +52,9 @@ export const SoftwareForm = {
 		}
 	},
 	beforeCreate() {
-		this.$api.get(
-			'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareMetadata', null)
-			.then(
-			result => {
+		this.$api
+			.call(ApiSoftware.getSoftwareMetadata())
+			.then(result => {
 				// display errors
 				if (result.error)
 				{
@@ -61,18 +69,14 @@ export const SoftwareForm = {
 
 		// Get Softwarelizenztypen
 		this.$api
-			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelizenztypen')
-			.then(result => {
-				this.softwarelizenztypen = result.retval ? result.retval : {};
-			})
+			.call(ApiSoftware.getSoftwarelizenztypen())
+			.then(result => this.softwarelizenztypen = result.retval ? result.retval : {})
 			.catch(error => { this.$fhcAlert.handleSystemError(error); });
 
 		// Get Softwarelizenzkategorien
 		this.$api
-			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwarelizenzkategorien')
-			.then(result => {
-				this.softwarelizenzkategorien = result.retval ? result.retval : {};
-			})
+			.call(ApiSoftware.getSoftwarelizenzkategorien())
+			.then(result => this.softwarelizenzkategorien = result.retval ? result.retval : {})
 			.catch(error => { this.$fhcAlert.handleSystemError(error); });
 	},
 	created() {
@@ -99,11 +103,7 @@ export const SoftwareForm = {
 			{
 				// Get software data
 				this.$api
-					.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftware',
-						{
-							software_id: software_id
-						}
-					)
+					.call(ApiSoftware.getSoftware(software_id))
 					.then (result => {
 						if (result.error)
 						{
@@ -132,21 +132,14 @@ export const SoftwareForm = {
 					.catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get last softwarestatus data
-				this.$api.get(
-					'/extensions/FHC-Core-Softwarebereitstellung/components/Software/getLastSoftwarestatus',
-					{
-						software_id: software_id
-					})
+				this.$api
+					.call(ApiSoftware.getLastSoftwarestatus(software_id))
 					.then(result => this.softwarestatus = result.retval)
 					.catch(error => this.$fhcAlert.handleSystemError(error));
 
 				// Get images of software
 				this.$api
-					.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesBySoftware',
-						{
-							software_id: software_id
-						}
-					)
+					.call(ApiImage.getImagesBySoftware(software_id))
 					.then(result => {
 						if (result.error)
 						{
@@ -161,7 +154,7 @@ export const SoftwareForm = {
 
 				// Get Studienjahre for Dropdown
 				this.$api
-					.get('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/getStudienjahre')
+					.call(ApiSoftware.getStudienjahre())
 					.then(result => this.studienjahre = result.data )
 					.catch(error => this.$fhcAlert.handleSystemError(error) );
 
@@ -252,11 +245,16 @@ export const SoftwareForm = {
 			this.lizenzenSumAndPercentageShareByOeAndStudienjahr = [],
 			this.lizenzenSumByStudienjahr = ''
 		},
-		getSoftwareByKurzbz(event) {
+		searchSw(event) {
+			if (this.abortController.swSuggestions)
+				this.abortController.swSuggestions.abort();
+
+			this.abortController.swSuggestions = new AbortController();
+
 			this.$api
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getSoftwareByKurzbz',
+				.call(ApiSoftware.searchSoftware(event.query),
 					{
-						software_kurzbz: event.query
+						signal: this.abortController.swSuggestions.signal
 					}
 				)
 				.then(result => {
@@ -278,11 +276,16 @@ export const SoftwareForm = {
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
-		getOeSuggestions(event) {
+		searchOe(event) {
+			if (this.abortController.oeSuggestions)
+				this.abortController.oeSuggestions.abort();
+
+			this.abortController.oeSuggestions = new AbortController();
+
 			this.$api
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getOeSuggestions',
+				.call(ApiSoftware.searchOe(event.query),
 					{
-						eventQuery: event.query
+						signal: this.abortController.oeSuggestions.signal
 					}
 				)
 				.then(result => {
@@ -323,11 +326,16 @@ export const SoftwareForm = {
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
-		getImagesByBezeichnung(event) {
+		searchImage(event) {
+			if (this.abortController.softwareImageSuggestions)
+				this.abortController.softwareImageSuggestions.abort();
+
+			this.abortController.softwareImageSuggestions = new AbortController();
+
 			this.$api
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Image/getImagesByBezeichnung',
+				.call(ApiImage.searchImage(event.query),
 					{
-						image_bezeichnung: event.query
+						signal: this.abortController.softwareImageSuggestions.signal
 					}
 				)
 				.then(result => {
@@ -343,11 +351,16 @@ export const SoftwareForm = {
 				})
 				.catch(error => this.$fhcAlert.handleSystemError(error));
 		},
-		getLizenzserverByKurzbz(event) {
+		searchLizenzserver(event) {
+			if (this.abortController.lizenzserverSuggestions)
+				this.abortController.lizenzserverSuggestions.abort();
+
+			this.abortController.lizenzserverSuggestions = new AbortController();
+
 			this.$api
-				.get('/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserverByKurzbz',
+				.call(ApiLizenzserver.searchLizenzserver(event.query),
 					{
-						lizenzserver_kurzbz: event.query
+						signal: this.abortController.lizenzserverSuggestions.signal
 					}
 				)
 				.then(result => {
@@ -368,10 +381,7 @@ export const SoftwareForm = {
 		},
 		getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(software_id, studienjahr_kurzbz) {
 			this.$api
-				.post('extensions/FHC-Core-Softwarebereitstellung/fhcapi/Software/getSwLizenzenSumAndPercentageShareByOeAndStudienjahr', {
-					software_id: software_id,
-					studienjahr_kurzbz: studienjahr_kurzbz
-				})
+				.call(ApiSoftware.getSwLizenzenSumAndPercentageShareByOeAndStudienjahr(software_id, studienjahr_kurzbz))
 				.then( result => {
 					this.lizenzenSumAndPercentageShareByOeAndStudienjahr = result.data;
 					this.lizenzenSumByStudienjahr =
@@ -493,7 +503,7 @@ export const SoftwareForm = {
 					dropdown-current
 					forceSelection
 					:suggestions="parentSoftwareSuggestions"
-					@complete="getSoftwareByKurzbz"
+					@complete="searchSw"
 				>
 				</core-form-input>
 			</div>
@@ -545,7 +555,7 @@ export const SoftwareForm = {
 					forceSelection
 					multiple
 					:suggestions="softwareImageSuggestions"
-					@complete="getImagesByBezeichnung"
+					@complete="searchImage"
 				>
 				</core-form-input>
 			</div>
@@ -590,7 +600,7 @@ export const SoftwareForm = {
 					dropdown-current
 					forceSelection
 					:suggestions="lizenzserverSuggestions"
-					@complete="getLizenzserverByKurzbz"
+					@complete="searchLizenzserver"
 				>
 				</core-form-input>
 			</div>
@@ -646,7 +656,7 @@ export const SoftwareForm = {
 					forceSelection
 					:disabled="software.lizenzart === 'opensource'"
 					:suggestions="oeSuggestions"
-					@complete="getOeSuggestions"
+					@complete="searchOe"
 				>
 				</core-form-input>
 			</div>

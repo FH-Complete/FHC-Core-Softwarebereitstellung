@@ -1,4 +1,11 @@
 export default {
+	searchLizenzserver(query){
+		return {
+			method: 'get',
+			url: '/extensions/FHC-Core-Softwarebereitstellung/components/Lizenzserver/getLizenzserverSuggestions',
+			params: {query: encodeURIComponent(query)}
+		}
+	},
 	deleteLizenzserver(lizenzserver_kurzbz) {
 		return {
 			method: 'post',

@@ -20,7 +20,7 @@ class Software extends Auth_Controller
 				'index' => 'extension/software_verwalten:rw',
 				'getSoftwareMetadata' => 'extension/software_verwalten:rw',
 				'getSoftware' => 'extension/software_verwalten:rw',
-				'getSoftwareByKurzbz' => 'extension/software_verwalten:rw',
+				'getSoftwareSuggestions' => 'extension/software_verwalten:rw',
 				'getSoftwareByImage' => 'extension/software_verwalten:rw',
 				'getSoftwareByOrt' => array('extension/software_verwalten:rw','extension/softwareliste:r'),
 				'getOeSuggestions' => 'extension/software_verwalten:rw',
@@ -149,15 +149,15 @@ class Software extends Auth_Controller
 	/**
 	 * Get Software by software_kurzbz
 	 */
-	public function getSoftwareByKurzbz()
+	public function getSoftwareSuggestions()
 	{
-		$software_kurzbz = $this->input->get('software_kurzbz');
+		$query = $this->input->get('query');
 
 		$this->SoftwareModel->addSelect('software_id, software_kurzbz, version');
 		$this->SoftwareModel->addOrder('software_kurzbz');
 		$this->SoftwareModel->addOrder('version', 'DESC');
 		$this->SoftwareModel->addOrder('software_id', 'DESC');
-		$result = $this->SoftwareModel->loadWhere("software_kurzbz ILIKE '%".$this->SoftwareModel->escapeLike($software_kurzbz)."%'");
+		$result = $this->SoftwareModel->loadWhere("software_kurzbz ILIKE '%".$this->SoftwareModel->escapeLike($query)."%'");
 
 		if (isError($result))
 		{
@@ -208,12 +208,12 @@ class Software extends Auth_Controller
 	 */
 	public function getOeSuggestions()
 	{
-		$eventQuery = $this->input->get('eventQuery');
+		$query = $this->input->get('query');
 
 		// load models
 		$this->load->model('organisation/Organisationseinheit_model', 'OrganisationseinheitModel');
 
-		$result = $this->OrganisationseinheitModel->getAutocompleteSuggestions($eventQuery);
+		$result = $this->OrganisationseinheitModel->getAutocompleteSuggestions($query);
 
 		if (isError($result))
 		{

@@ -19,7 +19,7 @@ class Image extends Auth_Controller
 				'getImage' => 'extension/software_verwalten:rw',
 				'deleteImage' => 'extension/software_verwalten:rw',
 				'getImagesBySoftware' => 'extension/software_verwalten:rw',
-				'getImagesByBezeichnung' => 'extension/software_verwalten:rw'
+				'getImageSuggestions' => 'extension/software_verwalten:rw'
 			)
 		);
 
@@ -103,14 +103,14 @@ class Image extends Auth_Controller
 	/**
 	 * Get all Images containing a Bezeichnung.
 	 */
-	public function getImagesByBezeichnung()
+	public function getImageSuggestions()
 	{
-		$image_bezeichnung = $this->input->get('image_bezeichnung');
+		$query = $this->input->get('query');
 
 		$this->SoftwareimageModel->addSelect('softwareimage_id, bezeichnung AS image_bezeichnung');
 		$this->SoftwareimageModel->addOrder('image_bezeichnung');
 		$this->SoftwareimageModel->addOrder('softwareimage_id', 'DESC');
-		$result = $this->SoftwareimageModel->loadWhere("bezeichnung ILIKE '%".$this->SoftwareimageModel->escapeLike($image_bezeichnung)."%'");
+		$result = $this->SoftwareimageModel->loadWhere("bezeichnung ILIKE '%".$this->SoftwareimageModel->escapeLike($query)."%'");
 
 		if (isError($result))
 		{
