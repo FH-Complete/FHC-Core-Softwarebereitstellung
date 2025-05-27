@@ -646,6 +646,9 @@ class Softwareanforderung extends FHCAPI_Controller
 			$result = $this->SoftwareLvModel->insertBatch($vorrueckSwLvs);
 
 			if (isError($result)) $this->terminateWithError($result, FHCAPI_Controller::ERROR_TYPE_DB);
+
+			// On success
+			$this->terminateWithSuccess($isVorgerrueckt_software_lv_ids);
 		}
 
 		// On success
