@@ -36,6 +36,16 @@ export default {
 			}
 		}
 	},
+	deleteSwLvsByLv(software_lv_id, studienjahr_kurzbz) {
+		return {
+			method: 'post',
+			url: 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/deleteSwLvsByLv',
+			params: {
+				software_lv_id: software_lv_id,
+				studienjahr_kurzbz: studienjahr_kurzbz
+			}
+		}
+	},
 	abbestellenSwLvs(software_lv_ids) {
 		return {
 			method: 'post',
@@ -53,6 +63,16 @@ export default {
 			}
 		}
 	},
+	vorrueckSwLvsByLvs(software_lv_ids, studienjahr_kurzbz) {
+		return {
+			method: 'post',
+			url: 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/vorrueckSwLvsByLvs',
+			params: {
+				software_lv_ids: software_lv_ids,
+				studienjahr_kurzbz: studienjahr_kurzbz
+			}
+		}
+	},
 	sendMailSoftwareAbbestellt(software_lv_ids) {
 		return {
 			method: 'post',
@@ -64,6 +84,16 @@ export default {
 		return {
 			method: 'post',
 			url: 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/validateVorrueckSwLvsForTpl',
+			params: {
+				software_lv_ids: software_lv_ids,
+				studienjahr_kurzbz: studienjahr_kurzbz
+			}
+		}
+	},
+	validateVorrueckSwLvsForLvs(software_lv_ids, studienjahr_kurzbz) {
+		return {
+			method: 'post',
+			url: 'extensions/FHC-Core-Softwarebereitstellung/fhcapi/Softwareanforderung/validateVorrueckSwLvsForLvs',
 			params: {
 				software_lv_ids: software_lv_ids,
 				studienjahr_kurzbz: studienjahr_kurzbz
