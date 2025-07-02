@@ -14,11 +14,19 @@ export const Raum = {
 	emits: [
 		 'onSaved'
 	],
+	props: {
+		softwareimageId: {
+			type: [Number, null],
+			default: null
+		},
+		softwareimage_bezeichnung: {
+			type: String,
+			default: ''
+		}
+	},
 	data() {
 		return {
 			softwareimageorte_id: null,
-			softwareimage_id : Vue.inject('softwareimageId'),
-			softwareimage_bezeichnung: Vue.inject('softwareimage_bezeichnung'),
 			orte: [],
 			ortSuggestions: [],
 			verfuegbarkeit_start: null,

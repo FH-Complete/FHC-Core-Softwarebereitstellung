@@ -12,6 +12,16 @@ export default {
 	mixins: [
 		BsModal
 	],
+	props: {
+		softwareimageId: {
+			type: [Number, null],
+			default: null
+		},
+		softwareimage_bezeichnung: {
+			type: String,
+			default: ''
+		}
+	},
 	data: function() {
 		return {
 			title: String
@@ -40,7 +50,15 @@ export default {
 		<bs-modal ref="modalContainer" class="bootstrap-prompt" v-bind="$props" @hidden-bs-modal="$refs.raum.reset()">
 			<template v-slot:title>{{title}}</template>
 			<template v-slot:default>
-				<raum ref="raum" @on-saved="emitOnSaved"></raum>
+				<div class="fade">
+					<raum 
+						ref="raum" 
+						:softwareimage-id="softwareimageId" 
+						:softwareimage_bezeichnung="softwareimage_bezeichnung" 
+						@on-saved="emitOnSaved"
+					>
+					</raum>
+				</div>
 			</template>
 			<template v-slot:footer>
 				<button type="button" class="btn btn-primary" @click="$refs.raum.save()">{{ $p.t('global/speichern') }} </button>
