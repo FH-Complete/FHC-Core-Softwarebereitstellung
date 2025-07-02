@@ -744,8 +744,7 @@ export const SoftwareForm = {
 					</div>
 				</div>
 			</div>
-			</div>
-		</form>
+		</core-form>
 	</div>
 	`
 }

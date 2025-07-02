@@ -348,7 +348,7 @@ export default {
 							:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
 							 @set-status="changeStatus"
 							 @hierarchy-view-changed="handleHierarchyViewChange"
-							 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
+							 @hierarchy-expansion-changed="handleHierarchyExpansion">
 						 </actions>
 					 </template>
 				</core-filter-cmpt>
@@ -366,11 +366,11 @@ export default {
 		</div>
 		<!-- Software modal component -->
 		<software-modal
-				class="fade"
-				ref="modalForSave"
-				dialog-class="modal-xl"
-				@software-saved="handleSoftwareSaved">
-			</software-modal>
+			class="fade"
+			ref="modalForSave"
+			dialog-class="modal-xl"
+			@software-saved="handleSoftwareSaved">
+		</software-modal>
 	</div>
 `
 };
