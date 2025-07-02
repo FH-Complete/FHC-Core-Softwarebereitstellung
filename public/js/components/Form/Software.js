@@ -430,7 +430,7 @@ export const SoftwareForm = {
 					name="softwaretyp_kurzbz"
 					:label="$p.t('global/softwaretyp')"
 					>
-					<option v-for="(bezeichnung, softwaretyp_kurzbz) in softwareMetadata.softwaretyp" :key="index" :value="softwaretyp_kurzbz">
+					<option v-for="(bezeichnung, softwaretyp_kurzbz) in softwareMetadata.softwaretyp" :key="softwaretyp_kurzbz" :value="softwaretyp_kurzbz">
 						{{bezeichnung}}
 					</option>
 				</core-form-input>		
@@ -450,7 +450,7 @@ export const SoftwareForm = {
 					name="softwarestatus_kurzbz"
 					label="Softwarestatus *"
 					>
-					<option v-for="(bezeichnung, softwarestatus_kurzbz) in softwareMetadata.softwarestatus" :key="index" :value="softwarestatus_kurzbz">
+					<option v-for="(bezeichnung, softwarestatus_kurzbz) in softwareMetadata.softwarestatus" :key="softwarestatus_kurzbz" :value="softwarestatus_kurzbz">
 						{{bezeichnung}}
 					</option>
 				</core-form-input>
