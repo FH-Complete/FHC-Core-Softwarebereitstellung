@@ -32,7 +32,8 @@ export default {
 			abortController: {
 				swSuggestions: null,
 				lvSuggestions: null
-			}
+			},
+			isLvSwRowsVisible: false
 		};
 	},
 	watch: {
