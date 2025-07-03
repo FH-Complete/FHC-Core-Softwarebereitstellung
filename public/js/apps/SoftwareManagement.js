@@ -18,8 +18,7 @@
 import SoftwareManagement from '../components/SoftwareManagement/SoftwareManagement.js';
 import SoftwarelisteLayout from '../components/Softwareliste/SoftwarelisteLayout.js';
 import SoftwareanforderungLayout from '../components/Softwareanforderung/SoftwareanforderungLayout.js';
-import FhcAlert from '../../../../js/plugins/FhcAlert.js';
-import FhcApi from "../../../../js/plugins/Api.js";
+// NOTE: Phrasen plugin includes API and FhcAlert internally — no separate imports needed
 import Phrasen from "../../../../js/plugins/Phrasen.js";
 
 const STUDIENSEMESTER_DROPDOWN_STARTDATE = '2024-09-01'; // Dropdown starts from this studiensemester up to all future ones
@@ -41,7 +40,5 @@ const softwareManagementApp = Vue.createApp({
 
 softwareManagementApp
 	.use(primevue.config.default,{zIndex: {overlay: 9999}})
-	.use(FhcAlert)
-	.use(FhcApi)
 	.use(Phrasen)
 	.mount('#main')
