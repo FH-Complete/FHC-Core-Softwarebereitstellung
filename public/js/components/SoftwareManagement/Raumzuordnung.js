@@ -9,10 +9,18 @@ export const Raumzuordnung = {
 		RaumModal,
 		Actions
 	},
+	props: {
+		softwareimageId: {
+			type: [Number, null],
+			default: null
+		},
+		softwareimage_bezeichnung: {
+			type: String,
+			default: ''
+		}
+	},
 	data() {
 		return {
-			softwareimageId: Vue.inject('softwareimageId'),
-			softwareimage_bezeichnung: Vue.inject('softwareimage_bezeichnung'),
 			softwareTitel: null,
 			orte: [],
 			orteTabulatorOptions: {
@@ -200,8 +208,9 @@ export const Raumzuordnung = {
 		</div>
 		<!-- Raumzuordnung modal component -->
 		<raum-modal
-			class="fade"
 			ref="raumModal"
+			:softwareimage-id="softwareimageId" 
+			:softwareimage_bezeichnung="softwareimage_bezeichnung" 
 			dialog-class="modal-lg"
 			@on-saved="onRaumzuordnungSaved">
 		</raum-modal>	

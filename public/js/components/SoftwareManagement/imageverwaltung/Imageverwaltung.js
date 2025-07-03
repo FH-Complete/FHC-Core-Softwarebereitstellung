@@ -12,12 +12,6 @@ export default {
 		Raumzuordnung,
 		Softwarezuordnung
 	},
-	provide() {
-		return {
-			softwareimageId: Vue.computed(() => this.softwareimageId),
-			softwareimage_bezeichnung: Vue.computed(() => this.softwareimage_bezeichnung)
-		}
-	},
 	data: function() {
 		return {
 			softwareimageTabulatorOptions: { // tabulator options which can be modified after first render
@@ -168,7 +162,13 @@ export default {
 			</div>
 			<div class="row">
 				<div class="col-6">
-					<raumzuordnung ref="raumzuordnung" @on-saved="onRaumzuordnungSaved"></raumzuordnung>
+					<raumzuordnung 
+						ref="raumzuordnung" 
+						:softwareimage-id="softwareimageId"
+  						:softwareimage_bezeichnung="softwareimage_bezeichnung"
+  						@on-saved="onRaumzuordnungSaved"
+					>
+				</raumzuordnung>
 				</div>
 				<div class="col-6">
 					<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>	

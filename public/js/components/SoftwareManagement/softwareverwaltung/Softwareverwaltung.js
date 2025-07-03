@@ -75,12 +75,27 @@ export default {
 					{
 						title: 'Software-Status', field: 'softwarestatus_kurzbz',
 						editor: "list",
-						editorParams:{ values: this.softwarestatus },
+						editorParams: () => ({
+							// Tabulator requires 'value' and 'label' keys for editors to handle the correct values
+							values: this.softwarestatus.map(x => ({
+								value: x.softwarestatus_kurzbz,
+								label: x.bezeichnung
+							}))
+						}),
 						headerFilter: true,
-						headerFilterParams:{ values: this.softwarestatus },
-						formatter: (cell) => this.softwarestatus
-							? this.softwarestatus[cell.getValue()]
-							: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1],
+						headerFilterParams: () => ({
+							// Tabulator requires 'value' and 'label' keys for editors to handle the correct values
+							values: this.softwarestatus.map(x => ({
+								value: x.softwarestatus_kurzbz,
+								label: x.bezeichnung
+							}))
+						}),
+						formatter: (cell) => {
+							const match = this.softwarestatus.find(x => x.softwarestatus_kurzbz === cell.getValue());
+							return match
+								? match.bezeichnung
+								: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1];
+						},
 						width: 150,
 						minWidth: 150,
 						maxWidth: 150,
@@ -131,13 +146,7 @@ export default {
 		// Get Softwarestati
 		this.$api
 			.call(ApiSoftware.getStatus())
-			.then(result => {
-				// Reduce array of objects into one object
-				return this.softwarestatus = result.retval.reduce((o, x) => {
-					o[x.softwarestatus_kurzbz] = x.bezeichnung;
-					return o;
-				}, {});
-			})
+			.then(result => this.softwarestatus = result.retval)
 	},
 	methods: {
 		handleHierarchyViewChange(showHierarchy) {
@@ -336,7 +345,7 @@ export default {
 							:expand-hierarchy="softwareTabulatorOptions.dataTreeStartExpanded"
 							 @set-status="changeStatus"
 							 @hierarchy-view-changed="handleHierarchyViewChange"
-							 @hierarchy-expansion-changed="handleHierarchyExpansion"/>
+							 @hierarchy-expansion-changed="handleHierarchyExpansion">
 						 </actions>
 					 </template>
 				</core-filter-cmpt>
@@ -354,11 +363,11 @@ export default {
 		</div>
 		<!-- Software modal component -->
 		<software-modal
-				class="fade"
-				ref="modalForSave"
-				dialog-class="modal-xl"
-				@software-saved="handleSoftwareSaved">
-			</software-modal>
+			class="fade"
+			ref="modalForSave"
+			dialog-class="modal-xl"
+			@software-saved="handleSoftwareSaved">
+		</software-modal>
 	</div>
 `
 };
