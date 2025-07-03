@@ -171,7 +171,11 @@ export default {
 				</raumzuordnung>
 				</div>
 				<div class="col-6">
-					<softwarezuordnung ref="softwarezuordnung"></softwarezuordnung>	
+					<softwarezuordnung
+						ref="softwarezuordnung"
+						:softwareimage-id="softwareimageId"
+					>
+					</softwarezuordnung>	
 				</div>
 			</div>
 		</div>		

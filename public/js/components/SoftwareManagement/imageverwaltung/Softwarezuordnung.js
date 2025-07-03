@@ -5,9 +5,14 @@ export const Softwarezuordnung = {
 	components: {
 		CoreFilterCmpt
 	},
+	props: {
+		softwareimageId: {
+			type: [Number, null],
+			default: null
+		}
+	},
 	data() {
 		return {
-			softwareimageId: Vue.inject('softwareimageId'),
 			softwareTitel: null,
 			softwareimage_bezeichnung: null,
 			softwarezuordnung: [],
