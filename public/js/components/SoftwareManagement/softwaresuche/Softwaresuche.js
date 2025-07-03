@@ -9,7 +9,7 @@ export default {
 	},
 	props: {
 		modelValue: {
-			type: Object,
+			type: String,
 			required: false
 		}
 	},
