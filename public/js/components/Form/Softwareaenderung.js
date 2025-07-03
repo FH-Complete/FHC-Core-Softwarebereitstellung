@@ -215,6 +215,7 @@ export default {
 								:suggestions="swSuggestions">
 							</core-form-input>
 							<div class="form-text text-danger" v-if="errorMsg">{{ errorMsg }}</div>						</div>
+					</div>
 				</template>
 				<template #footer>
 					<button type="button" class="btn btn-primary" 
