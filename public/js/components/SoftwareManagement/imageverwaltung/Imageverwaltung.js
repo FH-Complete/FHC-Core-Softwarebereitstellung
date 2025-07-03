@@ -145,7 +145,6 @@ export default {
 					filter-type="ImageVerwaltung"
 					uniqueId="softwareimageTable"
 					:tabulator-options="softwareimageTabulatorOptions"
-					:tabulator-events="[{event: 'rowClick', handler: onTableRowClick}]"
 					:side-menu="false"
 					new-btn-label="Image"
 					new-btn-show

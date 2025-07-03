@@ -114,7 +114,7 @@ export default {
 					table-only
 					:tabulator-options="softwaresucheTabulatorOptions"
 					:tabulator-events="[{event: 'tableBuilt', handler: onTableBuilt}]"
-					@click:new="openModal">
+				>
 					<template v-slot:search>
 							<auto-complete
 								class="w-100"

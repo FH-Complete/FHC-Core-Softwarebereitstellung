@@ -172,7 +172,7 @@ export default {
 	},
 	template: `
 	<div class="app-example-form-1">
-		<core-form ref="form" @submit.prevent="sendForm">
+		<core-form ref="form">
 			<core-bs-modal ref="modalContainer" dialog-class="modal-xl" class="bootstrap-prompt" @hidden-bs-modal="$emit('formClosed')">
 				<template #title>{{ modalTitel }}</template>
 				<template #default>
