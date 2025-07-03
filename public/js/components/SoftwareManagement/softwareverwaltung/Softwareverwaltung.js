@@ -75,12 +75,27 @@ export default {
 					{
 						title: 'Software-Status', field: 'softwarestatus_kurzbz',
 						editor: "list",
-						editorParams:{ values: this.softwarestatus },
+						editorParams: () => ({
+							// Tabulator requires 'value' and 'label' keys for editors to handle the correct values
+							values: this.softwarestatus.map(x => ({
+								value: x.softwarestatus_kurzbz,
+								label: x.bezeichnung
+							}))
+						}),
 						headerFilter: true,
-						headerFilterParams:{ values: this.softwarestatus },
-						formatter: (cell) => this.softwarestatus
-							? this.softwarestatus[cell.getValue()]
-							: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1],
+						headerFilterParams: () => ({
+							// Tabulator requires 'value' and 'label' keys for editors to handle the correct values
+							values: this.softwarestatus.map(x => ({
+								value: x.softwarestatus_kurzbz,
+								label: x.bezeichnung
+							}))
+						}),
+						formatter: (cell) => {
+							const match = this.softwarestatus.find(x => x.softwarestatus_kurzbz === cell.getValue());
+							return match
+								? match.bezeichnung
+								: cell.getData().softwarestatus_bezeichnung[this.languageIndex - 1];
+						},
 						width: 150,
 						minWidth: 150,
 						maxWidth: 150,
@@ -133,13 +148,7 @@ export default {
 		CoreRESTClient
 			.get('/extensions/FHC-Core-Softwarebereitstellung/components/Software/getStatus')
 			.then(result => result.data)
-			.then(result => {
-				// Reduce array of objects into one object
-				return this.softwarestatus = CoreRESTClient.getData(result).reduce((o, x) => {
-					o[x.softwarestatus_kurzbz] = x.bezeichnung;
-					return o;
-				}, {});
-			})
+			.then(result => this.softwarestatus = result.retval)
 	},
 	methods: {
 		handleHierarchyViewChange(showHierarchy) {
