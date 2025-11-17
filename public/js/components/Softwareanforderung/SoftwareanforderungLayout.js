@@ -19,6 +19,8 @@ import CoreBaseLayout from "../../../../../js/components/layout/BaseLayout.js";
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import CoreTabs from "../../../../../js/components/Tabs.js";
 
+import {absoluteJsImportUrl} from "../../../../../js/helpers/UrlHelpers.js";
+
 export default {
 	components: {
 		CoreNavigationCmpt,
@@ -43,23 +45,23 @@ export default {
 			tabs: {
 				softwarebereitstellungUebersicht: {
 					title: Vue.computed(() => this.$p.t('global/softwarebereitstellung') + ' ' + this.$p.t('global/uebersicht')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js'
+					component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js')
 				},
 				softwareanforderungNachLvTemplate: {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachQuellkurs')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLvTemplate.js'
+					component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLvTemplate.js')
 				},
 				softwareanforderungNachLv: {
 					title: Vue.computed(() => this.$p.t('global/anforderungNachLv')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js'
+					component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachLv.js')
 				},
 				softwareanforderungNachSw: {
 					title: Vue.computed(() => this.$p.t('global/softwareliste')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachSw.js'
+					component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/SoftwareanforderungNachSw.js')
 				},
 				softwaresuche: {
 					title: Vue.computed(() => this.$p.t('global/sucheNachRaum')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js'
+					component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js')
 				}
 			},
 			currentTab: 'softwarebereitstellungUebersicht',
