@@ -4,6 +4,7 @@ import CoreFormValidation from '../../../../../js/components/Form/Validation.js'
 import ApiImage from "../../api/image.js";
 
 export const Softwareimage = {
+	name: 'Softwareimage',
 	components: {
 		AutoComplete: primevue.autocomplete,
 		"datepicker": VueDatePicker,

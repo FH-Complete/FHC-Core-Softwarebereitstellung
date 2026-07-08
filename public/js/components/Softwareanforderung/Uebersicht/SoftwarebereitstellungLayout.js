@@ -19,6 +19,7 @@ import SoftwarebereitstellungLvs from "./SoftwarebereitstellungLvs.js";
 import SoftwarebereitstellungTemplates from "./SoftwarebereitstellungTemplates.js";
 
 export default {
+	name: 'SoftwarebereitstellungLayout',
 	components: {
 		CoreBaseLayout,
 		SoftwarebereitstellungLvs,

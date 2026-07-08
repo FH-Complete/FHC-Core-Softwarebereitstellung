@@ -3,6 +3,7 @@ import LizenzserverModal from "../../Modals/LizenzserverModal.js";
 import ApiLizenzserver from "../../../api/lizenzserver.js";
 
 export default {
+	name: 'Lizenzserververwaltung',
 	components: {
 		CoreFilterCmpt,
 		LizenzserverModal

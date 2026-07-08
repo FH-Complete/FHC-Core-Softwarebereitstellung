@@ -2,6 +2,7 @@ import BsModal from '../../../../../js/components/Bootstrap/Modal.js';
 import {Raum} from "../Form/Raum.js";
 
 export default {
+	name: 'RaumModal',
 	components: {
 		BsModal,
 		Raum: Raum

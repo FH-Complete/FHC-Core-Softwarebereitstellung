@@ -7,6 +7,7 @@ import ApiLizenzserver from "../../api/lizenzserver.js";
 import ApiFhc from "../../api/fhc.js";
 
 export const SoftwareForm = {
+	name: 'SoftwareForm',
 	components: {
 		AutoComplete: primevue.autocomplete,
 		"datepicker": VueDatePicker,

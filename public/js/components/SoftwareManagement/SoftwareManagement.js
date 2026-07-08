@@ -22,6 +22,7 @@ import CoreTabs from "../../../../../js/components/Tabs.js";
 import ApiFhc from "../../api/fhc.js";
 
 export default {
+	name: 'SoftwareManagement',
 	components: {
 		CoreNavigationCmpt,
 		CoreBaseLayout,

@@ -4,6 +4,7 @@ import {Actions} from "./imageverwaltung/Actions.js";
 import ApiOrt from "../../api/ort.js";
 
 export const Raumzuordnung = {
+	name: 'Raumzuordnung',
 	components: {
 		CoreFilterCmpt,
 		RaumModal,

@@ -1,4 +1,5 @@
 export const Notification = {
+	name: 'Notification',
 	data: function() {
 		return {
 			notifications: [

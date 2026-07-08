@@ -7,6 +7,7 @@ const idField = 'lehrveranstaltung_id';
 const parentIdField = 'lehrveranstaltung_template_id';
 
 export default {
+	name: 'SoftwarebereitstellungTemplates',
 	components: {
 		CoreFilterCmpt,
 		SoftwareaenderungForm

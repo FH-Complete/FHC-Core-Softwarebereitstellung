@@ -1,4 +1,5 @@
 export const Actions = {
+	name: 'Actions',
 	props: {
 		softwarestatus: Array,
 		expandHierarchy: Boolean

@@ -19,6 +19,7 @@ import CoreBaseLayout from "../../../../../js/components/layout/BaseLayout.js";
 import CoreTabs from "../../../../../js/components/Tabs.js";
 
 export default {
+	name: 'SoftwarelisteLayout',
 	components: {
 		CoreBaseLayout,
 		CoreTabs

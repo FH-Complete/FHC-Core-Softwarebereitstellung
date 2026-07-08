@@ -4,6 +4,7 @@ import CoreFormValidation from '../../../../../js/components/Form/Validation.js'
 import ApiOrt from "../../api/ort.js";
 
 export const Raum = {
+	name: 'Raum',
 	components: {
 		AutoComplete: primevue.autocomplete,
 		"datepicker": VueDatePicker,

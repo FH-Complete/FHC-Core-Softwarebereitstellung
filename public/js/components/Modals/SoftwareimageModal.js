@@ -2,6 +2,7 @@ import BsModal from '../../../../../js/components/Bootstrap/Modal.js';
 import {Softwareimage} from '../Form/Softwareimage.js';
 
 export default {
+	name: 'SoftwareimageModal',
 	components: {
 		BsModal,
 		Softwareimage

@@ -8,6 +8,7 @@ const idField = 'software_id';
 const parentIdField = 'software_id_parent';
 
 export default {
+	name: 'SoftwareanforderungNachSw',
 	components: {
 		CoreFilterCmpt,
 		SoftwareanforderungForm,

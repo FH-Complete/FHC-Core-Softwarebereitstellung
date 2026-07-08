@@ -5,6 +5,7 @@ import {Softwarezuordnung} from "./Softwarezuordnung.js";
 import ApiImage from "../../../api/image.js";
 
 export default {
+	name: 'Imageverwaltung',
 	componentName: 'Imageverwaltung',
 	components: {
 		CoreFilterCmpt,

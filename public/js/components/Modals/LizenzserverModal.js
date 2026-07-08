@@ -2,6 +2,7 @@ import BsModal from '../../../../../js/components/Bootstrap/Modal.js';
 import {Lizenzserver} from "../Form/Lizenzserver.js";
 
 export default {
+	name: 'LizenzserverModal',
 	components: {
 		BsModal,
 		Lizenzserver

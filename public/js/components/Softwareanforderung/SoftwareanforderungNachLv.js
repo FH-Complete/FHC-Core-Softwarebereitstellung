@@ -2,6 +2,7 @@ import {CoreFilterCmpt} from '../../../../../js/components/filter/Filter.js';
 import SoftwareanforderungForm from "../Form/Softwareanforderung.js";
 
 export default {
+	name: 'SoftwareanforderungNachLv',
 	components: {
 		CoreFilterCmpt,
 		SoftwareanforderungForm

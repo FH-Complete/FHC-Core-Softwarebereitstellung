@@ -3,6 +3,7 @@ import SoftwareaenderungForm from "../../Form/Softwareaenderung.js";
 import ApiSoftwareanforderung from "../../../api/softwareanforderung.js";
 
 export default {
+	name: 'SoftwarebereitstellungLvs',
 	components: {
 		CoreFilterCmpt,
 		SoftwareaenderungForm

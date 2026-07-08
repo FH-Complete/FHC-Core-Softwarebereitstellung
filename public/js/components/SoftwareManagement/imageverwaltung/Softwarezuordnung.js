@@ -2,6 +2,7 @@ import {CoreFilterCmpt} from '../../../../../../js/components/filter/Filter.js';
 import ApiSoftware from "../../../api/software.js";
 
 export const Softwarezuordnung = {
+	name: 'Softwarezuordnung',
 	components: {
 		CoreFilterCmpt
 	},

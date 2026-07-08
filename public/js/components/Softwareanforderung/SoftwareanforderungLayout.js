@@ -22,6 +22,7 @@ import ApiFhc from "../../api/fhc.js";
 
 
 export default {
+	name: 'SoftwareanforderungLayout',
 	components: {
 		CoreNavigationCmpt,
 		CoreBaseLayout,

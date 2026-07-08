@@ -5,6 +5,7 @@ const idField = 'software_id';
 const parentIdField = 'software_id_parent';
 
 export default {
+	name: 'Softwareliste',
 	componentName: 'Softwareliste',
 	components: {
 		CoreFilterCmpt,

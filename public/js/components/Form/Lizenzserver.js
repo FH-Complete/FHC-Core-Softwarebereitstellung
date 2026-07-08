@@ -4,6 +4,7 @@ import CoreFormValidation from '../../../../../js/components/Form/Validation.js'
 import ApiLizenzserver from "../../api/lizenzserver.js";
 
 export const Lizenzserver = {
+	name: 'Lizenzserver',
 	components: {
 		CoreForm,
 		CoreFormInput,

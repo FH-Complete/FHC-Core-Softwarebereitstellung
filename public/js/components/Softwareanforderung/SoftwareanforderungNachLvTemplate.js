@@ -6,6 +6,7 @@ const idField = 'lehrveranstaltung_id';
 const parentIdField = 'lehrveranstaltung_template_id';
 
 export default {
+	name: 'SoftwareanforderungNachLvTemplate',
 	components: {
 		CoreFilterCmpt,
 		SoftwareanforderungForm
@@ -238,7 +239,8 @@ export default {
 					{event: 'tableBuilt', handler: onTableBuilt},
 					{event: 'rowClick', handler: onRowClick},
 					{event: 'rowDblClick', handler: onRowDblClick}
-				]">
+				]"
+				:download="[{ formatter: 'csv', file: 'softwareanforderung_quellkurse.csv', options: {delimiter: ';', bom: true} }]">
 				<template v-slot:actions>
 					<button class="btn btn-primary" @click="openSoftwareanforderungForm()">SW für Quellkurs anfordern</button>
 						<div class="form-check form-check-inline ms-3">

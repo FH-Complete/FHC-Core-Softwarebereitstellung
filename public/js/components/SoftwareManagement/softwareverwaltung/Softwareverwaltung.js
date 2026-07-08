@@ -5,6 +5,7 @@ import {Raumzuordnung} from "../Raumzuordnung.js";
 import ApiSoftware from "../../../api/software.js";
 
 export default {
+	name: 'Softwareverwaltung',
 	componentName: 'Softwareverwaltung',
 	components: {
 		CoreFilterCmpt,

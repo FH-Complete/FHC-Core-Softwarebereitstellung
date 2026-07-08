@@ -3,6 +3,7 @@ import ApiSoftware from "../../../api/software.js";
 import ApiOrt from "../../../api/ort.js";
 
 export default {
+	name: 'Softwaresuche',
 	components: {
 		CoreFilterCmpt,
 		AutoComplete: primevue.autocomplete

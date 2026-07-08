@@ -5,6 +5,7 @@ import CoreBsModal from '../../../../../js/components/Bootstrap/Modal.js';
 import ApiSoftwareanforderung from "../../api/softwareanforderung.js";
 
 export default {
+	name: 'Softwareaenderung',
 	components: {
 		CoreForm,
 		CoreFormInput,

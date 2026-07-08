@@ -2,6 +2,7 @@ import BsModal from '../../../../../js/components/Bootstrap/Modal.js';
 import {SoftwareForm} from '../Form/Software.js';
 
 export default {
+	name: 'SoftwareModal',
 	components: {
 		BsModal,
 		SoftwareForm
