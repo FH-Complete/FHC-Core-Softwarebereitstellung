@@ -183,7 +183,7 @@ class Softwareanforderung extends FHCAPI_Controller
 		$this->_validateLizenzanzahl($this->input->post());
 
 		// Validate duplicate entries before inserting
-		$this->_validateDupliacateEntries($this->input->post());
+		$this->_validateDuplicateEntries($this->input->post());
 
 		// Check if posted SW LV Zuordnungen already exists
 		$result = $this->_checkAndGetExistingSwLvs($this->input->post());
@@ -211,6 +211,9 @@ class Softwareanforderung extends FHCAPI_Controller
 	public function saveSwRequestByTpl(){
 
 		$this->_validateLizenzanzahl($this->input->post('postData'));
+
+		// Validate duplicate entries before inserting
+		$this->_validateDuplicateEntries($this->input->post('postData'));
 
 		$lehrveranstaltung_template_id =  $this->input->post('template')['lehrveranstaltung_id'];
 
@@ -898,7 +901,7 @@ class Softwareanforderung extends FHCAPI_Controller
 			$this->terminateWithValidationErrors($this->form_validation->error_array());
 		}
 	}
-	private function _validateDupliacateEntries($data)
+	private function _validateDuplicateEntries($data)
 	{
 		$seen = [];
 		$duplicates = [];

@@ -206,6 +206,20 @@ export default {
 				if (item[parentIdField] === parentItem[idField] &&
 					item.software_id === parentItem.software_id) {
 
+					// LVs assigned to multiple Studienplaene are returned once per Studienplan.
+					// Keep each LV only once and merge the Studienplan-Bezeichnungen instead.
+					let existingChild = parentItem._children.find(
+						child => child.lehrveranstaltung_id === item.lehrveranstaltung_id
+					);
+
+					if (existingChild) {
+						if (item.studienplan_bezeichnung &&
+							!existingChild.studienplan_bezeichnung.includes(item.studienplan_bezeichnung)) {
+							existingChild.studienplan_bezeichnung += ', ' + item.studienplan_bezeichnung;
+						}
+						return;
+					}
+
 					parentItem._children.push({...item}); // Add as child
 				}
 			});
