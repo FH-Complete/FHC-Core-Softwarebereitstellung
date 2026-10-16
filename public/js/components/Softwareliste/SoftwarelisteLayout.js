@@ -17,6 +17,7 @@
 
 import CoreBaseLayout from "../../../../../js/components/layout/BaseLayout.js";
 import CoreTabs from "../../../../../js/components/Tabs.js";
+import { absoluteJsImportUrl } from '../../../../../js/helpers/UrlHelpers.js';
 
 export default {
 	components: {
@@ -34,11 +35,11 @@ export default {
 			tabs: {
 				softwareliste: {
 					title: Vue.computed(() => this.$p.t('global/softwareliste')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareliste/Softwareliste.js'
+					component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareliste/Softwareliste.js')
 				},
 				softwaresuche: {
 					title: Vue.computed(() => this.$p.t('global/sucheNachRaum')),
-					component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js'
+					component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js')
 				}
 			}
 		}
