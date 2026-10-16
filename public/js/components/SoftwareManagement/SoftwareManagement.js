@@ -19,6 +19,7 @@ import {CoreNavigationCmpt} from '../../../../../js/components/navigation/Naviga
 import CoreBaseLayout from "../../../../../js/components/layout/BaseLayout.js";
 import CoreFormInput from "../../../../../js/components/Form/Input.js";
 import CoreTabs from "../../../../../js/components/Tabs.js";
+import { absoluteJsImportUrl } from '../../../../../js/helpers/UrlHelpers.js';
 
 export default {
 	components: {
@@ -39,11 +40,11 @@ export default {
 	data() {
 		return {
 			tabs: {
-				tab1: { title: Vue.computed(() => this.$p.t('global/softwareverwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwareverwaltung/Softwareverwaltung.js' },
-				tab2: { title: Vue.computed(() => this.$p.t('global/imageverwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/imageverwaltung/Imageverwaltung.js' },
-				tab3: { title: Vue.computed(() => this.$p.t('global/lizenzserververwaltung')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/lizenzserververwaltung/Lizenzserververwaltung.js' },
-				tab4: { title: Vue.computed(() => this.$p.t('global/sucheNachRaum')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js' },
-				softwarebereitstellungUebersicht: { title: Vue.computed(() => this.$p.t('global/softwarebereitstellung') + ' ' + this.$p.t('global/uebersicht')), component: '../../extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js' }
+				tab1: { title: Vue.computed(() => this.$p.t('global/softwareverwaltung')), component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwareverwaltung/Softwareverwaltung.js') },
+				tab2: { title: Vue.computed(() => this.$p.t('global/imageverwaltung')), component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/imageverwaltung/Imageverwaltung.js') },
+				tab3: { title: Vue.computed(() => this.$p.t('global/lizenzserververwaltung')), component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/lizenzserververwaltung/Lizenzserververwaltung.js') },
+				tab4: { title: Vue.computed(() => this.$p.t('global/sucheNachRaum')), component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/SoftwareManagement/softwaresuche/Softwaresuche.js') },
+				softwarebereitstellungUebersicht: { title: Vue.computed(() => this.$p.t('global/softwarebereitstellung') + ' ' + this.$p.t('global/uebersicht')), component: absoluteJsImportUrl('public/extensions/FHC-Core-Softwarebereitstellung/js/components/Softwareanforderung/Uebersicht/SoftwarebereitstellungLayout.js') }
 			},
 			currentTab: 'softwarebereitstellungUebersicht',
 			studienjahre: [],
